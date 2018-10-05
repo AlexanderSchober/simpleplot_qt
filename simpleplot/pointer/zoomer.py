@@ -319,7 +319,6 @@ class Zoomer:
         ##############################################
         ''' 
 
-
         if (self.start_pos[0] == self.end_pos[0]) or (self.start_pos[1] == self.end_pos[1]): 
             self.canvas.artist.pointer.unbind_pointer()
             self.canvas.draw_surface.autoRange()
