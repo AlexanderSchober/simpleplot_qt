@@ -68,6 +68,8 @@ class Zoomer:
         self.color      = 'black'
         self.thickness  = 2
         self.roundness  = 5
+        self.fixed      = [False, False]
+        self.fixed_range= [None, None, None, None]
 
         self.start_pos     = [0,0]
         self.end_pos       = [0,0]
@@ -119,6 +121,26 @@ class Zoomer:
                 'color': QtGui.QColor(self.color),
                 'width': self.thickness
             })
+
+
+    def set_fixed(self, fixed = False, fixed_range= [None, None, None, None]):
+        '''
+        ##############################################
+        Sometimes the user wants to lock the zoom in
+        place. 
+        ———————
+        Input: 
+        - fixed (bool) fixed value 
+        - fixed_range [None or float array]
+        ———————
+        Output: -
+        ———————
+        status: active
+        ##############################################
+        ''' 
+        self.fixed = fixed
+        self.fixed_range = fixed_range
+
 
     def set_brush(self):
         '''
@@ -300,11 +322,37 @@ class Zoomer:
         if (self.start_pos[0] == self.end_pos[0]) or (self.start_pos[1] == self.end_pos[1]): 
             self.canvas.artist.pointer.unbind_pointer()
             self.canvas.draw_surface.autoRange()
+
+            #check for fixed
+            if self.fixed[0]:
+
+                self.canvas.draw_surface.setXRange(self.fixed_range[0], self.fixed_range[1])
+            
+            if self.fixed[1]:
+    
+                self.canvas.draw_surface.setYRange(self.fixed_range[2], self.fixed_range[3])
+
             self.canvas.artist.pointer.bind_pointer()
 
+
         else:
+
+            #set possible rnages
+            xRange = (self.start_pos[0], self.end_pos[0])
+            yRange = (self.start_pos[1], self.end_pos[1])
+
+            #check for fixed
+            if self.fixed[0]:
+
+                xRange = (self.fixed_range[0], self.fixed_range[1])
+            
+            if self.fixed[1]:
+    
+                xRange = (self.fixed_range[2], self.fixed_range[3])
+
+            #finally zoom
             self.canvas.artist.pointer.unbind_pointer()
             self.canvas.draw_surface.setRange(
-                xRange = (self.start_pos[0], self.end_pos[0]),
-                yRange = (self.start_pos[1], self.end_pos[1]))
+                xRange = xRange,
+                yRange = yRange)
             self.canvas.artist.pointer.bind_pointer()

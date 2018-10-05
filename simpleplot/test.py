@@ -46,7 +46,6 @@ def main():
 
     widget.show()
 
-    
     delta = 3
     x = np.arange(0, 600, delta)/100
     y = np.sin(x)
