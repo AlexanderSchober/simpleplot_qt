@@ -66,7 +66,7 @@ class Pointer_Position:
 
                 self.mapping.append([
                     plothandler.name,
-                    plot_element.get_para('Name')
+                    plot_element
                 ])
 
                 self.data.append([plot_element.x_data, plot_element.y_data])
@@ -154,10 +154,14 @@ class Type_0_Position(Pointer_Position):
                         idx_1  = idx_0 - 1
 
                 #calclate the Y from these positions
-                point_list.append(
-                    float(self.data[i][1][idx_0])+float((self.parent.cursor_x-self.data[i][0][idx_0]))
-                    *(float(self.data[i][1][idx_1])-float(self.data[i][1][idx_0]))
-                    /(float(self.data[i][0][idx_1])-float(self.data[i][0][idx_0])))
+                if self.mapping[i][0] == 'Scatter' and not '-' in self.mapping[i][1].get_para('Style'):
+                    point_list.append(float(self.data[i][1][idx_0]))
+
+                else:
+                    point_list.append(
+                        float(self.data[i][1][idx_0])+float((self.parent.cursor_x-self.data[i][0][idx_0]))
+                        *(float(self.data[i][1][idx_1])-float(self.data[i][1][idx_0]))
+                        /(float(self.data[i][0][idx_1])-float(self.data[i][0][idx_0])))
             except:
                 point_list.append(np.inf)
         
@@ -171,8 +175,11 @@ class Type_0_Position(Pointer_Position):
                 self.parent.method(
                     self.parent.canvas.plot_handlers[self.mapping[idx_2][0]][self.mapping[idx_2][1]], 
                     [self.parent.cursor_x,self.parent.cursor_y])
-        
-            
+
+            if self.mapping[idx_2][0] == 'Scatter' and not '-' in self.mapping[idx_2][1].get_para('Style'):
+                    
+                    self.parent.cursor_x = self.data[idx_2][0][idx_0]
+
             self.parent.cursor_y = point_list[idx_2]
         
         else:
@@ -247,10 +254,14 @@ class Type_1_Position(Pointer_Position):
                         idx_1  = idx_0 - 1
 
                 #calclate the Y from these positions
-                point_list.append(
-                    float(self.data[i][0][idx_0])+float((self.parent.cursor_y-self.data[i][1][idx_0]))
-                    *(float(self.data[i][0][idx_1])-float(self.data[i][0][idx_0]))
-                    /(float(self.data[i][1][idx_1])-float(self.data[i][1][idx_0])))
+                if self.mapping[i][0] == 'Scatter' and not '-' in self.mapping[i][1].get_para('Style'):
+                    point_list.append(float(self.data[i][0][idx_0]))
+
+                else:
+                    point_list.append(
+                        float(self.data[i][0][idx_0])+float((self.parent.cursor_y-self.data[i][1][idx_0]))
+                        *(float(self.data[i][0][idx_1])-float(self.data[i][0][idx_0]))
+                        /(float(self.data[i][1][idx_1])-float(self.data[i][1][idx_0])))
             except:
                 point_list.append(np.inf)
         
@@ -267,6 +278,10 @@ class Type_1_Position(Pointer_Position):
         
             
             self.parent.cursor_x = point_list[idx_2]
+
+            if self.mapping[idx_2][0] == 'Scatter' and not '-' in self.mapping[idx_2][1].get_para('Style'):
+
+                    self.parent.cursor_y = self.data[idx_2][1][idx_0]
         
         else:
             pass

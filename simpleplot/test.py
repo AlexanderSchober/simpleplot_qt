@@ -54,10 +54,10 @@ def main():
 
     #set the ax plot
     ax = mycanvas.get_subplot(0,0)
-    ax.add_plot('Scatter', x,y,   Name = 'sin', Style = ['-','s','10'], Log = [False,False])
+    ax.add_plot('Scatter', x,y,   Name = 'sin', Style = ['s','10'], Log = [False,False])
     ax.add_plot('Scatter', x,y_1, Name = 'cos', Thickness = 3, Style = ['-'], Log = [False,False])
     ax.add_plot('Scatter', x,y_2, Name = 'tan', Thickness = 3, Style = ['-'], Log = [False,False])
-    ax.pointer['Sticky'] = 2
+    ax.pointer['Sticky'] = 0
     ax.draw()
     ax.remove_plot('Scatter','tan')
     ax.axes.show_grid(x = True, y = True, alpha = 0.5)
