@@ -22,29 +22,23 @@
 # *****************************************************************************
 
 #import dependencies
-from pyqtgraph import GraphicsLayoutWidget
+from pyqtgraph import PlotWidget, ImageView, PlotItem
 import pyqtgraph as pg
 from .artist import Artist
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 pg.setConfigOptions(antialias=True)
 
-class Canvas_2D(GraphicsLayoutWidget):
+class Canvas_2D(QtGui.QWidget):
 
-    #initialise the signals
-
-    
     def __init__(self, multi_canvas = None, idx = 0 , background = 'k', **kwargs):        
         '''
         ##############################################
-        This method is the plot cnavas where all the 
-        elements will be drawn upon. It inherits
-        from the Graphocslayoutwidget library that 
-        was custom built on top of qt for python. 
-
-        We want to override the event from the default
-        graphicslayout of Qt. This is why the prensent
-        function will make the events respond directly
-        to the mouse and keyboard handlers.  
+        The canvas initializes as a widget and will 
+        then be fed the layout of the Qgrid layout. 
+        After this the widget will have a central
+        drawsurface and other items can be fed around
+        widget. 
         ———————
         Input: 
         - parent is the parent widget to inherit from
@@ -64,18 +58,56 @@ class Canvas_2D(GraphicsLayoutWidget):
         self.multi_canvas   = multi_canvas
         self.started        = False
         self.idx            = idx
-        
-        #initialise the canvas
-        GraphicsLayoutWidget.__init__(self)
-        self.draw_surface = self.addPlot()
-        self.draw_surface.disableAutoRange()
-        self.setBackground(background)
+        self.background     = background
 
-        #initialise the drawer
+        #initialize grid layout
+        QtGui.QWidget.__init__(self)
+
+
+
+        #initialize build
+        self.populate()
+        
+
+    def populate(self):
+        '''
+        ##############################################
+        populate the ui elements on the grid
+        ———————
+        Input: -
+        ———————
+        Output: -
+        ———————
+        status: active
+        ##############################################
+        '''
+
+        #create the layout
+        self.grid_layout = QtWidgets.QGridLayout()
+        self.grid_layout.setHorizontalSpacing(0)
+        self.grid_layout.setVerticalSpacing(0)
+
+        #create the center plot widget
+        self.plot_widget = PlotWidget()
+        self.draw_surface = self.plot_widget.getPlotItem()
+        self.draw_surface.disableAutoRange()
+        self.plot_widget.setBackground(self.background)
+
+        self.plot_widget.mouseMoveEvent     = self.mouseMoveEvent_artist
+        self.plot_widget.mousePressEvent    = self.mousePressEvent_artist
+        self.plot_widget.mouseReleaseEvent  = self.mouseReleaseEvent_artist
+
+        #put it into the layout
+        self.grid_layout.addWidget(self.plot_widget, 1, 1)
+
+        #set the layout to local widget
+        self.setLayout(self.grid_layout)
+
+        #wake up the artist
         self.artist = Artist(self)
         self.artist.setup()
 
-    def mouseMoveEvent(self, ev):
+    def mouseMoveEvent_artist(self, ev):
         '''
         ##############################################
         mouse move event
@@ -90,7 +122,7 @@ class Canvas_2D(GraphicsLayoutWidget):
         '''
         self.artist.mouse_move(ev)
 
-    def mousePressEvent(self, ev):
+    def mousePressEvent_artist(self, ev):
         '''
         ##############################################
         mouse press event
@@ -105,7 +137,7 @@ class Canvas_2D(GraphicsLayoutWidget):
         '''
         self.artist.mouse_press(ev)
 
-    def mouseReleaseEvent(self, ev):
+    def mouseReleaseEvent_artist(self, ev):
         '''
         ##############################################
         mouse release event
@@ -119,5 +151,3 @@ class Canvas_2D(GraphicsLayoutWidget):
         ##############################################
         '''
         self.artist.mouse_release(ev)
-        
-    

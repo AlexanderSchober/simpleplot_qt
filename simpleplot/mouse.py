@@ -204,7 +204,7 @@ class Mouse:
         self.pressed.append(event.button())
 
         #evaluate
-        self.evaluate_press()
+        self.evaluate_press(event.button())
     
     def release(self,event):
         '''
@@ -227,7 +227,7 @@ class Mouse:
         self.released.append(event.button())
 
         #evaluate
-        self.evaluate_release()
+        self.evaluate_release(event.button())
 
     def evaluate_motion(self):
         '''
@@ -247,7 +247,7 @@ class Mouse:
 
             method[0](self.cursor_x,self.cursor_y)
 
-    def evaluate_press(self):
+    def evaluate_press(self, button):
         '''
         ##############################################
         Evaluate the motion of the mouse onto the 
@@ -263,12 +263,12 @@ class Mouse:
         #run the bound methods
         for method in self.press_methods:
             
-            if method[2] in self.pressed:
+            if method[2] == button:
 
                 method[0]()
 
 
-    def evaluate_release(self):
+    def evaluate_release(self, button ):
         '''
         ##############################################
         Evaluate the motion of the mouse onto the 
@@ -284,7 +284,9 @@ class Mouse:
         #run the bound methods
         for method in self.release_methods:
 
-            method[0]()
+            if method[2] == button:
+
+                method[0]()
 
     def transmit_motion(self):
         '''

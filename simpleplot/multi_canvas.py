@@ -34,6 +34,7 @@ class Multi_Canvas(QtWidgets.QGridLayout):
     def __init__(self,
                  parent,
                  grid           = [[True]],
+                 element_types  = None,
                  x_ratios       = [1],
                  y_ratios       = [1],
                  no_title       = False,
@@ -97,14 +98,15 @@ class Multi_Canvas(QtWidgets.QGridLayout):
                 #check condition
                 if grid[i][j]:
                     
-                    #save it
+
                     self.canvas_objects[i].append(
                         [Canvas_2D(
                             multi_canvas    = self,
                             idx             = Index,
                             **kwargs)
                         ,i,j])
-                    
+
+                        
                     #make a pointer list
                     self.grab_object.append(self.canvas_objects[i][-1])
 
@@ -114,10 +116,6 @@ class Multi_Canvas(QtWidgets.QGridLayout):
     
                     self.canvas_objects[i].append(None)
     
-        #are we verbose
-        if self.verbose:
-        
-            print('This is the object array: ',self.canvas_objects)
 
         # ####################################
         # #Try to place the elements

@@ -83,6 +83,11 @@ class Bin_Plot():
         self.para_dict['Levels']    = [[0,100], ['list', 'float']]
         self.para_dict['Name']      = ['No Name', ['str']]
 
+        #the labels
+        self.para_dict['XLabel']      = [None, ['None', 'str']]
+        self.para_dict['YLabel']      = [None, ['None', 'str']]
+        self.para_dict['ZLabel']      = [None, ['None', 'str']]
+
         ##############################################
         #run through kwargs and try to inject
         for key in kwargs.keys():
@@ -116,14 +121,34 @@ class Bin_Plot():
         status: active
         ##############################################
         '''
+
+        #initialise the widgets
         self.image  = pg.ImageItem()
+        
+        #initialise the parameters and apply to image
         color_map   = pg.ColorMap(*self.get_para('Color_map'))
         look_up     = color_map.getLookupTable(0.0, 1.0, 256)
         self.image.setLookupTable(look_up)
         self.image.setLevels(self.get_para('Levels'))
         self.image.setImage(self.z_data)
 
+        #add the image itself onto drawsurface
         target_surface.draw_surface.addItem(self.image)
+
+
+        #to rethink and rewrite our own range engine
+
+        # #place histogram on the graph
+        # self.histo  = pg.HistogramLUTWidget(
+        #     image   = self.image, 
+        #     parent  = target_surface,
+        #     rgbHistogram = True
+        #     )
+        # self.histo.setBackground(target_surface.background)
+        # self.histo.axis.setStyle(showValues = False)
+
+        # target_surface.grid_layout.addWidget(self.histo,1,2)
+        # target_surface.grid_layout.setColumnMinimumWidth(2,100)
 
     def remove_items(self, target_surface):
         '''
@@ -140,3 +165,4 @@ class Bin_Plot():
         '''
 
         target_surface.draw_surface.removeItem(self.image)
+
