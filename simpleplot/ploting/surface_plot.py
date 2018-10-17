@@ -22,14 +22,17 @@
 # *****************************************************************************
 
 import pyqtgraph as pg
+import pyqtgraph.opengl as gl
+
+from copy import deepcopy
+from PyQt5 import QtGui
 import numpy as np
 
 
-class Bin_Plot():
-    
+class Surface(): 
     '''
     ##############################################
-    This class will be the plots. 
+    This class will be the scatter plots. 
     ———————
     Input: 
     - parent is the parent canvas class
@@ -40,15 +43,17 @@ class Bin_Plot():
     ##############################################
     '''
 
-    def __init__(self, x, y, z, **kwargs):
-    
+    def __init__(self, points, vertices, **kwargs):
+
         #save data localy
-        self.x_data = x
-        self.y_data = y
-        self.z_data = z
+        self.points     = np.asarray(deepcopy(points))
+        self.vertices   = np.asarray(deepcopy(vertices))
         
         #initalise plot parameters
         self.initialize(**kwargs)
+
+        #post process
+        self.process()
 
     def initialize(self, **kwargs):
         '''
@@ -66,31 +71,31 @@ class Bin_Plot():
 
         self.para_dict      = {}
 
-        color_map = [
-            np.array([0., 0.33, 0.66,  1.0]),
-            np.array(
-                [   [  0,   0, 255, 255],
-                    [  0, 255, 255, 255],
-                    [255, 255,   0, 255], 
-                    [255,   0,   0, 255]], 
-                    dtype=np.ubyte)]
-
         ##############################################
         #set the default values that will be overwritten
-        self.para_dict['Color_map'] = [color_map, ['list', 'np.array']]
-        self.para_dict['Levels']    = [[0,100], ['list', 'float']]
-        self.para_dict['Name']      = ['No Name', ['str']]
-
-        #the labels
-        self.para_dict['XLabel']      = [None, ['None', 'str']]
-        self.para_dict['YLabel']      = [None, ['None', 'str']]
-        self.para_dict['ZLabel']      = [None, ['None', 'str']]
+        self.para_dict['Color']     = [ 'b', ['str', 'hex', 'list', 'int']]
+        self.para_dict['Name']      = [ 'No Name', ['str']]
+        self.para_dict['Error']     = [ None, ['None', 'dict', 'float']]
 
         ##############################################
         #run through kwargs and try to inject
         for key in kwargs.keys():
-            
             self.para_dict[key][0] = kwargs[key]
+
+    def process(self):
+        '''
+        ##############################################
+        One parameters re set some processing can be 
+        performed...
+        ———————
+        Input: -
+        ———————
+        Output: -
+        ———————
+        status: active
+        ##############################################
+        '''
+        pass
 
     def get_para(self, name):
         '''
@@ -106,7 +111,7 @@ class Bin_Plot():
         '''
         return self.para_dict[name][0]
 
-    def draw(self, target_surface):
+    def drawGL(self, target_view):
         '''
         ##############################################
         Draw the objects.
@@ -119,34 +124,23 @@ class Bin_Plot():
         status: active
         ##############################################
         '''
+        self.curves = []
 
-        #initialise the widgets
-        self.image  = pg.ImageItem()
+        self.curves.append(gl.GLMeshItem(
+            vertexes    = self.points,
+            faces       = self.vertices,
+            smooth      = False, 
+            drawEdges   = True,
+            color       = self.get_para('Color')))
+
         
-        #initialise the parameters and apply to image
-        color_map   = pg.ColorMap(*self.get_para('Color_map'))
-        look_up     = color_map.getLookupTable(0.0, 1.0, 256)
-        self.image.setLookupTable(look_up)
-        self.image.setLevels(self.get_para('Levels'))
-        self.image.setImage(self.z_data)
+        
+        for curve in self.curves:
 
-        #add the image itself onto drawsurface
-        target_surface.draw_surface.addItem(self.image)
+            #curve.setGLOptions('opaque')
 
+            target_view.view.addItem(curve)
 
-        #to rethink and rewrite our own range engine
-
-        # #place histogram on the graph
-        # self.histo  = pg.HistogramLUTWidget(
-        #     image   = self.image, 
-        #     parent  = target_surface,
-        #     rgbHistogram = True
-        #     )
-        # self.histo.setBackground(target_surface.background)
-        # self.histo.axis.setStyle(showValues = False)
-
-        # target_surface.grid_layout.addWidget(self.histo,1,2)
-        # target_surface.grid_layout.setColumnMinimumWidth(2,100)
 
     def remove_items(self, target_surface):
         '''
@@ -162,5 +156,8 @@ class Bin_Plot():
         ##############################################
         '''
 
-        target_surface.draw_surface.removeItem(self.image)
+        for curve in self.curves:
+    
+            target_surface.draw_surface.removeItem(curve)
 
+        target_surface.draw_surface.setLogMode(*self.get_para('Log'))

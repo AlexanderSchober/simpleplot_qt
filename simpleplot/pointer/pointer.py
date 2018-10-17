@@ -265,9 +265,20 @@ class Pointer:
         if not self.locked:
             self.cursor_x = x 
             self.cursor_y = y 
+            self.cursor_z = 0
 
             #correct posiiton
             self.pointer_position.evaluate()
+
+            self.canvas.multi_canvas.bottom_selector.label.setText(
+                str(
+                    "  x = %"+str(self.get_para('Label_Precision')[0])+"f"
+                    ", y = %"+str(self.get_para('Label_Precision')[0])+"f"
+                    ", z = %"+str(self.get_para('Label_Precision')[0])+"f"
+                    )%(
+                        self.cursor_x,
+                        self.cursor_y,
+                        self.cursor_z))
         
         if self.live:
             #call the local drawing method

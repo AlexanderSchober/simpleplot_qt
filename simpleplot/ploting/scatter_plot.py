@@ -22,6 +22,8 @@
 # *****************************************************************************
 
 import pyqtgraph as pg
+import pyqtgraph.opengl as gl
+
 from copy import deepcopy
 from PyQt5 import QtGui
 import numpy as np
@@ -41,11 +43,17 @@ class Scatter_Plot():
     ##############################################
     '''
 
-    def __init__(self, x, y, **kwargs):
+    def __init__(self, x, y, z = None, **kwargs):
 
         #save data localy
         self.x_data = deepcopy(x)
         self.y_data = deepcopy(y)
+
+        if not isinstance(z,np.ndarray):
+            self.z_data = [0. for element in self.x_data]
+
+        else:
+            self.z_data = deepcopy(z)
         
         #initalise plot parameters
         self.initialize(**kwargs)
@@ -83,7 +91,6 @@ class Scatter_Plot():
         ##############################################
         #run through kwargs and try to inject
         for key in kwargs.keys():
-            
             self.para_dict[key][0] = kwargs[key]
 
     def process(self):
@@ -114,6 +121,10 @@ class Scatter_Plot():
         self.y_min = np.min(self.y_data)
         self.y_max = np.max(self.y_data)
         self.y_mean = np.mean(self.y_data)
+
+        self.z_min = np.min(self.z_data)
+        self.z_max = np.max(self.z_data)
+        self.z_mean = np.mean(self.z_data)
 
     def get_para(self, name):
         '''
@@ -215,7 +226,6 @@ class Scatter_Plot():
                     brush   = self.brush,
                     size    = int(self.get_para('Style')[-1])))
 
-            
         if not self.get_para('Error') == None:
 
             #generate the pen
@@ -232,6 +242,73 @@ class Scatter_Plot():
         for curve in self.curves:
 
             target_surface.draw_surface.addItem(curve)
+
+    def drawGL(self, target_view):
+        '''
+        ##############################################
+        Draw the objects.
+        ———————
+        Input: 
+        - target_surface plot objec to draw on
+        ———————
+        Output: -
+        ———————
+        status: active
+        ##############################################
+        '''
+        self.curves = []
+
+        #we want a line
+        if '-' in self.get_para('Style'):
+
+            #add the element
+            self.curves.append(
+                gl.GLLinePlotItem(
+                    pos=np.vstack([
+                        self.x_data,
+                        self.y_data,
+                        self.z_data]).transpose(),
+                    color = pg.glColor(self.get_para('Color')),
+                    width = self.get_para('Thickness')
+                ))
+
+        #we want a scatter
+        scatter_options = ['o', 'd', 's', 't']
+        scatter_bool    = [element in scatter_options for element in self.get_para('Style')]
+        
+        if any(scatter_bool):
+
+            #generate the pen
+            self.set_pen()
+            self.set_brush()
+
+            #add the element
+            self.curves.append(
+                gl.GLScatterPlotItem(
+                    pos=np.vstack([
+                        self.x_data,
+                        self.y_data,
+                        self.z_data]).transpose(),
+                        color = pg.glColor(self.get_para('Color')),
+                        size = int(self.get_para('Style')[-1])
+                        ))
+
+        # if not self.get_para('Error') == None:
+
+        #     #generate the pen
+        #     self.set_pen()
+            
+        #     self.curves.append(
+        #         pg.ErrorBarItem(
+        #             x   = self.x_data, 
+        #             y   = self.y_data,
+        #             pen = self.pen,
+        #             **self.get_para('Error')
+        #             ))
+
+        for curve in self.curves:
+
+            target_view.view.addItem(curve)
 
 
     def remove_items(self, target_surface):

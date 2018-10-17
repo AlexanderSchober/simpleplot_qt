@@ -135,4 +135,9 @@ class Mode_Select(QtWidgets.QHBoxLayout):
 
         for elements in self.multi_canvas.canvas_objects:
             for subelement in elements:
-                subelement[0].artist.set_mode(idx)
+
+                try:
+                    subelement[0].artist.set_mode(idx)
+
+                except:
+                    print('Could not set the cursor mode...')
