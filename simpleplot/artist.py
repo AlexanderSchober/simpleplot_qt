@@ -29,6 +29,7 @@ from .axes               import Axes
 
 from .ploting.plot_handler import get_plot_handler
 
+
 class Artist():
     '''
     ##############################################
@@ -53,38 +54,12 @@ class Artist():
 
     def __init__(self, canvas):
 
-        self.canvas         = canvas
-        self.plot_handlers  = []
-
         ##########################################
         #internal element indentifier
-        
-        ##########################################
-        #Initialise different elements of the plot
-        
-        #The axes
-        self.axes       = Axes(self.canvas)
-        
-        # #Set the mouse
-        self.mouse      = Mouse(self.canvas)
-        
-        # #Set the keyboard
-        # self.Keyboard   = KeyboardClass.Keyboard(self.Canvas,Multi = self.Multi)
-        
-        # #The pointer
-        self.pointer    = Pointer(self.canvas)
-        
-        # #The zoomer
-        self.zoomer     = Zoomer(self.canvas)
-        
-        # #the measurement Tool
-        self.measurer   = Measurer(self.canvas)
-        
-        # #The Modifier
-        # self.Modifier   = ModificationClass.Modify(self.Canvas)
-        
-        # #the title
-        # self.Title      = None #TitleClass.TitleClass(self.Canvas)
+
+        self.canvas         = canvas
+        self.plot_handlers  = []
+        self.artist_type    = '2D'
 
     def add_plot(self, name_type, *args, **kwargs):
         '''
@@ -156,10 +131,129 @@ class Artist():
 
             plot_handler.draw(self.canvas)
 
+    def redraw(self):
+        '''
+        ##############################################
+        This method will go through the plot handlers
+        and check if one of them has already the 
+        selected items. if not a new isntance will be
+        generated and then fed into the handler system
+        ———————
+        Input: -
+        ———————
+        Output: -
+        ———————
+        status: active
+        ##############################################
+        '''
+        for plot_handler in self.plot_handlers:
+
+            plot_handler.draw(self.canvas)
+
+    def clear(self):
+        '''
+        ##############################################
+        Interactive plotting software needs the
+        ability to clear the current content. This is 
+        done here by asking everyone to be deleted...
+        ———————
+        Input: -
+        ———————
+        Output: -
+        ———————
+        status: active
+        ##############################################
+        '''
+        for handler in self.plot_handlers:
+
+            for element in handler.plot_elements:
+
+                element.remove_items(self.canvas)
+
+            handler.plot_elements = []
+
+class Artist2D(Artist):
+    '''
+    ##############################################
+    This class is here to perform the managing of
+    drawing and displaying. This part should be
+    much easier thanks to the use of the qtgraph
+    lubrary which has most tools already built 
+    in except the management of the pointer
+    (for example).
+
+    The canvas inherits all methods from pyqtgraph
+    and will the target for ploting.
+    ———————
+    Input: 
+    - parent is the parent canvas class
+    ———————
+    Output: -
+    ———————
+    status: active
+    ##############################################
+    '''
+
+    def __init__(self, canvas):
+
+
+        ##########################################
+        #internal element indentifier
+        Artist.__init__(self, canvas)
+
+        self.canvas         = canvas
+        self.plot_handlers  = []
+        self.artist_type    = '2D'
+        
+        ##########################################
+        #Initialise different elements of the plot
+        
+        #The axes
+        self.axes       = Axes(self.canvas)
+        
+        # #Set the mouse
+        self.mouse      = Mouse(self.canvas)
+        
+        # #Set the keyboard
+        # self.Keyboard   = KeyboardClass.Keyboard(self.Canvas,Multi = self.Multi)
+        
+        # #The pointer
+        self.pointer    = Pointer(self.canvas)
+        
+        # #The zoomer
+        self.zoomer     = Zoomer(self.canvas)
+        
+        # #the measurement Tool
+        self.measurer   = Measurer(self.canvas)
+        
+        # #The Modifier
+        # self.Modifier   = ModificationClass.Modify(self.Canvas)
+        
+        # #the title
+        # self.Title      = None #TitleClass.TitleClass(self.Canvas)
+
+    def draw(self):
+        '''
+        ##############################################
+        This method will go through the plot handlers
+        and check if one of them has already the 
+        selected items. if not a new isntance will be
+        generated and then fed into the handler system
+        ———————
+        Input: -
+        ———————
+        Output: -
+        ———————
+        status: active
+        ##############################################
+        '''
+        for plot_handler in self.plot_handlers:
+
+            plot_handler.draw(self.canvas)
+
         self.setup()
 
         self.zoomer.zoom()
-
 
     def redraw(self):
         '''
@@ -234,7 +328,6 @@ class Artist():
         self.pointer.bind_pointer()
         self.zoomer.listen()
 
-        
     def set_mode(self, idx):
         '''
         ##############################################
@@ -270,3 +363,72 @@ class Artist():
     def mouse_release(self,event):
 
         self.mouse.release(event)
+
+
+class Artist3D(Artist):
+    '''
+    ##############################################
+    This class is here to perform the managing of
+    drawing and displaying. This part should be
+    much easier thanks to the use of the qtgraph
+    lubrary which has most tools already built 
+    in except the management of the pointer
+    (for example).
+
+    The canvas inherits all methods from pyqtgraph
+    and will the target for ploting.
+    ———————
+    Input: 
+    - parent is the parent canvas class
+    ———————
+    Output: -
+    ———————
+    status: active
+    ##############################################
+    '''
+
+    def __init__(self, canvas):
+
+        ##########################################
+        #internal element indentifier
+        Artist.__init__(self, canvas)
+
+        self.canvas         = canvas
+        self.plot_handlers  = []
+        self.artist_type    = '3D'
+
+        ##########################################
+        #internal element indentifier
+        
+        ##########################################
+        #Initialise different elements of the plot
+
+    def setup(self):
+        '''
+        ##############################################
+        Once all elements are created it is possible 
+        to set up the functionalities. 
+        ———————
+        Input: -
+        ———————
+        Output: -
+        ———————
+        status: active
+        ##############################################
+        '''
+        pass
+
+    def set_mode(self, idx):
+        '''
+        ##############################################
+        Once all elements are created it is possible 
+        to set up the functionalities. 
+        ———————
+        Input: -
+        ———————
+        Output: -
+        ———————
+        status: active
+        ##############################################
+        '''
+        pass

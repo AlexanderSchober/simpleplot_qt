@@ -24,9 +24,10 @@
 import pyqtgraph as pg
 import numpy as np
 
-from .scatter_plot import Scatter_Plot
-from .contour_plot import Contour_Plot
-from .bin_plot import Bin_Plot
+from .scatter_plot  import Scatter_Plot
+from .contour_plot  import Contour_Plot
+from .bin_plot      import Bin_Plot
+from.surface_plot   import Surface
 
 def get_plot_handler(select):
     '''
@@ -53,6 +54,10 @@ def get_plot_handler(select):
     elif select == 'Bin':
 
         return Plot_Handler(select, Bin_Plot)
+
+    elif select == 'Surface':
+    
+        return Plot_Handler(select, Surface)
 
     else:
 
@@ -163,11 +168,18 @@ class Plot_Handler():
         status: active
         ##############################################
         '''
-
         #set the plot
         for plot_element in self.plot_elements:
 
-            plot_element.draw(target)
+            if target.artist.artist_type == "2D":
 
-        #set th new zoom
-        target.artist.zoomer.zoom()
+                plot_element.draw(target)
+
+            elif target.artist.artist_type == "3D":
+    
+                plot_element.drawGL(target)
+
+        if target.artist.artist_type == "2D":
+
+            #set th new zoom
+            target.artist.zoomer.zoom()

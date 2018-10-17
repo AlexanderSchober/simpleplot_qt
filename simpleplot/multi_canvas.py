@@ -22,7 +22,7 @@
 # *****************************************************************************
 
 #import personal dependencies
-from .canvas import Canvas_2D
+from .canvas import Canvas_2D, Canvas_3D
 from .gui.mode_select import Mode_Select
 
 #import general
@@ -98,14 +98,32 @@ class Multi_Canvas(QtWidgets.QGridLayout):
                 #check condition
                 if grid[i][j]:
                     
+                    if element_types == None:
 
-                    self.canvas_objects[i].append(
-                        [Canvas_2D(
-                            multi_canvas    = self,
-                            idx             = Index,
-                            **kwargs)
-                        ,i,j])
+                        self.canvas_objects[i].append(
+                            [Canvas_2D(
+                                multi_canvas    = self,
+                                idx             = Index,
+                                **kwargs)
+                            ,i,j])
 
+                    elif element_types[i][j] == '2D':
+
+                        self.canvas_objects[i].append(
+                            [Canvas_2D(
+                                multi_canvas    = self,
+                                idx             = Index,
+                                **kwargs)
+                            ,i,j])
+
+                    elif element_types[i][j] == '3D':
+    
+                        self.canvas_objects[i].append(
+                            [Canvas_3D(
+                                multi_canvas    = self,
+                                idx             = Index,
+                                **kwargs)
+                            ,i,j])
                         
                     #make a pointer list
                     self.grab_object.append(self.canvas_objects[i][-1])

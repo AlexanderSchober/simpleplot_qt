@@ -37,17 +37,18 @@ def main():
     mycanvas    = Multi_Canvas(
         widget,
         grid        = [[True,True],[True,True]],
-        element_types = [['2D', 'image'],['2D','2D']],
+        element_types = [['2D', '3D'],['3D','2D']],
         x_ratios    = [2,3],
         y_ratios    = [2,2],
-        background  = "w",
+        background  = "k",
         highlightthickness = 0)
 
     widget.show()
 
     delta = 3
-    x = np.arange(0, 600, delta)/100
+    x = np.arange(-600, 600, delta)/100
     y = np.sin(x)
+    z = np.cos(x)
     y_1 = np.cos(x)
     y_2 = np.tan(x)
 
@@ -64,24 +65,31 @@ def main():
 
     #set the bx plot
     bx = mycanvas.get_subplot(0,1)
-    x_bin = np.arange(0, 100, 1)
-    y_bin = np.arange(0, 100, 1)
-    z_bin = np.random.rand(100,100)*100
+    bx.add_plot('Scatter', x, y, z =  z, Color = 'r', Name = 'sin', Style = ['-','s','10'], Log = [False,False])
+    bx.add_plot('Scatter', x, y, z = -z, Color = 'b', Name = 'sin', Style = ['-','s','10'], Log = [False,False])
+    bx.add_plot('Scatter', x, z, z =  y, Color = 'g', Name = 'sin', Style = ['-','s','10'], Log = [False,False])
+    bx.add_plot('Scatter', x, z, z = -y, Color = 'w', Name = 'sin', Style = ['-','s','10'], Log = [False,False])
 
-    color_map = [
-         np.array([0., 1., 0.5, 0.25, 0.75]),
-         np.array(
-             [
-                 [  0, 255, 255, 255], 
-                 [255, 255,   0, 255], 
-                 [  0,   0,   0, 255], 
-                 [  0,   0, 255, 255], 
-                 [255,   0,   0, 255]], 
-                 dtype=np.ubyte)]
 
-    bx.add_plot('Bin', x_bin,y_bin,z_bin, Name = 'bin', Color_map = color_map , Levels = [50,70])
-    bx.pointer['Sticky'] = 3
     bx.draw()
+    # x_bin = np.arange(0, 100, 1)
+    # y_bin = np.arange(0, 100, 1)
+    # z_bin = np.random.rand(100,100)*100
+
+    # color_map = [
+    #      np.array([0., 1., 0.5, 0.25, 0.75]),
+    #      np.array(
+    #          [
+    #              [  0, 255, 255, 255], 
+    #              [255, 255,   0, 255], 
+    #              [  0,   0,   0, 255], 
+    #              [  0,   0, 255, 255], 
+    #              [255,   0,   0, 255]], 
+    #              dtype=np.ubyte)]
+
+    # bx.add_plot('Bin', x_bin,y_bin,z_bin, Name = 'bin', Color_map = color_map , Levels = [50,70])
+    # bx.pointer['Sticky'] = 3
+    # bx.draw()
 
     
 
@@ -95,10 +103,10 @@ def main():
         
 
     # #link the axes
-    mycanvas.link(ax, bx, variableIn = 'x', variableOut = 'x')
-    mycanvas.link(ax, cx, variableIn = 'x', variableOut = 'y')
-    mycanvas.link(bx, ax, variableIn = 'x', variableOut = 'x')
-    mycanvas.link(dx, cx,variableIn = 'y',variableOut = 'x')
+    #mycanvas.link(ax, bx, variableIn = 'x', variableOut = 'x')
+    #mycanvas.link(ax, cx, variableIn = 'x', variableOut = 'y')
+    # mycanvas.link(bx, ax, variableIn = 'x', variableOut = 'x')
+    #mycanvas.link(dx, cx,variableIn = 'y',variableOut = 'x')
 
     
     
