@@ -73,7 +73,8 @@ class Surface():
 
         ##############################################
         #set the default values that will be overwritten
-        self.para_dict['Color']     = [ 'b', ['str', 'hex', 'list', 'int']]
+        self.para_dict['Color']     = [ None, ['str', 'hex', 'list', 'int']]
+        self.para_dict['Shader']    = [ None, ['str', 'hex', 'list', 'int']]
         self.para_dict['Name']      = [ 'No Name', ['str']]
         self.para_dict['Error']     = [ None, ['None', 'dict', 'float']]
 
@@ -126,14 +127,28 @@ class Surface():
         '''
         self.curves = []
 
-        self.curves.append(gl.GLMeshItem(
-            vertexes    = self.points,
-            faces       = self.vertices,
-            smooth      = False, 
-            drawEdges   = True,
-            color       = self.get_para('Color')))
+        kwargs = {}
 
-        
+        kwargs['vertexes']  = self.points
+        kwargs['faces']     = self.vertices
+        kwargs['smooth']    = False
+        kwargs['drawEdges'] = False
+
+        if not isinstance(self.get_para("Color"), type(None)):
+
+            if len(self.get_para('Color'))<5:
+                kwargs['color'] = self.get_para('Color')
+            else:
+                kwargs['vertexColors'] = self.get_para('Color')
+
+        elif not isinstance(self.get_para("Shader"),type(None)):
+            kwargs['shader'] = self.get_para('Shader')
+
+        else:
+            kwargs['shader'] = 'heightColor'
+
+        self.curves.append(gl.GLMeshItem(**kwargs))
+
         
         for curve in self.curves:
 

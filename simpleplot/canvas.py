@@ -209,7 +209,7 @@ class Canvas_3D(QtGui.QWidget):
         self.grid_layout.setVerticalSpacing(0)
 
         #create the center plot widget
-        self.view    = gl.GLViewWidget()
+        self.view    = MyGLViewWidget()
         # xgrid = gl.GLGridItem()
         # ygrid = gl.GLGridItem()
         # zgrid = gl.GLGridItem()
@@ -256,3 +256,70 @@ class Canvas_3D(QtGui.QWidget):
         #wake up the artist
         self.artist = Artist3D(self)
         #self.artist.setup()
+
+
+class MyGLViewWidget(gl.GLViewWidget):
+    """ Override GLViewWidget with enhanced behavior and Atom integration.
+    
+    """
+    #: Fired in update() method to synchronize listeners.
+    sigUpdate = QtCore.pyqtSignal()
+    
+    def mousePressEvent(self, ev):
+        """ Store the position of the mouse press for later use.
+        
+        """
+        super(MyGLViewWidget, self).mousePressEvent(ev)
+        self._downpos = self.mousePos
+            
+    def mouseReleaseEvent(self, ev):
+        """ Allow for single click to move and right click for context menu.
+        
+        Also emits a sigUpdate to refresh listeners.
+        """
+        super(MyGLViewWidget, self).mouseReleaseEvent(ev)
+        if self._downpos == ev.pos():
+            if ev.button() == 2:
+                print('show context menu')
+            elif ev.button() == 1:
+                x = ev.pos().x() - self.width() / 2
+                y = ev.pos().y() - self.height() / 2
+                self.pan(-x, -y, 0, relative=True)
+
+        self._prev_zoom_pos = None
+        self._prev_pan_pos = None
+        self.sigUpdate.emit()
+
+
+    def evalKeyState(self):
+        speed = 2.0
+        if len(self.keysPressed) > 0:
+            for key in self.keysPressed:
+                if key == QtCore.Qt.Key_Right:
+                    self.orbit(azim=-speed, elev=0)
+                elif key == QtCore.Qt.Key_Left:
+                    self.orbit(azim=speed, elev=0)
+                elif key == QtCore.Qt.Key_Up:
+                    self.orbit(azim=0, elev=-speed)
+                elif key == QtCore.Qt.Key_Down:
+                    self.orbit(azim=0, elev=speed)
+                elif key == QtCore.Qt.Key_PageUp:
+                    pass
+                elif key == QtCore.Qt.Key_PageDown:
+                    pass
+                self.keyTimer.start(16)
+        else:
+            self.keyTimer.stop()
+
+    def mouseMoveEvent(self, ev):
+        diff = ev.pos() - self.mousePos
+        self.mousePos = ev.pos()
+        
+        if ev.buttons() == QtCore.Qt.LeftButton:
+            self.orbit(-diff.x(), diff.y())
+            
+        elif ev.buttons() == QtCore.Qt.MidButton:
+            self.pan(diff.x(), diff.y(), 0, relative=True)
+
+        elif ev.buttons() == QtCore.Qt.RightButton:
+            self.pan(diff.x(), 0, diff.y(), relative=True)
