@@ -56,7 +56,7 @@ class Canvas_2D(QtGui.QWidget):
         ##############################################
         '''
         
-        #hirarchy
+        #hierarchy
         self.multi_canvas   = multi_canvas
         self.started        = False
         self.idx            = idx
@@ -178,7 +178,7 @@ class Canvas_3D(QtGui.QWidget):
         ##############################################
         '''
         
-        #hirarchy
+        #hierarchy
         self.multi_canvas   = multi_canvas
         self.started        = False
         self.idx            = idx

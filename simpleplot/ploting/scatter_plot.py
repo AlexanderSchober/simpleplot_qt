@@ -28,7 +28,6 @@ from copy import deepcopy
 from PyQt5 import QtGui
 import numpy as np
 
-
 class Scatter_Plot(): 
     '''
     ##############################################
@@ -45,7 +44,7 @@ class Scatter_Plot():
 
     def __init__(self, x, y, z = None, **kwargs):
 
-        #save data localy
+        #save data locally
         self.x_data = deepcopy(x)
         self.y_data = deepcopy(y)
 
@@ -190,6 +189,19 @@ class Scatter_Plot():
         '''
         self.curves = []
 
+        if not self.get_para('Error') == None:
+    
+            #generate the pen
+            self.set_pen()
+            
+            self.curves.append(
+                pg.ErrorBarItem(
+                    x   = self.x_data, 
+                    y   = self.y_data,
+                    pen = self.pen,
+                    **self.get_para('Error')
+                    ))
+
         #we want a line
         if '-' in self.get_para('Style'):
 
@@ -226,18 +238,6 @@ class Scatter_Plot():
                     brush   = self.brush,
                     size    = int(self.get_para('Style')[-1])))
 
-        if not self.get_para('Error') == None:
-
-            #generate the pen
-            self.set_pen()
-            
-            self.curves.append(
-                pg.ErrorBarItem(
-                    x   = self.x_data, 
-                    y   = self.y_data,
-                    pen = self.pen,
-                    **self.get_para('Error')
-                    ))
 
         for curve in self.curves:
 

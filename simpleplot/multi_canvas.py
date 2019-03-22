@@ -207,18 +207,15 @@ class Multi_Canvas(QtWidgets.QGridLayout):
                 self.setColumnStretch(i,1/x_ratios[i])
     
             except:
-    
                 if self.Verbose:
                     print('Could not set the row weight for: ',i)
         
         for j in range(0,len(y_ratios)):
-        
             try:
                 #configure the frame
                 self.setRowStretch(i,1/y_ratios[j])
     
             except:
-    
                 if self.Verbose:
                     print('Could not set the row weight for: ',j)
 

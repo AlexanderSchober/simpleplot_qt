@@ -28,7 +28,6 @@ from copy import deepcopy
 from PyQt5 import QtGui
 import numpy as np
 
-
 class Surface(): 
     '''
     ##############################################
@@ -45,11 +44,11 @@ class Surface():
 
     def __init__(self, points, vertices, **kwargs):
 
-        #save data localy
+        #save data locally
         self.points     = np.asarray(deepcopy(points))
         self.vertices   = np.asarray(deepcopy(vertices))
         
-        #initalise plot parameters
+        #initialise plot parameters
         self.initialize(**kwargs)
 
         #post process
@@ -112,6 +111,20 @@ class Surface():
         '''
         return self.para_dict[name][0]
 
+    def generate_shader(self,name):
+        '''
+        ##############################################
+        Returns the value of the parameter requested
+        ———————
+        Input: -
+        ———————
+        Output: -
+        ———————
+        status: active
+        ##############################################
+        '''
+        return self.para_dict[name][0]
+
     def drawGL(self, target_view):
         '''
         ##############################################
@@ -131,18 +144,20 @@ class Surface():
 
         kwargs['vertexes']  = self.points
         kwargs['faces']     = self.vertices
-        kwargs['smooth']    = False
-        kwargs['drawEdges'] = False
+        kwargs['smooth']    = True
+        kwargs['drawEdges'] = True
 
         if not isinstance(self.get_para("Color"), type(None)):
 
-            if len(self.get_para('Color'))<5:
-                kwargs['color'] = self.get_para('Color')
-            else:
-                kwargs['vertexColors'] = self.get_para('Color')
+            if isinstance(self.get_para("Color"), np.ndarray):
 
-        elif not isinstance(self.get_para("Shader"),type(None)):
-            kwargs['shader'] = self.get_para('Shader')
+                if len(self.get_para('Color'))<5:
+                    kwargs['color'] = self.get_para('Color')
+                else:
+                    kwargs['vertexColors'] = self.get_para('Color')
+
+            elif isinstance(self.get_para("Color"), pg.opengl.shaders.ShaderProgram):
+                kwargs['shader'] = self.get_para('Color')
 
         else:
             kwargs['shader'] = 'heightColor'
