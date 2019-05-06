@@ -29,127 +29,62 @@ import numpy as np
 
 class Measurer:
     '''
-    ##############################################
     Measure tool that allows the user to 
-    insvestigate distances between points. 
+    investigate distances between points. 
     ———————
     Input: 
     - canvas is the parent canvas
-    ———————
-    Output: -
-    ———————
-    status: active
-    ##############################################
     '''
 
     def __init__(self, canvas):
-            
-        #Bind to the canvas.
         self.canvas = canvas
+        self._initialize()
     
-        #launch defaults
-        self.init_parameters()
-    
-    def init_parameters(self):
+    def _initialize(self):
         '''
-        ##############################################
         Set the initial parameters of the zoombox
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        #cursor parameters
         self.color      = 'black'
         self.thickness  = 2
         self.roundness  = 5
 
-        self.start_pos     = [0,0]
-        self.end_pos       = [0,0]
-
+        self.start_pos  = [0,0]
+        self.end_pos    = [0,0]
 
     def listen(self):
         '''
-        ##############################################
         Make the class listen to the click event 
         related to the zoom initializingevent.
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        self.canvas.artist.mouse.bind('press', self.start_measure, 'start_measure', 1)
+        self.canvas.artist.mouse.bind('press', self.startMeasure, 'startMeasure', 1)
 
     def quiet(self):
         '''
-        ##############################################
         Quiet the zoom functionality.
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        self.canvas.artist.mouse.unbind('press', 'start_measure')
+        self.canvas.artist.mouse.unbind('press', 'startMeasure')
 
-    def set_pen(self):
+    def _setPen(self):
         '''
-        ##############################################
-        This method will initialise the Qpen as the
+        This method will initialise the QPen as the
         the QPainter method
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        #initialise the pen
         self.pen = pg.mkPen({
                 'color': QtGui.QColor(self.color),
                 'width': self.thickness
             })
 
-    def set_brush(self):
+    def _setBrush(self):
         '''
-        ##############################################
-        This method will initialise the Qpen as the
+        This method will initialise the QPen as the
         the QPainter method
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        #initialise the pen
         self.brush = pg.mkBrush(self.color)
 
-    def start_measure(self):
+    def startMeasure(self):
         '''
-        ##############################################
         Start to draw the zoom box. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         ''' 
-        #grab the actual cursor position from the Pointer class
-
-        
         self.start_pos     = [
             self.canvas.artist.pointer.cursor_x,
             self.canvas.artist.pointer.cursor_y]
@@ -158,7 +93,7 @@ class Measurer:
             self.canvas.artist.pointer.cursor_y]
 
         #create the object
-        self.set_pen()
+        self._setPen()
 
         self.line = pg.PlotCurveItem(
             x    = np.asarray([
@@ -183,26 +118,18 @@ class Measurer:
         self.canvas.draw_surface.addItem(self.line)
         self.canvas.draw_surface.addItem(self.dots)
 
-        #link the move lsitener
-        self.canvas.artist.mouse.bind('move', self.update_measure, 'update_measure')
-        self.canvas.artist.mouse.bind('release', self.end_measure, 'end_measure', 1)
+        #link the move listener
+        self.canvas.artist.mouse.bind('move', self.updateMeasure, 'updateMeasure')
+        self.canvas.artist.mouse.bind('release', self.endMeasure, 'endMeasure', 1)
 
         #remove the pointer
-        self.canvas.artist.pointer.unbind_pointer()
+        self.canvas.artist.pointer.unbindPointer()
 
-    def update_measure(self,x,y):
+    def updateMeasure(self,x,y):
         '''
-        ##############################################
-        Updat the box as the mouse moves
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
+        Update the box as the mouse moves
         ''' 
-        self.canvas.artist.pointer.refresh_pos()
+        self.canvas.artist.pointer.refreshPosition()
 
         self.end_pos       = [
             self.canvas.artist.pointer.cursor_x,
@@ -224,7 +151,6 @@ class Measurer:
                 self.start_pos[1],
                 self.end_pos[1]]))
 
-
         self.canvas.multi_canvas.bottom_selector.label.setText(
             str(
                 "  delta x = %."+str(self.roundness)+"f"
@@ -235,30 +161,17 @@ class Measurer:
 
         self.canvas.multi_canvas.bottom_selector.label.repaint()
 
-
-    def end_measure(self):
+    def endMeasure(self):
         '''
-        ##############################################
         End the zoom method and kill all the listeners
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         ''' 
-        
         self.canvas.draw_surface.removeItem(self.line)
         self.canvas.draw_surface.removeItem(self.dots)
         del(self.line)
         del(self.dots)
-        self.canvas.artist.pointer.bind_pointer()
+        self.canvas.artist.pointer.bindPointer()
 
         self.canvas.multi_canvas.bottom_selector.label.setText('')
 
-
-        #shut down the links
-        self.canvas.artist.mouse.unbind('move', 'update_measure')
-        self.canvas.artist.mouse.unbind('release','end_measure')
-
+        self.canvas.artist.mouse.unbind('move', 'updateMeasure')
+        self.canvas.artist.mouse.unbind('release','endMeasure')

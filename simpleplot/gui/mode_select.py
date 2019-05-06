@@ -25,50 +25,33 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 import os
 from functools import partial
+from .settings import PreferenceWindow
 
-class Mode_Select(QtWidgets.QHBoxLayout):
-
+class ModeSelect(QtWidgets.QHBoxLayout):
 
     def __init__(self, multi_canvas, parent, icon_dim):
         '''
-        ##############################################
         Selector toolbar for the mode used for the
         pointer. 
         ———————
         Input: 
         - parent is the widget parent
         - icondim is a integers
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-
         QtWidgets.QHBoxLayout.__init__(self)
         self.multi_canvas = multi_canvas
         self.initialize(parent, icon_dim)
         self.selected = 0
         self.process(0)
-        
-
 
     def initialize(self, parent, icon_dim):
         '''
-        ##############################################
-        Setting up the button environement
+        Setting up the button environnement
         ———————
         Input: 
         - parent is the widget parent
         - icondim is a integers
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-
-        #######################
         #Modes and variables
         self.modes = [
             ("Zoom"       , 0),
@@ -76,68 +59,55 @@ class Mode_Select(QtWidgets.QHBoxLayout):
             ("Edit"       , 2),
             ("Settings"   , 3),
             ]
-    
-        #######################
         #Grab the Path
         Path = os.path.join(os.path.dirname(__file__),'ressources')
         self.buttons = []
-
-        #######################
         #populate buttons
         for i in range(len(self.modes)):
-
             self.buttons.append(QtWidgets.QPushButton('', parent))
             self.buttons[i].setIcon(QtGui.QIcon(QtGui.QPixmap(os.path.join(Path,self.modes[i][0]+'.jpg'))))
             self.buttons[i].setIconSize(QtCore.QSize(icon_dim, icon_dim))
             self.buttons[i].setStyleSheet('background-color: silver; border-style: inset;border-width: 2px')
-            self.buttons[i].setCheckable(True)
-            self.buttons[i].clicked.connect(partial(self.process,i))
+            if i < len(self.modes) - 1:
+                self.buttons[i].setCheckable(True)
+                self.buttons[i].clicked.connect(partial(self.process,i))
+            else:
+                self.buttons[i].clicked.connect(self.openSettings)
             self.addWidget(self.buttons[i])
 
         self.label = QtWidgets.QLabel(parent)
         self.label.setText('')
         self.addWidget(self.label)
         
-        #######################
         #add a stretch to the selector
         self.addStretch(1)
         self.setSpacing(2)
-
                 
     def process(self, idx):
         '''
-        ##############################################
-        This method will try to resolv the click
+        This method will try to resolve the click
         action and then select the current mode. Note
-        that the cnavas will have to grab this value
-        to select the cose pointer method. 
-        ———————
-        Input: 
-        - idx
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
+        that the canvas will have to grab this value
+        to select the pointer method. 
         '''
-
         #set the variable 
         self.selected = idx
 
         #set all buttons inset
         for i in range(len(self.modes)):
-
             self.buttons[i].setStyleSheet('background-color: silver; border-style: inset;border-width: 2px')
-            
-        #se tht eselected button outset
         self.buttons[idx].setStyleSheet('background-color: grey; border-style: outset;border-width: 2px')
 
-
-        for elements in self.multi_canvas.canvas_objects:
+        for elements in self.multi_canvas.canvas_nodes:
             for subelement in elements:
-
                 try:
-                    subelement[0].artist.set_mode(idx)
-
+                    subelement[0].artist.setMode(idx)
                 except:
-                    print('Could not set the cursor mode...')
+                    pass
+
+    def openSettings(self):
+        self.settings = PreferenceWindow(self.multi_canvas)
+        self.settings.show()
+        
+
+

@@ -26,54 +26,44 @@ import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 import pyqtgraph as pg
 from .pointer_objects import *
-from .pointer_pos import *
+from .pointer_pos import * 
 
-class Pointer:
+from ..model.parameter_class import ParameterHandler
+from ..model.node import SessionNode
+
+class Pointer(SessionNode):
     '''
-    ######################################################
-    This class will manage the pointer behaviour. Note 
+    This class will manage the pointer behavior. Note 
     that it will only bin and unbind on request. This 
     method should be exited to reach the desired
-    bhaviour
+    behavior
     
     - if sticky is 0 the cursor is free
     - if sticky is 1 the cursor follows the closest line
     - if sticky is 2 the cursor sticks to points
-    ######################################################
     '''
-
     def __init__(self, canvas):
-
-        ##################################################
-        #Bind to the canvas.
+        SessionNode.__init__(
+            self,name = 'Pointer elements', parent = canvas)
+        self.pointer_handler    = ParameterHandler(
+            name = 'Pointer', parent = self)
+        self.tick_handler       = ParameterHandler(
+            name = 'Ticks', parent = self)
+        self.label_handler       = ParameterHandler(
+            name = 'Label', parent = self)
         self.canvas = canvas
-        self.init_parameters()
+        self.initialize()
 
-        ##################################################
-        #for debugging
-        self.verbose        = False
-        self.initialised    = False
-
-    def init_parameters(self):
+    def initialize(self):
         '''
-        ##############################################
         This method allows to set the pointer elements
         such as the hardcoded parameters and the 
         editable variables. 
 
-        variables will be eidtable in the preference
+        variables will be editable in the preference
         window and will therefore be saved as dict 
         with the proper values
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        self.live           = True
-        self.locked         = False
         self.projections    = [None, None]
         self.method         = None
         
@@ -84,230 +74,170 @@ class Pointer:
         self.link_list      = []
         self.method         = None
 
-
-        self.pointer_component  = Pointer_Object(self)
-        self.label_component    = Pointer_Object(self)
-        self.pointer_position   = Pointer_Position(self)
+        self.pointer_component  = PointerObject(self)
+        self.label_component    = PointerObject(self)
+        self.pointer_position   = PointerPosition(self)
     
-        ##################################################
-        #cursor parameters
-        self.para_dict  = {}
-        self.para_dict['Color']         = ['black', ['str', 'hex']] 
-        self.para_dict['Thickness']     = [2, ['int']]
-        self.para_dict['Rounding']      = [1, ['int']]
-        
-        ##################################################
-        #sticky parameter
-        self.para_dict['Sticky']    = [0, ['int']]
-        self.para_dict['Type']      = [1, ['int']]
-        self.para_dict['Size']      = [(20,20), ['tuple', 'int']]
-        
-        ##################################################
-        #Do we want labels? Types:
-        
-        self.para_dict['Labels']            = [(False,False,True,True), ['tuple','bool', 'int'], 'Labels']
-        self.para_dict['Label_Type']        = [2, ['int'], 'Type']
-        self.para_dict['Label_Color']       = ['black', ['str', 'hex'], 'Color']
-        self.para_dict['Label_Sci.']        = [(False,False,False,False), ['str', 'hex'], 'Scientific']
-        self.para_dict['Label_Precision']   = [('.1','.1','.1','.1'), ['tuple', 'str'], 'Precision']
+        self.pointer_handler.addParameter(
+            'Color',  QtGui.QColor('black'),
+            method = self.processParameters)
+        self.pointer_handler.addParameter(
+            'Thickness', 3,
+            method = self.processParameters)
+        self.pointer_handler.addParameter(
+            'Precision', 1,
+            method = self.processParameters)
+        self.pointer_handler.addParameter(
+            'Sticky', '0',
+            choices = ['0','1','2','3'],
+            method = self.processParameters)
+        self.pointer_handler.addParameter(
+            'Type', '0',
+            choices = ['0','1', '2'],
+            method = self.processParameters)
+        self.pointer_handler.addParameter(
+            'Size', [20,20],
+            method = self.processParameters)
+        self.pointer_handler.addParameter(
+            'Live', True,
+            method = self.processParameters)
+        self.pointer_handler.addParameter(
+            'Locked', False,
+            method = self.processParameters)
 
+        font = QtGui.QFont()
         if os.name == 'nt':
-            self.para_dict['Label_Font']        = [('Helvetica', '9'), ['tuple', 'str', 'int']]
+            font.setPointSize(12)
         else:
-            self.para_dict['Label_Font']        = [('Helvetica', '11'), ['tuple', 'str', 'int']]
+            font.setPointSize(12)
 
-        self.para_dict['Ticks']             = [(False,False,True,True), ['tuple', 'bool', 'int']]
-        self.para_dict['Tick_Thickness']    = [5, ['int']]
-        self.para_dict['Tick_Color']        = ['blue', ['str', 'hex']]
-        self.para_dict['Tick_Offset']       = [0, ['int']]
+        self.label_handler.addParameter(
+            'Present', [False,False,True,True],
+            method = self.processParameters)
+        self.label_handler.addParameter(
+            'Type', '0',
+            choices = ['0','1', '2'],
+            method = self.processParameters)
+        self.label_handler.addParameter(
+            'Color',  QtGui.QColor('black'),
+            method = self.processParameters)
+        self.label_handler.addParameter(
+            'Scientific',  [False,False,False,False],
+            method = self.processParameters)
+        self.label_handler.addParameter(
+            'Precision',  [2,2,2,2],
+            method = self.processParameters)  
+        self.label_handler.addParameter(
+            'Font', font,
+            method = self.processParameters)       
 
-    def get_para(self, name):
+        self.tick_handler.addParameter(
+            'Present', [False,False,True,True],
+            method = self.processParameters)
+        self.tick_handler.addParameter(
+            'Thickness', 5,
+            method = self.processParameters)
+        self.tick_handler.addParameter(
+            'Color',  QtGui.QColor('blue'),
+            method = self.processParameters)
+        self.tick_handler.addParameter(
+            'Offset',  0,
+            method = self.processParameters)
+
+    def processParameters(self):
         '''
-        ##############################################
-        Returns the value of the parameter requested
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
+        Will run through the items and set all the 
+        properties thorugh the linked method
         '''
+        self.unbindPointer()
+        self.setPen()
+        self.bindPointer()
 
-        return self.para_dict[name][0]
-
-    def __setitem__(self, name, value):
+    def setPen(self):
         '''
-        ##############################################
-        Returns the value of the parameter requested
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
-        '''
-
-        self.para_dict[name][0] = value
-
-    def set_pen(self):
-        '''
-        ##############################################
-        This method will initialise the Qpen as the
+        This method will initialise the QPen as the
         the QPainter method
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        #initialise the pen
         self.pen = pg.mkPen({
-                'color': QtGui.QColor(self.get_para('Color')),
-                'width': self.get_para('Thickness')
-            })
+            'color': self.pointer_handler['Color'],
+            'width': self.pointer_handler['Thickness']})
+        
 
-    def setup(self, init = True):
+    def setup(self):
         '''
-        ##############################################
-        Set the cenvironement and select the right
+        Set the environnement and select the right
         pointer label and corrector type
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-
         exec(
             'self.pointer_component = Type_'
-            +str(self.get_para('Type'))
+            +str(self.pointer_handler['Type'])
             +'_Pointer(self)')
 
         exec(
             'self.label_component = Type_'
-            +str(self.get_para('Label_Type'))
+            +str(self.label_handler['Type'])
             +'_Labels(self)')
 
         exec(
             'self.pointer_position = Type_'
-            +str(self.get_para('Sticky'))
+            +str(self.pointer_handler['Sticky'])
             +'_Position(self)')
-
+        
         self.live = True
 
-    def bind_pointer(self):
+    def bindPointer(self):
         '''
-        ##############################################
-        Binds the cursor to the system signals of the
+        Binds the cursor to the system signals of th
         mouse 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         self.setup()
-
         self.pointer_position.fetch_position_data()
-    
-        self.canvas.artist.mouse.bind('move', self.refresh_pos, 'pointer_move')
-
+        self.canvas.artist.mouse.bind('move', self.refreshPosition, 'pointer_move')
         self.draw()
 
-    def unbind_pointer(self):
+    def unbindPointer(self):
         '''
-        ##############################################
         Binds the cursor to the system signals of the
         mouse 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         self.canvas.artist.mouse.unbind('move', 'pointer_move')
-        
-        #initialise the local drawing method
         self.pointer_component.disconnect()
         self.label_component.disconnect()
-
         self.live = False
         
-    def refresh_pos(self,x = None, y = None):
+    def refreshPosition(self,x = None, y = None):
         '''
-        ##############################################
-        Rfresh the local position of the cursor
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
+        Refresh the local position of the cursor
         '''
-
-        #fetch them 
         if x == None or y == None:
-            x = self.canvas.artist.mouse.cursor_x
+            x = self.canvas.artist.mouse.cursor_x 
             y = self.canvas.artist.mouse.cursor_y
 
-        #grab the position
-        if not self.locked:
-            self.cursor_x = x 
-            self.cursor_y = y 
+        if not self.pointer_handler['Locked']:
+            self.cursor_x = x
+            self.cursor_y = y
+
             self.cursor_z = 0
-
-            #correct posiiton
             self.pointer_position.evaluate()
-
             self.canvas.multi_canvas.bottom_selector.label.setText(
                 str(
-                    "  x = %"+str(self.get_para('Label_Precision')[0])+"f"
-                    ", y = %"+str(self.get_para('Label_Precision')[0])+"f"
-                    ", z = %"+str(self.get_para('Label_Precision')[0])+"f"
+                    "  x = %"+str(self.pointer_handler['Precision'])+"f"
+                    ", y = %"+str(self.pointer_handler['Precision'])+"f"
+                    ", z = %"+str(self.pointer_handler['Precision'])+"f"
                     )%(
                         self.cursor_x,
                         self.cursor_y,
                         self.cursor_z))
         
-        if self.live:
-            #call the local drawing method
+        if self.pointer_handler['Live']:
             self.draw()
 
     def draw(self, init = True):
         '''
-        ##############################################
         In this method we will draw the cursor onto 
         the canvas. Note that this method will
-        differenciate between initialisationa and
+        differentiate between initialization and
         the update
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-
-        #now the lines
         self.pointer_component.move()
-
-        #now the lines
         self.label_component.move()
-
-
-
-
-
-

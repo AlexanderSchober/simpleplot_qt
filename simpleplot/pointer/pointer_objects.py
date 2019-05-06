@@ -27,19 +27,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import pyqtgraph as pg
 import numpy as np
 
-class Pointer_Object:
+class PointerObject:
     
     def __init__(self, parent):
         '''
-        ##############################################
         Type_0 cursor init
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         self.parent         = parent
         self.pointer_comp   = []
@@ -47,15 +39,7 @@ class Pointer_Object:
 
     def disconnect(self):
         '''
-        ##############################################
         Try to disconnect all methods
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         for component in self.pointer_comp:
     
@@ -67,39 +51,26 @@ class Pointer_Object:
 
     def get_ranges(self):
         '''
-        ##############################################
         Try to disconnect all methods
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         self.ranges = self.parent.canvas.draw_surface.viewRange()
 
-class Type_0_Pointer(Pointer_Object):
+    def move(self):
+        pass
+
+class Type_0_Pointer(PointerObject):
 
     def __init__(self, parent):
         '''
-        ##############################################
         Type_0 cursor init
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
 
-        Pointer_Object.__init__(self,parent)
+        PointerObject.__init__(self,parent)
         self.parent = parent
         self.pointer_comp = []
 
         #set the pen
-        self.parent.set_pen()
+        self.parent.setPen()
 
         #set the two inifinite lines
         self.pointer_comp.append(pg.InfiniteLine(
@@ -119,41 +90,24 @@ class Type_0_Pointer(Pointer_Object):
 
     def move(self):
         '''
-        ##############################################
         Move with the cursor
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         self.pointer_comp[0].setPos(self.parent.cursor_x)
         self.pointer_comp[1].setPos(self.parent.cursor_y)
 
-
-class Type_1_Pointer(Pointer_Object):
+class Type_1_Pointer(PointerObject):
     
     def __init__(self, parent):
         '''
-        ##############################################
         Type_0 cursor init
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
 
-        Pointer_Object.__init__(self,parent)
+        PointerObject.__init__(self,parent)
         self.parent = parent
         self.pointer_comp = []
 
         #set the pen
-        self.parent.set_pen()
+        self.parent.setPen()
         self.get_ranges()
 
         #set the two inifinite lines
@@ -177,15 +131,7 @@ class Type_1_Pointer(Pointer_Object):
 
     def move(self):
         '''
-        ##############################################
         Move with the cursor
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
 
         self.get_ranges()
@@ -206,8 +152,8 @@ class Type_1_Pointer(Pointer_Object):
 
         self.pointer_comp[0].setData(
             np.asarray([
-                self.parent.cursor_x - 10 * self.pixel_size_x  ,
-                self.parent.cursor_x + 10 * self.pixel_size_x ]),
+                self.parent.cursor_x - int(self.parent.pointer_handler['Size'][0]) * self.pixel_size_x  ,
+                self.parent.cursor_x + int(self.parent.pointer_handler['Size'][0]) * self.pixel_size_x ]),
             np.asarray([
                 self.parent.cursor_y,
                 self.parent.cursor_y]))
@@ -217,24 +163,16 @@ class Type_1_Pointer(Pointer_Object):
                 self.parent.cursor_x,
                 self.parent.cursor_x]),
             np.asarray([    
-                self.parent.cursor_y - 10 * self.pixel_size_y ,
-                self.parent.cursor_y + 10 * self.pixel_size_y ]))
+                self.parent.cursor_y - int(self.parent.pointer_handler['Size'][1]) * self.pixel_size_y ,
+                self.parent.cursor_y + int(self.parent.pointer_handler['Size'][1]) * self.pixel_size_y ]))
 
-class Type_0_Labels(Pointer_Object):
+class Type_0_Labels(PointerObject):
     
     def __init__(self, parent):
         '''
-        ##############################################
         Type_0 cursor init
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        Pointer_Object.__init__(self,parent)
+        PointerObject.__init__(self,parent)
         self.parent = parent
         self.label_comp = []
 
@@ -242,25 +180,16 @@ class Type_0_Labels(Pointer_Object):
 
         #add them to the target
         for component in self.label_comp:
-
-            component.setColor(QtGui.QColor(self.parent.get_para('Label_Color')))
-
+            component.setFont(self.parent.label_handler['Font'])
+            component.setColor(self.parent.label_handler['Color'])
             self.parent.canvas.draw_surface.addItem(component)
 
     def move(self):
         '''
-        ##############################################
         Move with the cursor
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        text    = 'x = %'+str(self.parent.get_para('Label_Precision')[0])+'f'
-        text   += ' y = %'+str(self.parent.get_para('Label_Precision')[2])+'f'
+        text    = 'x = %0.'+str(self.parent.label_handler['Precision'][0])+'f'
+        text   += ' y = %0.'+str(self.parent.label_handler['Precision'][2])+'f'
 
         #set the text to set the width
         self.label_comp[0].setText(str(text)%(self.parent.cursor_x,self.parent.cursor_y))
@@ -282,59 +211,39 @@ class Type_0_Labels(Pointer_Object):
         #do the move
         self.label_comp[0].setPos(self.parent.cursor_x, self.parent.cursor_y)
 
-class Type_1_Labels(Pointer_Object):
+class Type_1_Labels(PointerObject):
     
     def __init__(self, parent):
         '''
-        ##############################################
         Type_0 cursor init
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        Pointer_Object.__init__(self,parent)
+        PointerObject.__init__(self,parent)
         self.parent = parent
+
         self.label_comp = []
-
         self.label_comp.append(pg.TextItem())
         self.label_comp[-1].setAngle(90)
-
         self.label_comp.append(pg.TextItem())
         self.label_comp[-1].setAngle(90)
-
         self.label_comp.append(pg.TextItem())
-
         self.label_comp.append(pg.TextItem())
 
         #add them to the target
         for component in self.label_comp:
-
-            component.setColor(QtGui.QColor(self.parent.get_para('Label_Color')))
-
+            component.setFont(self.parent.label_handler['Font'])
+            component.setColor(self.parent.label_handler['Color'])
             self.parent.canvas.draw_surface.addItem(component)
 
     def move(self):
         '''
-        ##############################################
         Move with the cursor
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
 
         #set the text to set the width
-        self.label_comp[0].setText(str('%'+str(self.parent.get_para('Label_Precision')[0])+'f ')%(self.parent.cursor_x))
-        self.label_comp[1].setText(str('%'+str(self.parent.get_para('Label_Precision')[1])+'f ')%(self.parent.cursor_x))
-        self.label_comp[2].setText(str('%'+str(self.parent.get_para('Label_Precision')[2])+'f ')%(self.parent.cursor_y))
-        self.label_comp[3].setText(str('%'+str(self.parent.get_para('Label_Precision')[3])+'f ')%(self.parent.cursor_y))
+        self.label_comp[0].setText(str('%0.'+str(self.parent.label_handler['Precision'][0])+'f ')%(self.parent.cursor_x))
+        self.label_comp[1].setText(str('%0.'+str(self.parent.label_handler['Precision'][1])+'f ')%(self.parent.cursor_x))
+        self.label_comp[2].setText(str('%0.'+str(self.parent.label_handler['Precision'][2])+'f ')%(self.parent.cursor_y))
+        self.label_comp[3].setText(str('%0.'+str(self.parent.label_handler['Precision'][3])+'f ')%(self.parent.cursor_y))
 
         #get the current view rnage
         self.get_ranges()
@@ -367,59 +276,38 @@ class Type_1_Labels(Pointer_Object):
         self.label_comp[3].setPos(self.ranges[0][1], self.parent.cursor_y)
 
 
-class Type_2_Labels(Pointer_Object):
+class Type_2_Labels(PointerObject):
     
     def __init__(self, parent):
         '''
-        ##############################################
         Type_0 cursor init
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        Pointer_Object.__init__(self,parent)
+        PointerObject.__init__(self,parent)
         self.parent = parent
         self.label_comp = []
 
         self.label_comp.append(pg.TextItem())
-
         self.label_comp.append(pg.TextItem())
-
+        self.label_comp.append(pg.TextItem())
+        self.label_comp[-1].setAngle(90)
         self.label_comp.append(pg.TextItem())
         self.label_comp[-1].setAngle(90)
 
-        self.label_comp.append(pg.TextItem())
-        self.label_comp[-1].setAngle(90)
-
-        #add them to the target
         for component in self.label_comp:
-
-            component.setColor(QtGui.QColor(self.parent.get_para('Label_Color')))
-
+            component.setFont(self.parent.label_handler['Font'])
+            component.setColor(self.parent.label_handler['Color'])
             self.parent.canvas.draw_surface.addItem(component)
 
     def move(self):
         '''
-        ##############################################
         Move with the cursor
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
 
         #set the text to set the width
-        self.label_comp[0].setText(str('%'+str(self.parent.get_para('Label_Precision')[0])+'f ')%(self.parent.cursor_x))
-        self.label_comp[1].setText(str('%'+str(self.parent.get_para('Label_Precision')[1])+'f ')%(self.parent.cursor_x))
-        self.label_comp[2].setText(str('%'+str(self.parent.get_para('Label_Precision')[2])+'f ')%(self.parent.cursor_y))
-        self.label_comp[3].setText(str('%'+str(self.parent.get_para('Label_Precision')[3])+'f ')%(self.parent.cursor_y))
+        self.label_comp[0].setText(str('%0.'+str(self.parent.label_handler['Precision'][0])+'f ')%(self.parent.cursor_x))
+        self.label_comp[1].setText(str('%0.'+str(self.parent.label_handler['Precision'][1])+'f ')%(self.parent.cursor_x))
+        self.label_comp[2].setText(str('%0.'+str(self.parent.label_handler['Precision'][2])+'f ')%(self.parent.cursor_y))
+        self.label_comp[3].setText(str('%0.'+str(self.parent.label_handler['Precision'][3])+'f ')%(self.parent.cursor_y))
 
         #get the current view rnage
         self.get_ranges()

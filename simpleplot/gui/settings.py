@@ -17,7 +17,7 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 # Module authors:
-#   Alexander Schober <alexander.schober@mac.com>
+#   Alexander Schober <alex.schober@mac.com>
 #
 # *****************************************************************************
 
@@ -26,412 +26,218 @@ import pyqtgraph as pg
 from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
+from .setting_window_ui import Ui_preference_window
+from ..model.delegates  import ParameterDelegate
+
+from .scatter_widget    import ScatterWidget
+from .surface_widget    import SurfaceWidget
+from .bar_widget        import BarWidget
+
 import sys
+import numpy as np
 
-from misc import Multi_Widget
+class PreferenceWindow(QtGui.QMainWindow, Ui_preference_window):
+    def __init__(self, multi_canvas, parent=None):
+        super(PreferenceWindow, self).__init__(parent)
+        self.setupUi(self)
 
-class Pref_Window(QtGui.QMainWindow):
+        self.multi_canvas = multi_canvas
+        self._initialize()
 
-    def __init__(self, parent = None):
+        self.canvas_tree_view.setModel(multi_canvas._model)
+        self.canvas_tree_view.collapsed.connect(self._resizeTree)
+        self.canvas_tree_view.expanded.connect(self._resizeTree)
+        self.delegate = ParameterDelegate()
+        self.canvas_tree_view.setItemDelegate(self.delegate)
+        
+        self.canvas_select.setModel(multi_canvas._model)
+        self.canvas_select.currentIndexChanged.connect(self._selectCanvas)
+
+        self.plot_tree_view.clicked.connect(self._updateTable)
+        self.plot_tree_view.clicked.connect(self._setWidget)
+
+        self._selectCanvas(0)
+
+        self.plot_tree_view.collapsed.connect(self._resizePlotTree)
+        self.plot_tree_view.expanded.connect(self._resizePlotTree)
+
+        self.plot_data_view.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        
+        self._resizePlotTree()
+        self._resizeTree()
+
+    def _initialize(self):
         '''
-        ##############################################
-        Initialize the settings window. It will inherit
-        from the window class of pyqt. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
+        Load the widgets
         '''
-        super(Pref_Window, self).__init__(parent)
-        self.main_widget  = Pref_Widget(self)
-        self.setCentralWidget(self.main_widget)
-        self.show()
+        self._scatter_class     = ScatterWidget()
+        self._surface_class     = SurfaceWidget()
+        self._bar_class         = BarWidget()
 
+        self._scatter_widget    = self._scatter_class.local_widget
+        self._surface_widget    = self._surface_class.local_widget
+        self._bar_widget        = self._bar_class.local_widget
 
-class Pref_Widget(QtWidgets.QWidget):
-    
-    def __init__(self, parent = None):
+        self.editor_layout.addWidget(self._scatter_widget)
+        self.editor_layout.addWidget(self._surface_widget)
+        self.editor_layout.addWidget(self._bar_widget)
+
+        self._scatter_widget.hide()
+        self._surface_widget.hide()
+        self._bar_widget.hide()
+
+        self._current_widget = None
+        self._current_class  = None
+        
+
+    def _resizeTree(self):
         '''
-        ##############################################
-        Initialize the settings window. It will inherit
-        from the window class of pyqt. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
+        Resize the tree on select
         '''
-        super(QtWidgets.QWidget, self).__init__(parent)
-        self.show()
-        self.parent = parent
-        self.build()
+        self.canvas_tree_view.resizeColumnToContents(0)
+        self.canvas_tree_view.resizeColumnToContents(1)
 
-    def build(self):
+    def _resizePlotTree(self):
         '''
-        ##############################################
-        Build the widget tab view
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
+        Resize the tree on select
         '''
+        self.plot_tree_view.resizeColumnToContents(0)
+        self.plot_tree_view.resizeColumnToContents(1)
 
-        #initialise the tab
-        self.layout = QtWidgets.QVBoxLayout()
-        self.tabs	= QtWidgets.QTabWidget()
+    def _selectCanvas(self, index):
+        '''
+        When the combobox is activated the selected canvas
+        plot items should be displayed in the treeview
+        '''
+        self.plot_tree_view.setModel(self.multi_canvas._rootNode._children[index]._plot_model)
 
+    def _setWidget(self):
+        '''
+        Set the right widget into the view to allow the edition 
+        of the elements.
+        '''
+        if not self._current_widget == None:
+            self._current_widget.hide()
+            self._current_class.unlink()
+            self._current_widget =  None
 
-        #set the individual widgets
-        self.tab_1	= QtWidgets.QWidget()	
-        self.tab_2	= Pointer_Tab()
-        self.tab_3	= QtWidgets.QWidget()
-        self.tab_4	= Save_Tab()
+        index = self.plot_tree_view.selectedIndexes()[0]
+        item  = index.model().getNode(index)
 
+        if item.type == 'Scatter':
+            self._current_widget = self._scatter_widget
+            self._current_class = self._scatter_class
+            self._current_class.link(item)
+            self._current_widget.show()
+
+        elif item.type == 'Surface':
+            self._current_widget = self._surface_widget
+            self._current_class = self._surface_class
+            self._current_class.link(item)
+            self._current_widget.show()
+
+        elif item.type == 'Bar':
+            self._current_widget = self._bar_widget
+            self._current_class = self._bar_class
+            self._current_class.link(item)
+            self._current_widget.show()
+
+        else:
+            pass
             
-        # Add the tabs
-        self.tabs.addTab(self.tab_1,"Layout")
-        self.tabs.addTab(self.tab_2,"Pointer")
-        self.tabs.addTab(self.tab_3,"Items")
-        self.tabs.addTab(self.tab_4,"Export") 
-
-        #add the tabs
-        self.layout.addWidget(self.tabs)
-        self.setLayout(self.layout)
-        
-
-class Pointer_Tab(QtWidgets.QWidget):
-    
-    def __init__(self, parent = None):
+    def _updateTable(self):
         '''
-        ##############################################
-        Initialize the settings window. It will inherit
-        from the window class of pyqt. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
+        Put the elements into the table widget
         '''
-        super(QtWidgets.QWidget, self).__init__(parent)
-        self.show()
-        self.parent = parent
+        index = self.plot_tree_view.selectedIndexes()[0]
+        item  = index.model().getNode(index)
 
-        #build the widget view
-        self.build()
+        if item.type == 'Scatter':
+            self.header     = []
+            self.data_list  = []
 
+            if not isinstance(item.x_data, type(None)):
+                self.header.append('x')
+                self.data_list.append(item.x_data.tolist())
+            if not isinstance(item.y_data, type(None)):
+                self.header.append('y')
+                self.data_list.append(item.y_data.tolist())
+            if not isinstance(item.z_data, type(None)):
+                self.header.append('z')
+                self.data_list.append(item.z_data.tolist())
+            if not isinstance(item.parameters['Error'][0], type(None)):
+                for key in item.parameters['Error'][0].keys():
+                    if key in ['top', 'bottom', 'width', 'height']:
+                        self.header.append(key)
+                        values = item.parameters['Error'][0][key]
+                        if isinstance(values, float) or isinstance(values, int):
+                            self.data_list.append([item.parameters['Error'][0][key] for i in range(len(self.data_list[0]))])
+                        else:
+                            self.data_list.append(item.parameters['Error'][0][key])
 
-    def build(self):
-        '''
-        ##############################################
-        Build the widget tab widget for the actual
-        export options. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
-        '''
+            self.data_list = np.array(self.data_list).transpose().tolist()
+            self.rows = [e for e in range(len(self.data_list))]
 
-        ##############################################
-        #initialise the tab
-        self.container      = QtWidgets.QVBoxLayout()
+        elif item.type == 'Surface':
+            self.header     = []
+            self.data_list  = []
 
-        self.group_1        = QtWidgets.QGroupBox('Pointer')
-        self.grid_layout    = QtWidgets.QGridLayout()
-        self.widget_list    = []
+            if not isinstance(item.x_data, type(None)):
+                self.header = np.around(item.x_data, 4).tolist()
+            else:
+                self.header = [i for i in range(item.z_data.shape[0])]
 
-        ##############################################
-        #populate it
-        
-        #0
-        self.widget_list.append([
-            Multi_Widget(
-                4, 
-                'label', 
-                parent = self,
-                values = ['Top', 'Bot', 'Left', 'Right']),
-            0, 1, None])
+            if not isinstance(item.y_data, type(None)):
+                self.rows = np.around(item.y_data, 4).tolist()
+            else:
+                self.rows = [i for i in range(item.z_data.shape[1])]
 
-        self.widget_list.append([
-            QtWidgets.QLabel('Labels:', parent = self),
-            1, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter])
+            self.data_list = item.z_data.tolist()
 
-        #2
-        self.widget_list.append([
-            Multi_Widget(
-                4, 
-                'check', 
-                parent = self,
-                values = [True, True, True, True ]),
-            1, 1, None])
+        else:
+            self.header     = []
+            self.data_list  = []
+            self.rows       = []
 
-        self.widget_list.append([
-            QtWidgets.QLabel('Ticks:', parent = self),
-            2, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter])
+        self.data_model = DataTableModel(
+            self,self.data_list, 
+            self.header,self.rows)
 
-        #4
-        self.widget_list.append([
-            Multi_Widget(4, 'check', parent = self),
-            2, 1, None])
+        self.plot_data_view.setModel(self.data_model)
 
-        self.widget_list.append([
-            QtWidgets.QLabel('Scientific:', parent = self),
-            3, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter])
+class DataTableModel(QtCore.QAbstractTableModel):
+    def __init__(self, parent, data_list, col_header,row_header, *args):
+        QtCore.QAbstractTableModel.__init__(self, parent, *args)
+        self.data_list = data_list
+        self.col_header = col_header
+        self.row_header = row_header
 
-        #6
-        self.widget_list.append([
-            Multi_Widget(4, 'check', parent = self),
-            3, 1, None])
+    def rowCount(self, parent):
+        return len(self.data_list)
 
-        self.widget_list.append([
-            QtWidgets.QLabel('Precision:', parent = self),
-            4, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter])
-
-        #6
-        self.widget_list.append([
-            Multi_Widget(4, 'input', parent = self),
-            4, 1, None])
-
-
-        ##############################################
-        #add the tabs
-        for element in self.widget_list:
-
-            self.grid_layout.addWidget(element[0], element[1], element[2])
-            
-            #manage alignement
-            if not element[3] == None:
-                element[0].setAlignment(element[3])
-
-        ##############################################
-        #set the methods and data
-
-
-        ##############################################
-        #set up the end
-
-        self.group_1.setLayout(self.grid_layout)
-        self.container.addWidget(self.group_1)
-        self.container.addStretch(1)
-        self.setLayout(self.container)
-
-    def get_export_path(self, i):
-        '''
-        ##############################################
-        Set the file export path
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
-        '''
-        self.path, self.allowed = QtGui.QFileDialog.getSaveFileName(self, 'Save File')
-        self.widget_list[1][0].setText(self.path)
-
-    def set_export_format(self, idx):
-        '''
-        ##############################################
-        Set the file export format
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
-        '''
-        self.format = self.widget_list[3][0]
-
-
-    def export(self):
-        '''
-        ##############################################
-        The export function
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
-        '''
-        pass
-
-class Save_Tab(QtWidgets.QWidget):
-    
-    def __init__(self, parent = None):
-        '''
-        ##############################################
-        Initialize the settings window. It will inherit
-        from the window class of pyqt. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
-        '''
-        super(QtWidgets.QWidget, self).__init__(parent)
-        self.show()
-        self.parent = parent
-
-        #variabmes
-        self.path       = ''
-        self.format     = 'PNG'
-        self.formats    = ['PNG', 'SVG', 'CSV', 'Matplotlib', 'Print', 'Text']
-        self.allowed    = None
-
-        #build the widget view
-        self.build()
-
-
-    def build(self):
-        '''
-        ##############################################
-        Build the widget tab widget for the actual
-        export options. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
-        '''
-
-        ##############################################
-        #initialise the tab
-        self.container      = QtWidgets.QVBoxLayout()
-        self.group_1        = QtWidgets.QGroupBox('Save options')
-        self.grid_layout    = QtWidgets.QGridLayout()
-        self.widget_list    = []
-        ##############################################
-        #populate it
-        
-        #0
-        self.widget_list.append([
-            QtWidgets.QPushButton('Select path', parent = self),
-            0, 1, None])
-
-        #1
-        self.widget_list.append([
-            QtWidgets.QLineEdit('Nothing selected', parent = self),
-            0, 0, None])
- 
-        #2
-        self.widget_list.append([
-            QtWidgets.QLabel('Format:', parent = self),
-            1, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter])
-
-        #3
-        self.widget_list.append([
-            QtWidgets.QComboBox(parent = self),
-            1,1, None])
-
-        #4
-        self.widget_list.append([
-            QtWidgets.QCheckBox('Invert X and Y (text save)', parent = self),
-            2,0, None])
-
-        self.widget_list.append([
-            QtWidgets.QPushButton('Save', parent = self),
-            3,1, None])
-
-        ##############################################
-        #add the tabs
-        for element in self.widget_list:
-
-            self.grid_layout.addWidget(element[0], element[1], element[2])
-            
-            #manage alignement
-            if not element[3] == None:
-                element[0].setAlignment(element[3])
-
-        ##############################################
-        #set the methods and data
-        self.widget_list[0][0].clicked.connect(self.get_export_path)
-        self.widget_list[3][0].currentIndexChanged.connect(self.set_export_format)
-        self.widget_list[3][0].addItems(self.formats)
-        self.widget_list[5][0].clicked.connect(self.export)
-
-
-        ##############################################
-        #set up the end
-        
-        self.group_1.setLayout(self.grid_layout)
-        self.container.addWidget(self.group_1)
-        self.container.addStretch(1)
-        self.setLayout(self.container)
-
-
-    def get_export_path(self, i):
-        '''
-        ##############################################
-        Set the file export path
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
-        '''
-        self.path, self.allowed = QtGui.QFileDialog.getSaveFileName(self, 'Save File')
-        self.widget_list[1][0].setText(self.path)
-
-    def set_export_format(self, idx):
-        '''
-        ##############################################
-        Set the file export format
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
-        '''
-        self.format = self.widget_list[3][0]
-
-
-    def export(self):
-        '''
-        ##############################################
-        The export function
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
-        '''
-        pass
-
-
-
-if __name__ == "__main__":
-
-    app 	    = QtWidgets.QApplication(sys.argv)
-    widget      = QtWidgets.QWidget()
-    widget.show()
-
-    new = Pref_Window(widget)
-
-
-    sys.exit(app.exec_())
+    def columnCount(self, parent):
+        if len(self.data_list) > 0:
+            return len(self.data_list[0])
+        else:
+            return 0
+    def data(self, index, role):
+        if not index.isValid():
+            return None
+        elif role != QtCore.Qt.DisplayRole:
+            return None
+        return self.data_list[index.row()][index.column()]
+    def headerData(self, col, orientation, role):
+        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+            return self.col_header[col]
+        elif orientation == QtCore.Qt.Vertical and role == QtCore.Qt.DisplayRole:
+            return self.row_header[col]
+        else:
+            return None
+    def sort(self, col, order):
+        """sort table by given column number col"""
+        self.emit(QtCore.SIGNAL("layoutAboutToBeChanged()"))
+        self.data_list = sorted(self.data_list,
+            key=operator.itemgetter(col))
+        if order == QtCore.Qt.DescendingOrder:
+            self.data_list.reverse()
+        self.emit(QtCore.SIGNAL("layoutChanged()"))

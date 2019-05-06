@@ -23,25 +23,18 @@
 
 
 import pyqtgraph as pg
-from PyQt5 import QtGui
+from pyqtgraph import functions as fn
+from PyQt5 import QtGui,QtCore
+
 import numpy as np
 
 
 class Zoomer:
     '''
-    ##############################################
     This class will manage the zoom functionality.
     This is that the graph will be resized onto
     the area selected throught the rectangular
     selection tool. 
-    ———————
-    Input: 
-    - canvas is the parent canvas
-    ———————
-    Output: -
-    ———————
-    status: active
-    ##############################################
     '''
     
     def __init__(self, canvas):
@@ -54,15 +47,7 @@ class Zoomer:
     
     def init_parameters(self):
         '''
-        ##############################################
         Set the initial parameters of the zoombox
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         #cursor parameters
         self.color      = 'black'
@@ -74,47 +59,30 @@ class Zoomer:
         self.start_pos     = [0,0]
         self.end_pos       = [0,0]
 
+        self.rbScaleBox = QtGui.QGraphicsRectItem(0, 0, 1, 1)
+        self.rbScaleBox.setPen(fn.mkPen((50,50,50), width=1))
+        self.rbScaleBox.setBrush(fn.mkBrush(50,50,50,100))
+        self.rbScaleBox.setZValue(1e9)
+        self.rbScaleBox.hide()
+        self.canvas.view.addItem(self.rbScaleBox, ignoreBounds=True)
+
     def listen(self):
         '''
-        ##############################################
         Make the class listen to the click event 
         related to the zoom initializingevent.
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         self.canvas.artist.mouse.bind('press', self.start_zoom, 'start_zoom', 1)
 
     def quiet(self):
         '''
-        ##############################################
-        Quiet the zoom functionality.
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
+        Quiet the zoom functionality.]
         '''
         self.canvas.artist.mouse.unbind('press', 'start_zoom')
 
     def set_pen(self):
         '''
-        ##############################################
         This method will initialise the Qpen as the
         the QPainter method
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         #initialise the pen
         self.pen = pg.mkPen({
@@ -122,53 +90,25 @@ class Zoomer:
                 'width': self.thickness
             })
 
-
     def set_fixed(self, fixed = False, fixed_range= [None, None, None, None]):
         '''
-        ##############################################
         Sometimes the user wants to lock the zoom in
         place. 
-        ———————
-        Input: 
-        - fixed (bool) fixed value 
-        - fixed_range [None or float array]
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         ''' 
         self.fixed = fixed
         self.fixed_range = fixed_range
 
-
     def set_brush(self):
         '''
-        ##############################################
         This method will initialise the Qpen as the
         the QPainter method
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         #initialise the pen
         self.brush = pg.mkBrush(self.color)
 
     def start_zoom(self):
         '''
-        ##############################################
         Start to draw the zoom box. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         ''' 
         #grab the actual cursor position from the Pointer class
         x,y = self.canvas.artist.mouse.get_pos()
@@ -176,94 +116,32 @@ class Zoomer:
         self.start_pos     = [x,y]
         self.end_pos       = [x,y]
 
-        #create the object
-        self.set_pen()
-
-        self.line = pg.PlotCurveItem(
-            x    = np.asarray([
-                self.start_pos[0],
-                self.start_pos[0],
-                self.end_pos[0],
-                self.end_pos[0],
-                self.start_pos[0]]), 
-            y    = np.asarray([
-                self.start_pos[1],
-                self.end_pos[1],
-                self.end_pos[1],
-                self.start_pos[1],
-                self.start_pos[1]]),
-            pen  = self.pen)
-
-        self.dots = pg.ScatterPlotItem(
-            x    = np.asarray([
-                self.start_pos[0],
-                self.start_pos[0],
-                self.end_pos[0],
-                self.end_pos[0],
-                self.start_pos[0]]), 
-            y    = np.asarray([
-                self.start_pos[1],
-                self.end_pos[1],
-                self.end_pos[1],
-                self.start_pos[1],
-                self.start_pos[1]]),
-            pen  = self.pen,
-            size = 10)
-
-        #put it on the draw surface
-        self.canvas.draw_surface.addItem(self.line)
-        self.canvas.draw_surface.addItem(self.dots)
+        r = QtCore.QRectF(QtCore.QPointF(*self.start_pos),QtCore.QPointF(*self.end_pos))
+        self.rbScaleBox.setPos(r.topLeft())
+        self.rbScaleBox.resetTransform()
+        self.rbScaleBox.scale(r.width(), r.height())
+        self.rbScaleBox.show()
 
         #link the move lsitener
         self.canvas.artist.mouse.bind('move', self.update_zoom, 'update_zoom')
         self.canvas.artist.mouse.bind('release', self.end_zoom, 'end_zoom', 1)
 
         #remove the pointer
-        self.canvas.artist.pointer.unbind_pointer()
+        self.canvas.artist.pointer.unbindPointer()
         
     def update_zoom(self,x,y):
         '''
-        ##############################################
         Updat the box as the mouse moves
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         ''' 
 
         self.end_pos       = [x,y]
+
+        r = QtCore.QRectF(QtCore.QPointF(*self.start_pos),QtCore.QPointF(*self.end_pos))
+        self.rbScaleBox.setPos(r.topLeft())
+        self.rbScaleBox.resetTransform()
+        self.rbScaleBox.scale(r.width(), r.height())
+        self.rbScaleBox.show()
         
-        self.line.setData(
-            np.asarray([
-                self.start_pos[0],
-                self.start_pos[0],
-                self.end_pos[0],
-                self.end_pos[0],
-                self.start_pos[0]]),
-            np.asarray([
-                self.start_pos[1],
-                self.end_pos[1],
-                self.end_pos[1],
-                self.start_pos[1],
-                self.start_pos[1]]))
-
-        self.dots.setData(
-            np.asarray([
-                self.start_pos[0],
-                self.start_pos[0],
-                self.end_pos[0],
-                self.end_pos[0],
-                self.start_pos[0]]),
-            np.asarray([
-                self.start_pos[1],
-                self.end_pos[1],
-                self.end_pos[1],
-                self.start_pos[1],
-                self.start_pos[1]]))
-
         self.canvas.multi_canvas.bottom_selector.label.setText(
             str(
                 "  x 0 = %."+str(self.roundness)+"f"
@@ -280,21 +158,10 @@ class Zoomer:
 
     def end_zoom(self):
         '''
-        ##############################################
         End the zoom method and kill all the listeners
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         ''' 
         
-        self.canvas.draw_surface.removeItem(self.line)
-        self.canvas.draw_surface.removeItem(self.dots)
-        del(self.line)
-        del(self.dots)
+        self.rbScaleBox.hide()
 
         self.zoom()
 
@@ -308,31 +175,21 @@ class Zoomer:
 
     def zoom(self):
         '''
-        ##############################################
         This processes the zoom method
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         ''' 
 
         if (self.start_pos[0] == self.end_pos[0]) or (self.start_pos[1] == self.end_pos[1]): 
-            self.canvas.artist.pointer.unbind_pointer()
+            self.canvas.artist.pointer.unbindPointer()
             self.canvas.draw_surface.autoRange()
 
             #check for fixed
             if self.fixed[0]:
-
                 self.canvas.draw_surface.setXRange(self.fixed_range[0], self.fixed_range[1])
             
             if self.fixed[1]:
-    
                 self.canvas.draw_surface.setYRange(self.fixed_range[2], self.fixed_range[3])
 
-            self.canvas.artist.pointer.bind_pointer()
+            self.canvas.artist.pointer.bindPointer()
 
 
         else:
@@ -351,8 +208,8 @@ class Zoomer:
                 xRange = (self.fixed_range[2], self.fixed_range[3])
 
             #finally zoom
-            self.canvas.artist.pointer.unbind_pointer()
+            self.canvas.artist.pointer.unbindPointer()
             self.canvas.draw_surface.setRange(
                 xRange = xRange,
                 yRange = yRange)
-            self.canvas.artist.pointer.bind_pointer()
+            self.canvas.artist.pointer.bindPointer()
