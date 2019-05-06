@@ -17,20 +17,22 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 # Module authors:
-#   Alexander Schober <alexander.schober@mac.com>
+#   Alexander Schober <alex.schober@mac.com>
 #
 # *****************************************************************************
 
-
-from pyqtgraph.opengl import shaders
-import numpy as np
-
-class PlotShader:
-    '''
-    Opengl supports shaders and therefore it is 
-    required to write a shader generator based 
-    on the shader program of pyqtgraph
-    '''
+class Line:
 
     def __init__(self):
+        '''
+        ##############################################
+        
+        ———————
+        Input: -
+        ———————
+        Output: -
+        ———————
+        status: active
+        ##############################################
+        '''
         pass

@@ -24,162 +24,72 @@
 import pyqtgraph as pg
 import numpy as np
 
-from .scatter_plot  import Scatter_Plot
-from .contour_plot  import Contour_Plot
-from .bin_plot      import Bin_Plot
-from.surface_plot   import Surface
+from .scatter_plot  import ScatterPlot
+from .surface_plot  import Surface
+from .bar_plot      import BarPlot
+
+from ..model.node   import SessionNode
 
 def get_plot_handler(select):
     '''
-    ##############################################
     Will return the right fit manager depending 
     on the initial input
-    ———————
-    Input: target (Data_Structure)
-    ———————
-    Output: -
-    ———————
-    status: active
-    ##############################################
     '''
-
     if select == 'Scatter':
-
-        return Plot_Handler(select, Scatter_Plot)
-
-    elif select == 'Contour':
-    
-        return Plot_Handler(select, Contour_Plot)
-
-    elif select == 'Bin':
-
-        return Plot_Handler(select, Bin_Plot)
-
+        return Plot_Handler(select, ScatterPlot)
     elif select == 'Surface':
-    
         return Plot_Handler(select, Surface)
-
+    elif select == 'Bar':
+        return Plot_Handler(select, BarPlot)
     else:
-
-        print('Could not find the fit class you are looking for. Error...')
-        
+        print('Could not find the fit class you are looking for. Error...')        
         return None
 
-
-class Plot_Handler():
-
+class Plot_Handler(SessionNode):
     '''
-    ############################################## 
     This class will be the manager of all the 
     scatter plots. 
-    ———————
-    Input: 
-    - parent is the parent canvas class
-    ———————
-    Output: -
-    ———————
-    status: active
-    ##############################################
     '''
-
     def __init__(self, name, target_class):
-        
-        self.plot_elements  = []
+        SessionNode.__init__(self,name)
         self.identifier     = 0
         self.target_class   = target_class
         self.name           = name
-
-
-    def __getitem__(self,name):
+        self.type           = 'None'
+        
+    def addChild(self,*args, **kwargs):
         '''
-        ##############################################
         This will effectively add an element to the 
         plot_elements array. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        for plot_element in self.plot_elements:
+        self._children.append(self.target_class(*args,**kwargs))
+        self._children[-1]._parent = self
 
-            if plot_element.name == name:
+        return self._children[-1]
 
-                return plot_element
-
-
-    def add_item(self,*args, **kwargs):
+    def removeItem(self, name = '', idx = None, target = None):
         '''
-        ##############################################
-        This will effectively add an element to the 
-        plot_elements array. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
-        '''
-        self.plot_elements.append(self.target_class(*args,**kwargs))
-
-    def remove_item(self, name = '', idx = None, target = None):
-        '''
-        ##############################################
         here we will ask the element in question to 
         remove one of its items and proceed to a clean
-        removale. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
+        removal. 
         '''
-        if idx == None and name == '':
-            print("You can't remove nothing ...")
+        # if idx == None and name == '':
+        #     print("You can't remove nothing ...")
 
-        elif not name == '':
-            
-            names = [element.get_para('Name') for element in self.plot_elements]
+        # elif not name == '':
+        #     names = [element.get_para('Name') for element in self.plot_elements]
+        #     self.plot_elements[names.index(name)].remove_items(target)
+        #     del self.plot_elements[names.index(name)]
 
-            self.plot_elements[names.index(name)].remove_items(target)
-
-            del self.plot_elements[names.index(name)]
-
-        elif not idx == None:
-
-            self.plot_elements[idx].remove_items(target)
-
-            del self.plot_elements[idx]
+        # elif not idx == None:
+        #     self.plot_elements[idx].remove_items(target)
+        #     del self.plot_elements[idx]
 
     def draw(self, target):
         '''
-        ##############################################
-        
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        #set the plot
-        for plot_element in self.plot_elements:
-
-            if target.artist.artist_type == "2D":
-
+        for plot_element in self._children:
+            if target.handler['Type'] == "2D":
                 plot_element.draw(target)
-
-            elif target.artist.artist_type == "3D":
-    
+            elif target.handler['Type'] == "3D":
                 plot_element.drawGL(target)
-
-        if target.artist.artist_type == "2D":
-
-            #set th new zoom
-            target.artist.zoomer.zoom()

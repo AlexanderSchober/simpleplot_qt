@@ -17,12 +17,12 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 # Module authors:
-#   Alexander Schober <alexander.schober@mac.com>
+#   Alexander Schober <alex.schober@mac.com>
 #
 # *****************************************************************************
 
 #import dependencies
-from simpleplot.multi_canvas import Multi_Canvas
+from simpleplot.canvas.multi_canvas import MultiCanvasItem
 from PyQt5 import QtWidgets
 import numpy as np
 import sys
@@ -33,7 +33,7 @@ def test_normal():
     #set up the app
     app 	    = QtWidgets.QApplication(sys.argv)
     widget      = QtWidgets.QWidget()
-    mycanvas    = Multi_Canvas(
+    mycanvas    = MultiCanvasItem(
         widget,
         grid        = [[True,True],[True,True]],
         element_types = [['2D', '3D'],['3D','2D']],
@@ -71,8 +71,6 @@ def test_normal():
 
     bx.draw()
 
-
-    
 
     cx = mycanvas.get_subplot(1,0)
     cx.add_plot('Scatter', x,y,   Name = 'sin', Style = ['-','s','10'], Log = [False,False])
@@ -118,16 +116,14 @@ class Settings:
 
 def test_3D():
 
-    ######################################################
-    #set up the app
-    app 	    = QtWidgets.QApplication(sys.argv)
-    widget      = QtWidgets.QWidget()
-    mycanvas    = Multi_Canvas(
-        widget,
-        grid        = [[True]],
-        element_types = [['3D']],
-        x_ratios    = [1],
-        y_ratios    = [1],
+    app 	        = QtWidgets.QApplication(sys.argv)
+    widget          = QtWidgets.QWidget()
+    multi_canvas    = MultiCanvasItem(
+        widget = widget,        
+        grid        = [[True, True], [True, True]],
+        element_types = [['3D', '2D'], ['3D', '2D']],
+        x_ratios    = [1,1],
+        y_ratios    = [1,1],
         background  = "w",
         highlightthickness = 0)
 
@@ -135,13 +131,40 @@ def test_3D():
     y_bin = np.arange(0, 100, 1)
     z_bin = np.random.rand(100,100)*100
 
-    ax = mycanvas.get_subplot(0,0)
-    ax.add_plot('Bin', x_bin,y_bin,z_bin, Name = 'bin')
-    # ax.pointer['Sticky'] = 3
+    ax = multi_canvas.getSubplot(0,1)
+    ax.addPlot('Bin', x_bin,y_bin,z_bin, Name = 'bin')
     ax.draw()
 
+    x = np.linspace(-2*np.pi, 2*np.pi, 100)
+    xv, yv = np.meshgrid(x, x)
+    y = np.sin(x)
+    z = np.cos(x)
+    y_1 = np.cos(x)
+    y_2 = np.cos(x)*np.sin(x)
+
+    #set the ax plot
+    bx = multi_canvas.getSubplot(1,1)
+    bx.addPlot('Scatter', x,y,   Name = 'sin', Style = ['-','d','r', '10'], Log = [False,False])
+    bx.addPlot('Scatter', x,y_1, Name = 'cos', Thickness = 3, Style = ['-'], Log = [False,False])
+    bx.addPlot('Scatter', x,y_2, Name = 'tan', Thickness = 3, Style = ['-'], Log = [False,False])
+    bx.draw()
+
+    cx = multi_canvas.getSubplot(0,0)
+    cx.addPlot(
+        'Surface', 
+        x = x,
+        y = x,
+        z = np.sin(xv+yv),
+        Name    = 'key')
+        #$Color = meas.sample.elements[sam_key].geometry.strucutre_surfaces[key].color)
+    cx.draw()
+    # cx.grid.pointer_handler['Grid'] = 3('Grid active', [True, False, False])
+
     widget.show()
+    multi_canvas.launchSettings()
+    multi_canvas.settings.show()
     sys.exit(app.exec_())
 
 if __name__ == "__main__":
     test_3D()
+    

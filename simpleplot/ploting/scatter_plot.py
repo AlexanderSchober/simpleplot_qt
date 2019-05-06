@@ -17,7 +17,7 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 # Module authors:
-#   Alexander Schober <alexander.schober@mac.com>
+#   Alexander Schober <alex.schober@mac.com>
 #
 # *****************************************************************************
 
@@ -28,305 +28,266 @@ from copy import deepcopy
 from PyQt5 import QtGui
 import numpy as np
 
-class Scatter_Plot(): 
+from ..model.node   import SessionNode
+
+class ScatterPlot(SessionNode): 
     '''
-    ##############################################
     This class will be the scatter plots. 
-    ———————
-    Input: 
-    - parent is the parent canvas class
-    ———————
-    Output: -
-    ———————
-    status: active
-    ##############################################
     '''
 
-    def __init__(self, x, y, z = None, **kwargs):
+    def __init__(self, x = None, y = None, z = None,  **kwargs):
+        '''
+        This class serves as envelope for the 
+        PlotDataItem. Note that the axis of y will be
+        changed to z in case of a 3D representation while the 
+        y axis will be set to 0. This seems more
+        natural.
 
-        #save data locally
+        Parameters
+        -----------
+        x : 1D numpy array
+            the x data
+        y : 1D numpy array
+            the y data
+        z : 1D numpy array
+            the z data
+        error: dict of float arrays
+            The error of each point
+        '''
+        SessionNode.__init__(self, 'No_name')
+
         self.x_data = deepcopy(x)
         self.y_data = deepcopy(y)
-
-        if not isinstance(z,np.ndarray):
-            self.z_data = [0. for element in self.x_data]
-
-        else:
-            self.z_data = deepcopy(z)
-        
-        #initalise plot parameters
+        self.z_data = deepcopy(z)
         self.initialize(**kwargs)
-
-        #post process
-        self.process()
+        self._mode = '2D'
+        self.type  = 'Scatter'
 
     def initialize(self, **kwargs):
         '''
-        ##############################################
         This class will be the scatter plots. 
-        ———————
-        Input: 
-        - parent is the parent canvas class
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
+
+        Parameters
+        -----------
+        kwargs : dict
+            The parameters passed on by the user that 
+            will override the predefined values
         '''
 
-        self.para_dict      = {}
+        
+        self.parameters              = {}
+        self.parameters['Color']     = [[QtGui.QColor('b')]]
+        # self.parameters['Dash']      = [ None,['str', 'tuple', 'int']]
 
-        ##############################################
-        #set the default values that will be overwritten
-        self.para_dict['Color']     = [ 'b', ['str', 'hex']]
-        self.para_dict['Dash']      = [ None,['str', 'tuple', 'int']]
-        self.para_dict['Thickness'] = [ 1, ['int']]
-        self.para_dict['Active']    = [ True, ['bool']]
-        self.para_dict['Style']     = [ '',['tuple','str']]
-        self.para_dict['Name']      = [ 'No Name', ['str']]
-        self.para_dict['Log']       = [ [False, False], ['list', 'tuple', 'bool']]
-        self.para_dict['Error']     = [ None, ['None', 'dict', 'float']]
+        self.parameters['Line color']       = [[QtGui.QColor('blue')]]
+        self.parameters['Shadow color']     = [[QtGui.QColor('red')]]
+        self.parameters['Symbol color']     = [[QtGui.QColor('blue')]]
+        self.parameters['Error color']      = [[QtGui.QColor('grey')]]
 
-        ##############################################
-        #run through kwargs and try to inject
+        self.parameters['Line thickness']   = [[2]]
+        self.parameters['Shadow thickness'] = [[4]]
+        self.parameters['Symbol thickness'] = [[1]]
+        self.parameters['Error thickness']  = [[2]]
+
+        self.parameters['Active']    = [[True]]
+        self.parameters['Style']     = [['']]
+        self.parameters['Name']      = [['Non name']]
+        self.parameters['Log']       = [[False, False]]
+        self.parameters['Show error']= [[True]]
+        self.parameters['Error']     = [None]
+
         for key in kwargs.keys():
-            self.para_dict[key][0] = kwargs[key]
+            temp_key = key.replace('_', ' ')
+            if temp_key in self.parameters.keys():
+                if isinstance(kwargs[key], list) or isinstance(kwargs[key], tuple) or isinstance(kwargs[key], dict):
+                    self.parameters[temp_key][0] = kwargs[key]
+                else:
+                    self.parameters[temp_key][0] = [kwargs[key]]
 
-    def process(self):
+    def getParameter(self, name):
         '''
-        ##############################################
-        One parameters re set some processing can be 
-        performed...
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
-        '''
-        #x processing
-        if self.get_para('Log')[0]:
-            self.x_data = np.log10(self.x_data)
-
-        self.x_min = np.min(self.x_data)
-        self.x_max = np.max(self.x_data)
-        self.x_mean = np.mean(self.x_data)
-
-        #y processing
-        if self.get_para('Log')[1]:
-            self.y_data = np.log10(self.y_data)
-
-        self.y_min = np.min(self.y_data)
-        self.y_max = np.max(self.y_data)
-        self.y_mean = np.mean(self.y_data)
-
-        self.z_min = np.min(self.z_data)
-        self.z_max = np.max(self.z_data)
-        self.z_mean = np.mean(self.z_data)
-
-    def get_para(self, name):
-        '''
-        ##############################################
         Returns the value of the parameter requested
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        return self.para_dict[name][0]
+        return self.parameters[name][0]
 
-    def set_pen(self):
+    def setPens(self):
         '''
-        ##############################################
         This method will initialise the Qpen as the
         the QPainter method
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        #initialise the pen
-        self.pen = pg.mkPen({
-                'color': QtGui.QColor(self.get_para('Color')),
-                'width': self.get_para('Thickness')
-            })
+        self.line_pen = pg.mkPen({
+                'color': QtGui.QColor(self.getParameter('Line color')[0]),
+                'width': self.getParameter('Line thickness')[0]})
 
-    def set_brush(self):
+        self.shadow_pen = pg.mkPen({
+                'color': QtGui.QColor(self.getParameter('Shadow color')[0]),
+                'width': self.getParameter('Shadow thickness')[0]})
+
+        self.symbol_pen = pg.mkPen({
+                'color': QtGui.QColor(self.getParameter('Symbol color')[0]),
+                'width': self.getParameter('Symbol thickness')[0]})
+
+        self.error_pen = pg.mkPen({
+                'color': QtGui.QColor(self.getParameter('Error color')[0]),
+                'width': self.getParameter('Error thickness')[0]})
+
+        self.empty_pen = pg.mkPen({ 'width': 0})
+
+    def setBrushes(self):
         '''
-        ##############################################
         This method will initialise the Qpen as the
         the QPainter method
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        #initialise the pen
-        self.brush = pg.mkBrush(self.get_para('Color'))
+        self.symbol_brush = pg.mkBrush(self.getParameter('Color')[0])
 
-    def draw(self, target_surface):
+    def setData(self, **kwargs):
         '''
-        ##############################################
-        Draw the objects.
-        ———————
-        Input: 
-        - target_surface plot objec to draw on
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
+        Set the data of the plot manually after the plot item 
+        has been actualized
         '''
-        self.curves = []
 
-        if not self.get_para('Error') == None:
-    
-            #generate the pen
-            self.set_pen()
+        if 'x' in kwargs.keys():
+            self.x_data = kwargs['x']
+            kwargs['x'] = np.log10(kwargs['x']) if self.getParameter('Log')[0] else kwargs['x']
             
-            self.curves.append(
-                pg.ErrorBarItem(
-                    x   = self.x_data, 
-                    y   = self.y_data,
-                    pen = self.pen,
-                    **self.get_para('Error')
-                    ))
+        if 'y' in kwargs.keys():
+            self.y_data = kwargs['y']
+            kwargs['y'] = np.log10(kwargs['y']) if self.getParameter('Log')[0] else kwargs['y']
+            
+        if 'z' in kwargs.keys():
+            self.z_data = kwargs['z']
+            kwargs['z'] = np.log10(kwargs['z']) if self.getParameter('Log')[0] else kwargs['z']
+            
+        if 'error' in kwargs.keys():
+            self.parameters['Error']  = [kwargs['error']]
+            self.draw_items[1].setData(**kwargs, **self.getParameter('Error'))
 
-        #we want a line
-        if '-' in self.get_para('Style'):
+        self.draw_items[0].setData(**kwargs)
+            
+    def draw(self, target_surface = None):
+        '''
+        Draw the objects.
+        '''
+        self._mode = '2D'
+        if not target_surface == None:
+            self.default_target = target_surface
 
-            #generate the pen
-            self.set_pen()
-
-            #add the element
-            self.curves.append(
-                pg.PlotCurveItem(
-                    self.x_data, 
-                    self.y_data,
-                    pen = self.pen))
+        self.draw_items = []
+        self.setBrushes()
+        self.setPens()
 
         #we want a scatter
         scatter_options = ['o', 'd', 's', 't']
-        scatter_bool    = [element in scatter_options for element in self.get_para('Style')]
+        scatter_bool    = [
+            element in scatter_options 
+            for element in self.getParameter('Style')]
         
-        if any(scatter_bool):
+        kwargs = {}
+
+        scatter_present = any(scatter_bool)
+        line_present    = ('-' in self.getParameter('Style'))
+
+        kwargs['x'] = np.log10(self.x_data) if self.getParameter('Log')[0] else self.x_data
+        kwargs['y'] = np.log10(self.y_data) if self.getParameter('Log')[1] else self.y_data
+
+        if scatter_present and line_present:
+            scatter_option  = self.getParameter('Style')[scatter_bool.index(True)]
+            kwargs['symbol']      = scatter_option
+            kwargs['symbolSize']  = int(self.getParameter('Style')[-1])
+            kwargs['symbolPen']   = self.symbol_pen
+            kwargs['symbolBrush'] = self.symbol_brush
+            kwargs['pen']         = self.line_pen
+            kwargs['shadowPen']   = self.shadow_pen
+        elif scatter_present and not line_present:
+            scatter_option  = self.getParameter('Style')[scatter_bool.index(True)]
+            kwargs['symbol']      = scatter_option
+            kwargs['size']  = int(self.getParameter('Style')[-1])
+            kwargs['pen']   = self.symbol_pen
+            kwargs['brush'] = self.symbol_brush
+        elif not scatter_present and line_present:
+            kwargs['pen']         = self.line_pen
+            kwargs['shadowPen']   = self.shadow_pen
+
+        if scatter_present and line_present:
+            self.draw_items = [pg.PlotDataItem(
+                **kwargs)]
+        elif scatter_present and not line_present:
+            self.draw_items = [pg.ScatterPlotItem(
+                **kwargs)]
+        elif not scatter_present and line_present:
+            self.draw_items = [pg.PlotCurveItem(
+                **kwargs)]
             
-            #grab the shape
-            scatter_option = self.get_para('Style')[scatter_bool.index(True)]
+        if not self.getParameter('Error') == None and self.getParameter('Show error')[0]:
+            self.draw_items.append(
+                pg.ErrorBarItem(
+                    x   = kwargs['x'], 
+                    y   = kwargs['y'],
+                    pen = self.error_pen,
+                    **self.getParameter('Error')))
 
-            #generate the pen
-            self.set_pen()
-            self.set_brush()
+        for curve in self.draw_items:
+            self.default_target.draw_surface.addItem(curve)
 
-            #add the element
-            self.curves.append(
-                pg.ScatterPlotItem(
-                    self.x_data, 
-                    self.y_data,
-                    symbol  = scatter_option,
-                    pen     = self.pen,
-                    brush   = self.brush,
-                    size    = int(self.get_para('Style')[-1])))
-
-
-        for curve in self.curves:
-
-            target_surface.draw_surface.addItem(curve)
-
-    def drawGL(self, target_view):
+    def drawGL(self, target_view = None):
         '''
-        ##############################################
         Draw the objects.
-        ———————
-        Input: 
-        - target_surface plot objec to draw on
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        self.curves = []
+        self._mode = '3D'
+        if not target_view == None:
+            self.default_target = target_view
+
+        self.draw_items = []
+        self.setBrushes()
+        self.setPens()
+        
+        x_data = self.x_data
+        y_data = self.y_data if not self.z_data == None else np.zeros(x_data.shape)
+        z_data = self.z_data if not self.z_data == None else self.y_data 
+
+        color  = [
+            self.getParameter('Line color')[0].red()/255.,
+            self.getParameter('Line color')[0].green()/255.,
+            self.getParameter('Line color')[0].blue()/255.,
+            self.getParameter('Line color')[0].alpha()/255.]
+        
+        scatter_options = ['o', 'd', 's', 't']
+        scatter_bool    = [
+            element in scatter_options 
+            for element in self.getParameter('Style')]
+        scatter_present = any(scatter_bool)
+        line_present    = ('-' in self.getParameter('Style'))
 
         #we want a line
-        if '-' in self.get_para('Style'):
-
-            #add the element
-            self.curves.append(
+        if line_present:
+            self.draw_items.append(
                 gl.GLLinePlotItem(
                     pos=np.vstack([
-                        self.x_data,
-                        self.y_data,
-                        self.z_data]).transpose(),
-                    color = pg.glColor(self.get_para('Color')),
-                    width = self.get_para('Thickness')
-                ))
-
-        #we want a scatter
-        scatter_options = ['o', 'd', 's', 't']
-        scatter_bool    = [element in scatter_options for element in self.get_para('Style')]
+                        x_data,
+                        y_data,
+                        z_data]).transpose(),
+                    color = color,
+                    width = self.getParameter('Line thickness')[0]))
+            self.draw_items[-1].setGLOptions('translucent')
         
-        if any(scatter_bool):
-
-            #generate the pen
-            self.set_pen()
-            self.set_brush()
-
-            #add the element
-            self.curves.append(
+        if scatter_present:
+            self.draw_items.append(
                 gl.GLScatterPlotItem(
                     pos=np.vstack([
-                        self.x_data,
-                        self.y_data,
-                        self.z_data]).transpose(),
-                        color = pg.glColor(self.get_para('Color')),
-                        size = int(self.get_para('Style')[-1])
-                        ))
-
-        # if not self.get_para('Error') == None:
-
-        #     #generate the pen
-        #     self.set_pen()
+                    x_data,
+                    y_data,
+                    z_data]).transpose(),
+                    color = color,
+                    size = int(self.getParameter('Style')[-1])
+                    ))
+            self.draw_items[-1].setGLOptions('translucent')
             
-        #     self.curves.append(
-        #         pg.ErrorBarItem(
-        #             x   = self.x_data, 
-        #             y   = self.y_data,
-        #             pen = self.pen,
-        #             **self.get_para('Error')
-        #             ))
+        for curve in self.draw_items:
+            self.default_target.view.addItem(curve)
 
-        for curve in self.curves:
-
-            target_view.view.addItem(curve)
-
-
-    def remove_items(self, target_surface):
+    def removeItems(self):
         '''
-        ##############################################
         Remove the objects.
-        ———————
-        Input: 
-        - parent is the parent canvas class
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-
-        for curve in self.curves:
-    
-            target_surface.draw_surface.removeItem(curve)
-
-        target_surface.draw_surface.setLogMode(*self.get_para('Log'))
+        for curve in self.draw_items:
+            self.default_target.draw_surface.removeItem(curve)

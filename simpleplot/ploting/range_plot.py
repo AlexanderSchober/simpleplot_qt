@@ -86,12 +86,12 @@ class RangePlot():
         status: active
         ##############################################
         '''
-        self.curves = []
+        self.draw_items = []
 
         #add the element
-        self.curves.append(
+        self.draw_items.append(
             pg.LinearRegionItem())
 
-        for curve in self.curves:
+        for curve in self.draw_items:
 
             target_surface.draw_surface.addItem(curve)

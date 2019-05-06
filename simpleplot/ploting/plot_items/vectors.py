@@ -17,30 +17,11 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 # Module authors:
-#   Alexander Schober <alexander.schober@mac.com>
+#   Alexander Schober <alex.schober@mac.com>
 #
 # *****************************************************************************
 
-import pyqtgraph as pg
+
+from .points import Point
+from .lines import Line
 import numpy as np
-
-
-class Contour_Plot():
-    
-    '''
-    ##############################################
-    This class will be the plots. 
-    ———————
-    Input: 
-    - parent is the parent canvas class
-    ———————
-    Output: -
-    ———————
-    status: active
-    ##############################################
-    '''
-
-    def __init__(self):
-        
-        self.plot_elements  = []
-        self.para_dict      = {}

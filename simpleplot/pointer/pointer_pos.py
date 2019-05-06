@@ -23,151 +23,101 @@
 # *****************************************************************************
 import numpy as np
     
-class Pointer_Position:
+class PointerPosition:
         
     def __init__(self, parent):
         '''
-        ##############################################
         This is the main pointer position evaluation 
         system. In here we will define simple methods
         that will be inherited by all children. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        self.parent         = parent
+        self.parent = parent
 
     def fetch_position_data(self):
         '''
-        ##############################################
         This method will go through all plot items in 
         the canvas and map their datapoints. This will
-        then allow the evaluater to access on screen 
+        then allow the evaluator to access on screen 
         information. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-
         self.mapping = []
         self.data    = []
 
-        for plothandler in self.parent.canvas.artist.plot_handlers:
-
-            for plot_element in plothandler.plot_elements:
-
-                self.mapping.append([
-                    plothandler.name,
-                    plot_element
-                ])
-
+        for plot_handler in self.parent.canvas._plot_root._children:
+            for plot_element in plot_handler._children:
+                self.mapping.append([plot_handler.name,plot_element])
                 self.data.append([plot_element.x_data, plot_element.y_data])
-
-                if plothandler.name == 'Bin' or plothandler.name == 'Contour':
+                if plot_handler.name == 'Surface':
                     self.data[-1].append(plot_element.z_data)
 
     def evaluate(self):
         '''
-        ##############################################
-        Defaul do nothng
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         pass
 
 
-class Type_0_Position(Pointer_Position):
+class Type_0_Position(PointerPosition):
 
     def __init__(self, parent):
         '''
-        ##############################################
         Type_0 cursor init
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        Pointer_Position.__init__(self,parent)
+        PointerPosition.__init__(self,parent)
         self.parent = parent
 
     def evaluate(self):
         '''
-        ##############################################
         old find_nearestY. This method aims at 
-        searching sucessively for the nearest value in 
+        searching successively for the nearest value in 
         all plots by first scanning the nearest X. 
         Then e find the second nearest to zero after 
         X-Nearest. This will give us back two point 
-        ids which whome we can calculate the nearest Y
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
+        ids which whom we can calculate the nearest Y
         '''
-        #first grab closest Id to the researched value
         point_list = []
         idx_list = []
 
         for i in range(len(self.data)):
-        
             #search the first closest
-            idx_0 = (np.abs(np.asarray(self.data[i][0]) - self.parent.cursor_x)).argmin()
+            x_data = np.asarray(self.data[i][0])
+            x_data = np.log10(x_data) if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else x_data
 
+            idx_0 = (np.abs(x_data - self.parent.cursor_x)).argmin()
             try:
-                if self.data[i][0][idx_0] <= self.parent.cursor_x:
-                    
-                    #check for the array direction
-                    if self.data[i][0][idx_0] < self.data[i][0][idx_0+1]:
+                if x_data[idx_0] <= self.parent.cursor_x:
+                    if x_data[idx_0] < x_data[idx_0+1]:
                         idx_1 = idx_0 + 1
-            
                     else:
                         idx_1 = idx_0 - 1
                 else:
-                    
-                    #check for the array direction
-                    if self.data[i][0][idx_0] < self.data[i][0][idx_0+1]:
-
+                    if x_data[idx_0] < x_data[idx_0+1]:
                         idx_0 -= 1
-                    
                         idx_1  = idx_0 + 1
-
                     else:
-                        
                         idx_0 += 1
-                    
                         idx_1  = idx_0 - 1
-
                 idx_list.append(idx_0)
 
                 #calclate the Y from these positions
-                if self.mapping[i][0] == 'Scatter' and not '-' in self.mapping[i][1].get_para('Style'):
-                    point_list.append(float(self.data[i][1][idx_0]))
+                if self.mapping[i][0] == 'Scatter' and not '-' in self.mapping[i][1].getParameter('Style'):
+                    point_list.append(float(
+                        np.log10(self.data[i][1][idx_0]) if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else self.data[i][1][idx_0]))
                     
 
                 else:
-                    point_list.append(
-                        float(self.data[i][1][idx_0])+float((self.parent.cursor_x-self.data[i][0][idx_0]))
-                        *(float(self.data[i][1][idx_1])-float(self.data[i][1][idx_0]))
-                        /(float(self.data[i][0][idx_1])-float(self.data[i][0][idx_0])))
+                    x_data_0 = np.asarray(self.data[i][0][idx_0])
+                    x_data_0 = np.log10(x_data_0) if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else x_data_0
+                    x_data_1 = np.asarray(self.data[i][0][idx_1])
+                    x_data_1 = np.log10(x_data_1) if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else x_data_1
+
+                    y_data_0 = np.asarray(self.data[i][1][idx_0])
+                    y_data_0 = np.log10(y_data_0) if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else y_data_0
+                    y_data_1 = np.asarray(self.data[i][1][idx_1])
+                    y_data_1 = np.log10(y_data_1) if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else y_data_1
+
+                    val = (y_data_0+(self.parent.cursor_x-x_data_0)*(y_data_1-y_data_0) /(x_data_1-x_data_0))
+
+                    point_list.append(val)
             except:
                 idx_list.append(0)
                 point_list.append(np.inf)
@@ -176,16 +126,14 @@ class Type_0_Position(Pointer_Position):
             
             #grab the second one
             idx_2   = (np.abs(np.asarray(point_list)-self.parent.cursor_y)).argmin()
-        
             if not self.parent.method == None:
-            
                 self.parent.method(
                     self.parent.canvas.plot_handlers[self.mapping[idx_2][0]][self.mapping[idx_2][1]], 
                     [self.parent.cursor_x,self.parent.cursor_y])
 
-            if self.mapping[idx_2][0] == 'Scatter' and not '-' in self.mapping[idx_2][1].get_para('Style'):
-                    
+            if self.mapping[idx_2][0] == 'Scatter' and not '-' in self.mapping[idx_2][1].getParameter('Style'):
                     self.parent.cursor_x = self.data[idx_2][0][idx_list[idx_2]]
+                    self.parent.cursor_x = np.log10(self.parent.cursor_x) if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else self.parent.cursor_x
 
             self.parent.cursor_y = point_list[idx_2]
         
@@ -193,53 +141,34 @@ class Type_0_Position(Pointer_Position):
             pass
         
 
-class Type_1_Position(Pointer_Position):
+class Type_1_Position(PointerPosition):
     
     def __init__(self, parent):
         '''
-        ##############################################
         Type_0 cursor init
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        Pointer_Position.__init__(self,parent)
+        PointerPosition.__init__(self,parent)
         self.parent = parent
-
 
     def evaluate(self):
         '''
-        ##############################################
         old find_nearestX. This method aims at 
-        searching sucessively for the nearest value in 
+        searching successively for the nearest value in 
         all plots by first scanning the nearest X. 
         Then e find the second nearest to zero after 
         X-Nearest. This will give us back two point 
-        ids which whome we can calculate the nearest Y
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
+        ids which whom we can calculate the nearest Y
         '''
         #first grab closest Id to the researched value
-        point_list = []
+        point_list  = []
         idx_list    = []
 
         for i in range(len(self.data)):
-        
             #search the first closest
             idx_0 = (np.abs(np.asarray(self.data[i][1]) - self.parent.cursor_y)).argmin()
 
             try:
                 if self.data[i][1][idx_0] <= self.parent.cursor_y:
-                    
                     #check for the array direction
                     if self.data[i][1][idx_0] < self.data[i][1][idx_0 + 1]:
                         idx_1 = idx_0 + 1
@@ -250,21 +179,17 @@ class Type_1_Position(Pointer_Position):
                     
                     #check for the array direction
                     if self.data[i][1][idx_0] < self.data[i][1][idx_0 + 1]:
-
                         idx_0 -= 1
-                    
                         idx_1  = idx_0 + 1
 
                     else:
-                        
                         idx_0 += 1
-                    
                         idx_1  = idx_0 - 1
 
                 idx_list.append(idx_0)
 
                 #calclate the Y from these positions
-                if self.mapping[i][0] == 'Scatter' and not '-' in self.mapping[i][1].get_para('Style'):
+                if self.mapping[i][0] == 'Scatter' and not '-' in self.mapping[i][1].getParameter('Style'):
                     point_list.append(float(self.data[i][0][idx_0]))
 
                 else:
@@ -286,68 +211,47 @@ class Type_1_Position(Pointer_Position):
                 self.parent.method(
                     self.parent.canvas.plot_handlers[self.mapping[idx_2][0]][self.mapping[idx_2][1]], 
                     [self.parent.cursor_x,self.parent.cursor_y])
-        
             
             self.parent.cursor_x = point_list[idx_2]
 
-            if self.mapping[idx_2][0] == 'Scatter' and not '-' in self.mapping[idx_2][1].get_para('Style'):
+            if self.mapping[idx_2][0] == 'Scatter' and not '-' in self.mapping[idx_2][1].getParameter('Style'):
 
                     self.parent.cursor_y = self.data[idx_2][1][idx_list[idx_2]]
         
         else:
             pass
 
-
-class Type_2_Position(Pointer_Position):
+class Type_2_Position(PointerPosition):
     
     def __init__(self, parent):
         '''
-        ##############################################
         Type_0 cursor init
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        Pointer_Position.__init__(self,parent)
-
+        PointerPosition.__init__(self,parent)
 
     def evaluate(self):
         '''
-        ##############################################
-        This method aims at searching sucessively for 
+        This method aims at searching successively for 
         the nearest value in all plots by first 
         scanning the nearest X. Then e find the second 
         nearest to zero after X-Nearest. This will 
-        give us back two point ids which whome we can 
+        give us back two point ids which whom we can 
         calculate the nearest Y
         
         This version will pin it to the closest point 
-        also. This is particulary helpful when dealing 
+        also. This is particulars helpful when dealing 
         with scatter plots
         
         Note that this version also sends out the 
         function so the point editor can do it's work...
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         #first grab closest Id to the researched value
         point_list = []
         idx_0 = []
 
         for i in range(len(self.data)):
-        
             #search the first closest
             idx_0.append((np.abs(np.asarray(self.data[i][0]) - self.parent.cursor_x)).argmin())
-        
             #calclate the Y from these positions
             try:
                 point_list.append(float(self.data[i][1][idx_0[-1]]))
@@ -366,40 +270,23 @@ class Type_2_Position(Pointer_Position):
         self.parent.cursor_x = self.data[idx_2][0][idx_0[idx_2]]
         self.parent.cursor_y = point_list[idx_2]
 
-class Type_3_Position(Pointer_Position):
+class Type_3_Position(PointerPosition):
     
     def __init__(self, parent):
         '''
-        ##############################################
         Type_0 cursor init
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        Pointer_Position.__init__(self,parent)
+        PointerPosition.__init__(self,parent)
         self.parent = parent
 
     def evaluate(self):
         '''
-        ##############################################
         This tries to find the closest X and Y of the 
         a the first contour plots...
-        Multiple contours are not supporte yet abd 
+        Multiple contours are not supported yet and 
         frankly don't make to much sense therefore we
         will simply grab contour [0].
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-        #first grab closest Id to the researched value
         idx_0 = (np.abs(np.asarray(self.data[0][0]) - self.parent.cursor_x)).argmin()
         idx_1 = (np.abs(np.asarray(self.data[0][1]) - self.parent.cursor_y)).argmin()
 
@@ -413,8 +300,7 @@ class Type_3_Position(Pointer_Position):
         self.parent.cursor_y = self.data[0][1][idx_1]
         self.parent.cursor_z = self.data[0][2][idx_0, idx_1]
 
-
-# class Type_4_Position(Pointer_Position):
+# class Type_4_Position(PointerPosition):
     
 #     def __init__(self, parent):
 #         '''
@@ -428,7 +314,7 @@ class Type_3_Position(Pointer_Position):
 #         status: active
 #         ##############################################
 #         '''
-#         Pointer_Position.__init__(self,parent)
+#         PointerPosition.__init__(self,parent)
 #         self.parent = parent
 
 #     def find_nearestXCascade(self, X, Y):
