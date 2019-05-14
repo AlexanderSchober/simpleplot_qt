@@ -21,8 +21,15 @@
 #
 # *****************************************************************************
 
+from pyqtgraph.opengl.shaders import initShaders
 from pyqtgraph.opengl import shaders
+from OpenGL.GL import glUseProgram, glGetUniformLocation, glCreateProgram, glAttachShader
 import numpy as np
+
+
+
+from OpenGL import GL
+
 
 class ShaderConstructor:
     '''
@@ -32,10 +39,16 @@ class ShaderConstructor:
     '''
 
     def __init__(self):
-        self._colors    = [[1.,0.,1., 1.], [0., 1., 0., 0.]]
-        self._positions = [0,1] 
-        self._range     = [0,1]
-        self._factors   = [1,0]
+        self._colors    = [
+                [0.,1.,1., 1.],
+                [0.,0.,1., 1.],
+                [0.,1.,0., 1.],
+                [1.,0.,0., 1.],
+                [0.,1.,0., 1.]
+            ]
+        self._positions = [0,0.25,0.5,0.75,1.]
+        self._range     = [0.,1.]
+        self._factors   = [1.,0.]
 
     def setColors(self, colors, positions):
         '''
@@ -78,6 +91,8 @@ class ShaderConstructor:
         '''
         if name == 'height':
             return self.heightShader()
+        elif name == 'orientation':
+            return self.orientationShader()
 
     def heightShader(self):
         '''
@@ -136,6 +151,8 @@ class ShaderConstructor:
             fragment_text += str(temp_1)
         
         fragment_text += ('gl_FragColor = color;}')
+
+        # make the vertex
         vertex  = shaders.VertexShader(
             """
             varying vec4 pos;
@@ -148,11 +165,136 @@ class ShaderConstructor:
                 gl_Position = ftransform();
             }
             """)
+
+        #set shader up
         fragment    = shaders.FragmentShader(
             start_text + fragment_text)
-        to_use      = shaders.ShaderProgram(
+
+        #set shader up
+        to_use = shaders.ShaderProgram(
             'height', 
             [vertex, fragment], 
             uniforms = uniforms)
+            
+        # print('##################################################')
+        # num_active_uniforms = GL.glGetProgramiv(to_use.program(), GL.GL_ACTIVE_UNIFORMS)
+        # for u in range(num_active_uniforms):
+        #     name, size, type_ = GL.glGetActiveUniform(to_use.program(), u)
+        #     location = GL.glGetUniformLocation(to_use.program(), name)
+        #     print(name,size,location)
+
+        return to_use
+
+    def orientationShader(self):
+        '''
+        produce the orientation shader
+        '''
+        uniforms = {}
+        uniforms['position'] = self._positions
+        for i,element in enumerate(self._colors):
+            uniforms['color_'+str(i)] = element
+
+        fragment_text = ''
+
+        fragment_text+=(
+            """
+            uniform float position[1];
+            """)
+        fragment_text = fragment_text.replace('position[1]', 'position['+str(len(self._positions))+']')
+
+        for i in range(len(self._colors)):
+            temp_0 = (
+                """uniform float color_0[3];"""
+                )
+            temp_0 = temp_0.replace('color_0', 'color_'+str(i))
+            fragment_text += str(temp_0)
+
+    
+        # out varying vec4 color;    
+        fragment_text += (
+            """
+            varying vec4 pos;
+            varying vec3 normal;
+            void main() {
+                float o = position[0];
+                vec4 color;
+                color.x = color_0[0];
+                color.y = color_0[1];
+                color.z = color_0[2];
+                color.w = 1.;
+
+                vec3 x = vec3(1,0,0);
+                vec3 y = vec3(0,1,0);
+                vec3 z = vec3(0,0,1);
+
+                float altitude_scalar = dot(normal, z) / length(z);
+                float altitude_angle  = acos( altitude_scalar / length(normal) );
+
+                vec3 plane_normal = normalize(normal - altitude_scalar * z);
+
+                float plane_scalar_0 = dot(plane_normal, x) / length(x);
+                float plane_angle_0  = acos( plane_scalar_0 / length(plane_normal) );
+
+                float plane_scalar_1 = dot(plane_normal, y) / length(y);
+                float plane_angle_1  = acos( plane_scalar_1 / length(plane_normal) );
+
+                float azimuth = radians(90.) - altitude_angle;
+                float orbit   = plane_angle_0;
+                if(plane_angle_0 > radians(90.) ){
+                    orbit = orbit + radians(180.);
+                }
+                orbit = orbit / radians(360.);
+                float z_local;
+            """)
+
+        for i in range(len(self._colors)-1):
+            temp_1 = (
+                """
+                if (orbit >= position[0] && orbit <= position[1]){
+                    z_local = (orbit-position[0])/(position[1]-position[0]);
+                    color.x = (color_1[0]-color_0[0])*z_local + color_0[0];
+                    color.y = (color_1[1]-color_0[1])*z_local + color_0[1];
+                    color.z = (color_1[2]-color_0[2])*z_local + color_0[2];
+                    color.w = 1.; 
+                }
+                """)
+            
+            temp_1 = temp_1.replace('color_1', 'color_'+str(i+1))
+            temp_1 = temp_1.replace('color_0', 'color_'+str(i))
+            temp_1 = temp_1.replace('position[1]', 'position['+str(i+1)+']')
+            temp_1 = temp_1.replace('position[0]', 'position['+str(i)+']')
+            fragment_text += temp_1
+        
+        fragment_text += ('gl_FragColor = color;}')
+
+        # make the vertex
+        vertex  = shaders.VertexShader(
+            """
+            varying vec4 pos;
+            varying vec3 normal;
+            void main() {
+                normal = gl_Normal;
+                gl_FrontColor = gl_Color;
+                gl_BackColor = gl_Color;
+                pos = gl_Vertex;
+                gl_Position = ftransform();
+            }
+            """)
+
+        #set shader up
+        fragment    = shaders.FragmentShader(fragment_text)
+
+        #set shader up
+        to_use      = shaders.ShaderProgram(
+            'orientation', 
+            [vertex, fragment], 
+            uniforms = uniforms)
+
+        # print('##################################################')
+        # num_active_uniforms = GL.glGetProgramiv(to_use.program(), GL.GL_ACTIVE_UNIFORMS)
+        # for u in range(num_active_uniforms):
+        #     name, size, type_ = GL.glGetActiveUniform(to_use.program(), u)
+        #     location = GL.glGetUniformLocation(to_use.program(), name)
+        #     print(name,size,location)
 
         return to_use

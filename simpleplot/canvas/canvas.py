@@ -33,8 +33,10 @@ from ..artist.artist import Artist2DNode, Artist3DNode
 from ..model.node import SessionNode
 from ..model.parameter_class import ParameterHandler 
 from ..model.models import SessionModel
-
+from ..ploting.plot_items.shaders import ShaderConstructor
 # pg.setConfigOptions(antialias=True)
+
+from OpenGL import GL
 
 class CanvasNode(SessionNode):
 
@@ -196,25 +198,40 @@ class CanvasNode(SessionNode):
         self.artist.mouse_release(ev)
 
 class MyGLViewWidget(gl.GLViewWidget):
-
-    """ Override GLViewWidget with enhanced behavior and Atom integration.
-    
-    """
-    #: Fired in update() method to synchronize listeners.
+    ''' 
+    Override GLViewWidget with enhanced behavior and Atom integration.
+    '''
     sigUpdate = QtCore.pyqtSignal()
     
+    def __init__(self):
+        '''
+        '''
+        gl.GLViewWidget.__init__(self)
+        self.constructor = ShaderConstructor()
+        self.shader_prog = self.constructor.getShader('orientation')
+        self.sphere = gl.GLMeshItem(
+            meshdata = gl.MeshData.sphere(10,10,1))
+        self.sphere.setShader(self.shader_prog)
+
     def mousePressEvent(self, ev):
-        """ Store the position of the mouse press for later use.
-        
-        """
+        ''' 
+        Store the position of the mouse press for later use.
+        '''
         super(MyGLViewWidget, self).mousePressEvent(ev)
         self._downpos = self.mousePos
+        self.addItem(self.sphere)
+        self.sphere.resetTransform()
+        self.sphere.translate(
+            self.opts['center'][0],
+            self.opts['center'][1],
+            self.opts['center'][2])
+        
             
     def mouseReleaseEvent(self, ev):
-        """ Allow for single click to move and right click for context menu.
+        ''' Allow for single click to move and right click for context menu.
         
         Also emits a sigUpdate to refresh listeners.
-        """
+        '''
         super(MyGLViewWidget, self).mouseReleaseEvent(ev)
         if self._downpos == ev.pos():
             if ev.button() == 2:
@@ -227,6 +244,8 @@ class MyGLViewWidget(gl.GLViewWidget):
         self._prev_zoom_pos = None
         self._prev_pan_pos = None
         self.sigUpdate.emit()
+
+        self.removeItem(self.sphere)
 
     def evalKeyState(self):
         speed = 2.0
@@ -260,6 +279,12 @@ class MyGLViewWidget(gl.GLViewWidget):
 
         elif ev.buttons() == QtCore.Qt.RightButton:
             self.pan(diff.x(), 0, diff.y(), relative=True)
+
+        self.sphere.resetTransform()
+        self.sphere.translate(
+            self.opts['center'][0],
+            self.opts['center'][1],
+            self.opts['center'][2])
 
     def setBackground(self, color):
         self.setBackgroundColor(color)
