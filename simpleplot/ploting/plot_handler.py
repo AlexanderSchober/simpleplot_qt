@@ -25,8 +25,9 @@ import pyqtgraph as pg
 import numpy as np
 
 from .scatter_plot  import ScatterPlot
-from .surface_plot  import Surface
+from .surface_plot  import SurfacePlot
 from .bar_plot      import BarPlot
+from .volume_plot   import VolumePlot
 
 from ..model.node   import SessionNode
 
@@ -38,9 +39,11 @@ def get_plot_handler(select):
     if select == 'Scatter':
         return Plot_Handler(select, ScatterPlot)
     elif select == 'Surface':
-        return Plot_Handler(select, Surface)
+        return Plot_Handler(select, SurfacePlot)
     elif select == 'Bar':
         return Plot_Handler(select, BarPlot)
+    elif select == 'Volume':
+        return Plot_Handler(select, VolumePlot)
     else:
         print('Could not find the fit class you are looking for. Error...')        
         return None

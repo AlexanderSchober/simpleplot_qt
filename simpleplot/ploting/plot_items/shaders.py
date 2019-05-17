@@ -99,6 +99,7 @@ class ShaderConstructor:
         produce the height shader
         '''
         uniforms = {}
+
         uniforms['position'] = self._positions
         uniforms['factor']   = [
             1./np.abs(self._range[1]-self._range[0]),
@@ -139,7 +140,7 @@ class ShaderConstructor:
                     color.x = (color_1[0]-color_0[0])*z_local + color_0[0];
                     color.y = (color_1[1]-color_0[1])*z_local + color_0[1];
                     color.z = (color_1[2]-color_0[2])*z_local + color_0[2];
-                    color.w = 1.; 
+                    color.w = 1.0; 
                 }
                 """)
             
