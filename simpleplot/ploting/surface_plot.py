@@ -34,7 +34,7 @@ from .plot_items.shaders    import ShaderConstructor
 
 from ..model.node   import SessionNode
 
-class Surface(SessionNode): 
+class SurfacePlot(SessionNode): 
     '''
     This class will be the scatter plots. 
     '''

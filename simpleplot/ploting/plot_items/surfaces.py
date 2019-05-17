@@ -31,7 +31,6 @@ from .operations import getNormal
 #mathematic libraries
 import numpy as np
 
-
 class Surface:
 
     def __init__(self, **kwargs):

@@ -92,6 +92,15 @@ class ParameterHandler(ParameterNode):
     def setString(self):
         pass
 
+    def runAll(self):
+        '''
+        Run all methods in the class
+        '''
+        for key in self.items.keys():
+            if 'method' in self.items[key].kwargs.keys():
+                self.items[key].kwargs['method']()
+
+
 class ParameterMaster:
     '''
     This class is meant to be inherited and 
@@ -172,7 +181,10 @@ class ParameterVector(ParameterMaster, ParameterNode):
         The values here will be set manually
         '''
         for i, element in enumerate(self._vector_elements):
-            element.updateValue(value[i])
+            element.updateValue(value[i], method = False)
+
+        if 'method' in self.kwargs.keys():
+            self.kwargs['method']()
 
 class ParameterValue(ParameterMaster, ParameterItem):
     '''
@@ -221,14 +233,15 @@ class ParameterValue(ParameterMaster, ParameterItem):
             self.kwargs['method']()
         return self._constructor.retrieveData(editor)
 
-    def updateValue(self, value):
+    def updateValue(self, value, method = True):
         '''
         The values here will be set manually
         '''
         self._value = value
         self.parent().setString()
-        self._model.dataChanged.emit(self.index(),self.index())
-        if 'method' in self.kwargs.keys():
+        self._model.dataChanged.emit(QtCore.QModelIndex(),QtCore.QModelIndex())
+
+        if 'method' in self.kwargs.keys() and method:
             self.kwargs['method']()
        
 

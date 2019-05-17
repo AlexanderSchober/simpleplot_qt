@@ -27,6 +27,7 @@ from ..model.modal_items import QColorDialog
 
 from .surface_widget_ui import Ui_SurfaceWidget
 from pyqtgraph import GradientWidget
+from pyqtgraph.graphicsItems.GradientEditorItem import GradientEditorItem
 import numpy as np
 
 class SurfaceWidget(Ui_SurfaceWidget):
@@ -234,7 +235,7 @@ class SurfaceWidget(Ui_SurfaceWidget):
         Tell the plot item to update the colors
         of the surface plot item
         '''
-        if color == None:
+        if isinstance(color, GradientEditorItem):
             state = self.gradient_widget.saveState()
             positions = [element[0] for element in state['ticks']]
             colors    = [list(np.array(element[1])/255) for element in state['ticks']]

@@ -22,8 +22,6 @@
 # *****************************************************************************
 
 #import personal dependencies
-from .canvas2d import Canvas2DNode
-from .canvas3d import Canvas3DNode
 from .canvas   import CanvasNode
 
 from ..model.models import SessionModel
@@ -284,7 +282,6 @@ if __name__ == '__main__':
     ax.axes['bottom'].setScale(8*np.pi/100)
     ax.axes['left'].setScale(8*np.pi/100)
     ax.setHistogram('right', surf)
-    ax.pointer
     ax.zoomer.zoom()
     
     #set the ax plot
@@ -306,7 +303,7 @@ if __name__ == '__main__':
         Line_thickness   = 3, 
         Style       = ['-'], 
         Log         = [False,False])
-    bar = bx.addPlot('Bar', x = x, y = x, z =  np.cos(xv)+np.sin(yv)+2)
+    # bar = bx.addPlot('Bar', x = x, y = x, z =  np.cos(xv)+np.sin(yv)+2)
     bx.draw()
 
     first.setData(x = x, y = y)
@@ -348,9 +345,13 @@ if __name__ == '__main__':
 
     dx = multi_canvas.getSubplot(1,0)
     bar = dx.addPlot('Bar')
-    bar_2 = dx.addPlot('Bar')
+    def calc(i,j,k):
+        return np.sin(np.cos(i/10)+np.sin(j/10)+np.sin(k/10))
+    data = np.fromfunction(calc, (100,100,100))
+    
+    volume = dx.addPlot('Volume', data = data)
     dx.draw()
     bar.setData( x = x, y = x, z =  np.cos(xv)+np.sin(yv)+2, z_lower = np.cos(xv)+np.sin(yv)-2)
-    bar_2.setData( x = x, y = x, z =  np.cos(xv)+np.sin(yv)+6, Lower = [[7]])
+    # bar_2.setData( x = x, y = x, z =  np.cos(xv)+np.sin(yv)+6, Lower = [[7]])
     widget.show()
     sys.exit(app.exec_())

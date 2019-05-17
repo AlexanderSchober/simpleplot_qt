@@ -110,7 +110,7 @@ class Type_1_Pointer(PointerObject):
         self.parent.setPen()
         self.get_ranges()
 
-        #set the two inifinite lines
+        #set the two infinite lines
         self.pointer_comp.append(pg.PlotCurveItem(
             x       = np.asarray([0,1]), 
             y       = np.asarray([0,1]),
