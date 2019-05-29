@@ -93,6 +93,8 @@ class ShaderConstructor:
             return self.heightShader()
         elif name == 'orientation':
             return self.orientationShader()
+        elif name == 'length':
+            return self.vecLengthShader()
 
     def heightShader(self):
         '''
@@ -177,13 +179,6 @@ class ShaderConstructor:
             [vertex, fragment], 
             uniforms = uniforms)
             
-        # print('##################################################')
-        # num_active_uniforms = GL.glGetProgramiv(to_use.program(), GL.GL_ACTIVE_UNIFORMS)
-        # for u in range(num_active_uniforms):
-        #     name, size, type_ = GL.glGetActiveUniform(to_use.program(), u)
-        #     location = GL.glGetUniformLocation(to_use.program(), name)
-        #     print(name,size,location)
-
         return to_use
 
     def orientationShader(self):
@@ -291,11 +286,82 @@ class ShaderConstructor:
             [vertex, fragment], 
             uniforms = uniforms)
 
-        # print('##################################################')
-        # num_active_uniforms = GL.glGetProgramiv(to_use.program(), GL.GL_ACTIVE_UNIFORMS)
-        # for u in range(num_active_uniforms):
-        #     name, size, type_ = GL.glGetActiveUniform(to_use.program(), u)
-        #     location = GL.glGetUniformLocation(to_use.program(), name)
-        #     print(name,size,location)
+        return to_use
+
+    def vecLengthShader(self):
+        '''
+        produce the height shader
+        '''
+        uniforms = {}
+
+        # uniforms['position'] = self._positions
+        # uniforms['factor']   = [
+        #     1./np.abs(self._range[1]-self._range[0]),
+        #     self._range[0]]
+        # for i,element in enumerate(self._colors):
+        #     uniforms['color_'+str(i)] = element
+
+        # start_text = (
+        #     """
+        #     uniform float position[1];
+        #     uniform float factor[2];
+        #     """)
+        # start_text = start_text.replace('position[1]', 'position['+str(len(self._positions))+']')
+
+        # for i in range(len(self._colors)):
+        #     temp_0 = (
+        #         """uniform float color_0[3];"""
+        #         )
+        #     temp_0 = temp_0.replace('color_0', 'color_'+str(i))
+        #     start_text += str(temp_0)
+        start_text = ''
+
+        fragment_text = (
+            """
+            varying vec4 v_color;
+            void main() {
+            """)
+
+        # for i in range(len(self._colors)-1):
+        #     temp_1 = (
+        #         """
+        #         if (z_norm >= position[0] && z_norm <= position[1] ){
+        #             z_local = (z_norm-position[0])/(position[1]-position[0]);
+        #             color.x = (color_1[0]-color_0[0])*z_local + color_0[0];
+        #             color.y = (color_1[1]-color_0[1])*z_local + color_0[1];
+        #             color.z = (color_1[2]-color_0[2])*z_local + color_0[2];
+        #             color.w = 1.0; 
+        #         }
+        #         """)
+            
+        #     temp_1 = temp_1.replace('color_1', 'color_'+str(i+1))
+        #     temp_1 = temp_1.replace('color_0', 'color_'+str(i))
+        #     temp_1 = temp_1.replace('position[1]', 'position['+str(i+1)+']')
+        #     temp_1 = temp_1.replace('position[0]', 'position['+str(i)+']')
+
+        #     fragment_text += str(temp_1)
+        
+        fragment_text += ('gl_FragColor = v_color;}')
+
+        # make the vertex
+        vertex  = shaders.VertexShader(
+            """
+            attribute vec3 position_vec;
+            attribute vec4 color_vec;
+            varying vec4 v_color;
+            void main() {
+                gl_Position = vec4(position_vec,1);
+                v_color= color_vec;
+            }
+            """)
+
+        #set shader up
+        fragment    = shaders.FragmentShader(
+            start_text + fragment_text)
+
+        #set shader up
+        to_use = shaders.ShaderProgram(
+            'length', 
+            [vertex, fragment])
 
         return to_use

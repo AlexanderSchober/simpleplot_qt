@@ -77,6 +77,9 @@ class CanvasNode(SessionNode):
             choices = ['2D', '3D'],
             method = self.switch)
         self.handler.addParameter(
+            'Show', True,
+            method = self._hideCanvas)
+        self.handler.addParameter(
             'Background',  QtGui.QColor('white'),
             method = self._setBackground)
         self.handler.addParameter(
@@ -89,11 +92,20 @@ class CanvasNode(SessionNode):
         self._plot_root  = SessionNode('Root', None) 
         self._plot_model = SessionModel(self._plot_root, self.multi_canvas)
 
+    def _hideCanvas(self):
+        '''
+        Hides the canvas from the subplot view
+        '''
+        self.widget.setVisible(self.handler['Show'])
+        self.multi_canvas.update()
+
     def _buildSupport(self):
         '''
         build the support base of the code
         '''
         self.widget         = QtGui.QWidget()
+        self.widget.setSizePolicy(QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.grid_layout = QtWidgets.QGridLayout()
         self.widget.setLayout(self.grid_layout)
 

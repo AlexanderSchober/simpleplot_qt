@@ -27,6 +27,7 @@ from .canvas   import CanvasNode
 from ..model.models import SessionModel
 from ..gui.mode_select import ModeSelect
 from ..model.node import SessionNode
+from ..model.parameter_class import ParameterHandler 
 
 #import general
 from PyQt5 import QtWidgets, QtGui, QtCore
@@ -81,14 +82,15 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         '''
         QtWidgets.QGridLayout.__init__(self)
 
-        self._rootNode  = SessionNode("Root", None)
-
         self.grid       = grid
-        self.x_ratios   = x_ratios
-        self.y_ratios   = y_ratios
+        self.x_ratios   = [float(e) for e in x_ratios]
+        self.y_ratios   = [float(e) for e in y_ratios]
         self.parent     = widget
         self.icon_dim   = 25
+        self.subplot_names      = []
 
+        self._rootNode  = SessionNode("Root", None)
+        
         self.canvas_nodes = [
             [None 
             for i in range(len(self.grid[0]))] 
@@ -104,6 +106,7 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
                 self.canvas_nodes[i][j]=[None, i,j]
 
             elif element_types  ==  None or element_types[i][j] == '2D':
+                self.subplot_names.append("Subplot ("+str(i)+", "+str(j)+")")
                 self.canvas_nodes[i][j]=[
                     CanvasNode(
                         "Subplot ("+str(i)+", "+str(j)+")", self._rootNode,
@@ -113,6 +116,7 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
                         **kwargs),i,j]
 
             elif element_types[i][j] == '3D':
+                self.subplot_names.append("Subplot ("+str(i)+", "+str(j)+")")
                 self.canvas_nodes[i][j]=[
                     CanvasNode(
                         "Subplot ("+str(i)+", "+str(j)+")", self._rootNode,
@@ -120,6 +124,8 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
                         idx = len(self.canvas_nodes),
                         Type = '3D',
                         **kwargs),i,j]
+
+        self._initialise()
 
         self._proxyModel    = QtCore.QSortFilterProxyModel(self)
         self._model         = SessionModel(
@@ -131,6 +137,31 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         self._configureGrid()
         self._layoutManager()
         self.parent.setLayout(self)
+
+    def _initialise(self):
+        self.handler        = ParameterHandler(
+            name = 'Multi-canvas options', 
+            parent = self._rootNode) 
+
+        self.handler.addParameter(
+            'x_ratios', self.x_ratios,
+            method = self._configureGrid)
+        self.handler.addParameter(
+            'y_ratios', self.y_ratios,
+            method = self._configureGrid)
+        self.handler.addParameter(
+            'Select', 'All',
+            choices = ['All']+self.subplot_names,
+            method = self._selectPlot)
+        # self.handler.addParameter(
+        #     'Background',  QtGui.QColor('white'),
+        #     method = self._setBackground)
+        # self.handler.addParameter(
+        #     'Horizontal spacing', 1,
+        #     method = self._setHorizontalSpacing)
+        # self.handler.addParameter(
+        #     'Vertical spacing', 1,
+        #     method = self._setVerticalSpacing)
 
     def _placeObjects(self):
         '''
@@ -153,38 +184,43 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
                     self.canvas_nodes[i][j][1], 
                     self.canvas_nodes[i][j][2])
 
-    def _configureGrid(self):
+    def _configureGrid(self, zeros = False):
         '''
         This method will run through the elements and
         set the desired fractional ratios between
         cells and rows.
         '''
-        grid_loop = [
-            (i, j)
-            for i in range(len(self.grid))
-            for j in range(len(self.grid[0]))]
-
-        for i,j in grid_loop:
-            width  = ( 
-                self.parent.frameGeometry().width()
-                /len(self.canvas_nodes[i]))/ self.x_ratios[j]
-            height = (
-                self.parent.frameGeometry().height() 
-                / len(self.canvas_nodes) )/ self.y_ratios[i]
-            self.canvas_nodes[i][j][0].widget.resize(width, height)
-
-        for i in range(len(self.x_ratios)):
+        for i in range(len(self.handler['x_ratios'])):
             try:
-                self.setColumnStretch(i,1/self.x_ratios[i])
+                self.setColumnStretch(i,self.handler['x_ratios'][i] if not zeros else 0)
             except:
                 pass
         
-        for j in range(len(self.y_ratios)):
+        for j in range(len(self.handler['y_ratios'])):
             try:
-                self.setRowStretch(j,1/self.y_ratios[j])
+                self.setRowStretch(j,self.handler['y_ratios'][j] if not zeros else 0)
             except:
                 if self.Verbose:
                     print('Could not set the row weight for: ',j)
+
+    def _selectPlot(self):
+        '''
+        This method will run through the elements and
+        set the desired fractional ratios between
+        cells and rows.
+        '''
+        if self.handler['Select'] == 'All':
+            for child in self._rootNode._children:
+                if 'Subplot'in child._name:
+                    child.widget.setVisible(True)
+            self._configureGrid()
+        else:
+            for child in self._rootNode._children:
+                if 'Subplot'in child._name and not child._name == self.handler['Select']:
+                    child.widget.setVisible(False)
+                elif 'Subplot'in child._name and child._name == self.handler['Select']:
+                    child.widget.setVisible(True)
+            self._configureGrid(zeros = True)
 
     def _layoutManager(self):
         '''
@@ -243,115 +279,3 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         
         return ID
     
-if __name__ == '__main__':
-    import sys
-    import numpy as np
-    app 	        = QtWidgets.QApplication(sys.argv)
-    widget          = QtWidgets.QWidget()
-    multi_canvas    = MultiCanvasItem(
-        widget = widget,        
-        grid        = [[True, True], [True, True]],
-        element_types = [['3D', '2D'], ['3D', '2D']],
-        x_ratios    = [1,1],
-        y_ratios    = [1,1],
-        background  = "w",
-        highlightthickness = 0)
-
-    x_bin = np.arange(0, 100, 1)
-    y_bin = np.arange(0, 100, 1)
-    z_bin = np.random.rand(100,100)*100
-    
-    x = np.linspace(-4*np.pi, 4*np.pi, 100)
-    xv, yv = np.meshgrid(x, x)
-    y = np.sin(x)
-    z = np.cos(x)
-    y_1 = np.cos(x+0.5)
-    y_2 = np.cos(x)+2*np.sin(x)
-
-    ax = multi_canvas.getSubplot(0,1)
-    surf = ax.addPlot(
-        'Surface', 
-        Name = 'bin')
-    ax.draw()
-    surf.setData(       
-        x = x_bin,
-        y = x_bin, 
-        z = np.cos(xv)+np.sin(yv)-2 )
-
-
-    ax.axes['bottom'].setScale(8*np.pi/100)
-    ax.axes['left'].setScale(8*np.pi/100)
-    ax.setHistogram('right', surf)
-    ax.zoomer.zoom()
-    
-    #set the ax plot
-    bx = multi_canvas.getSubplot(1,1)
-    first = bx.addPlot(
-        'Scatter', 
-        Name        = 'sin', 
-        Style       = ['-','d','r', '10'], 
-        Log         = [False,False])
-    second = bx.addPlot(
-        'Scatter', 
-        Name        = 'cos', 
-        Style       = ['d','r','20'], 
-        Log         = [False,False],
-        Error       = {})
-    third = bx.addPlot(
-        'Scatter', 
-        Name        = 'tan', 
-        Line_thickness   = 3, 
-        Style       = ['-'], 
-        Log         = [False,False])
-    # bar = bx.addPlot('Bar', x = x, y = x, z =  np.cos(xv)+np.sin(yv)+2)
-    bx.draw()
-
-    first.setData(x = x, y = y)
-    second.setData(x = x, y = y_1, error = {'width' : 0.1,'height': 0.1})
-    third.setData(x = x, y = y_2)
-
-    bx.zoomer.zoom()
-
-    cx = multi_canvas.getSubplot(0,0)
-
-    Colors = [
-            [0.,1.,1.],
-            [0.,0.,1.],
-            [0.,1.,0.],
-            [1.,0.,0.],
-            [0.,1.,0.],
-        ]
-    Positions = [0,0.25,0.5,0.75,1.]
-
-    cx.addPlot(
-        'Surface', 
-        x = x,
-        y = x,
-        z = np.cos(xv)+np.sin(yv)-2,
-        Name        = 'key',
-        Colors      = Colors,
-        Positions   = Positions)
-    
-    cx.addPlot(
-        'Surface', 
-        x = x,
-        y = x,
-        z = -np.cos(xv)-np.sin(yv)+2,
-        Name        = 'key',
-        Colors      = Colors[::-1],
-        Positions   = Positions)
-
-    cx.draw()
-
-    dx = multi_canvas.getSubplot(1,0)
-    bar = dx.addPlot('Bar')
-    def calc(i,j,k):
-        return np.sin(np.cos(i/10)+np.sin(j/10)+np.sin(k/10))
-    data = np.fromfunction(calc, (100,100,100))
-    
-    volume = dx.addPlot('Volume', data = data)
-    dx.draw()
-    bar.setData( x = x, y = x, z =  np.cos(xv)+np.sin(yv)+2, z_lower = np.cos(xv)+np.sin(yv)-2)
-    # bar_2.setData( x = x, y = x, z =  np.cos(xv)+np.sin(yv)+6, Lower = [[7]])
-    widget.show()
-    sys.exit(app.exec_())
