@@ -291,3 +291,9 @@ class ScatterPlot(SessionNode):
         '''
         for curve in self.draw_items:
             self.default_target.draw_surface.removeItem(curve)
+
+    def processRay(self, ray):
+        '''
+        try to process the ray intersection
+        '''
+        pass

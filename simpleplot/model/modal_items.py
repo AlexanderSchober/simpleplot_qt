@@ -28,6 +28,7 @@ class QColorDialog(QtWidgets.QColorDialog):
     def __init__(self, parent = None): 
         super().__init__(parent = parent)
         self.setModal(False)
+        self.setOption(QtWidgets.QColorDialog.ShowAlphaChannel)
         self.methods = []
 
     def connectMethod(self, method):

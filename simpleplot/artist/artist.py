@@ -90,15 +90,15 @@ class Artist():
         for plot_handler in self.canvas._plot_root._children:
             plot_handler.draw(self.canvas)
 
-    def redraw(self):
-        '''
-        This method will go through the plot handlers
-        and check if one of them has already the 
-        selected items. if not a new instance will be
-        generated and then fed into the handler system
-        '''
-        for plot_handler in self.plot_handlers:
-            plot_handler.draw(self.canvas)
+    # def redraw(self):
+    #     '''
+    #     This method will go through the plot handlers
+    #     and check if one of them has already the 
+    #     selected items. if not a new instance will be
+    #     generated and then fed into the handler system
+    #     '''
+    #     for plot_handler in self.plot_handlers:
+    #         plot_handler.draw(self.canvas)
 
     def clear(self):
         '''
@@ -296,6 +296,9 @@ class Artist3DNode(SessionNode, Artist):
         self.grid = GridGl(canvas)
         self.axes = Axes3D(canvas)
 
+        self.canvas.view.rayUpdate.connect(self.processRay)
+
+
     def setup(self):
         '''
         Once all elements are created it is possible 
@@ -307,5 +310,29 @@ class Artist3DNode(SessionNode, Artist):
         '''
         Once all elements are created it is possible 
         to set up the functionalities. 
+        '''
+        pass
+
+    def processRay(self):
+        '''
+        Will try to Manage the items and their 
+        ray tracing position calculation
+        '''
+        hits = []
+        for child in self.canvas._plot_root._children:
+            hits.append(child.processRay(self.canvas.view.mouse_ray))
+        distances = [np.linalg.norm(e - self.canvas.view.mouse_ray[0]) for elements in hits for e in elements ]
+    
+    def _processDistances(self):
+        '''
+        Will process the distance arrangement of the ray
+        and then tell the program from whom to pick 
+        the data for the position lines
+        '''
+        pass
+
+    def _getPointerData(self):
+        '''
+        Call the pointer onto the right child
         '''
         pass

@@ -27,6 +27,11 @@ import pyqtgraph.opengl as gl
 import pyqtgraph as pg
 import numpy as np
 
+
+from OpenGL.GL import glReadPixels, GL_RGBA,  GL_FLOAT, glPixelStorei, GL_UNPACK_ALIGNMENT, glFlush, glFinish, glGetIntegerv, glGetDoublev, GL_PROJECTION_MATRIX, GL_VIEWPORT, GL_MODELVIEW_MATRIX
+
+import OpenGL.GLU as GLU
+
 #personal imports
 from ..ploting.plot_items.shaders import ShaderConstructor
 from ..model.parameter_class import ParameterHandler 
@@ -36,12 +41,18 @@ class MyGLViewWidget(gl.GLViewWidget):
     Override GLViewWidget with enhanced behavior and Atom integration.
     '''
     sigUpdate = QtCore.pyqtSignal()
+    rayUpdate = QtCore.pyqtSignal()
     
     def __init__(self, parent = None):
         '''
         '''
         gl.GLViewWidget.__init__(self)
         self._initialize(parent)
+        self.setMouseTracking(True)
+        self.pointer = gl.GLLinePlotItem(mode = 'line_strip')
+        self.addItem(self.pointer)
+        self.mouse_ray = np.array([[0,0,0],[0,0,0]])
+
 
     def _initialize(self, parent):
         '''
@@ -71,6 +82,8 @@ class MyGLViewWidget(gl.GLViewWidget):
             'Camera position', [20.,45.,45.],
             names = ['distance', 'azimuth', 'elevation'],
             method = self._setCamera)
+
+        self.mousePos = [None, None]
 
         self.handler.runAll()
 
@@ -134,10 +147,12 @@ class MyGLViewWidget(gl.GLViewWidget):
 
         self._prev_zoom_pos = None
         self._prev_pan_pos = None
-        self.sigUpdate.emit()
+        self.mousePos = [None, None]
 
         if self.handler['Show center']:
             self.removeItem(self.sphere)
+
+        self.sigUpdate.emit()
         
     def evalKeyState(self):
         speed = 2.0
@@ -163,66 +178,92 @@ class MyGLViewWidget(gl.GLViewWidget):
         '''
         manage the mouse move events
         '''
-
-        diff = ev.pos() - self.mousePos
-        self.mousePos = ev.pos()
-    
-        if ev.buttons() == QtCore.Qt.LeftButton:
-            self.handler['Camera position'] = [
-                self.handler['Camera position'][0],
-                -diff.x() + self.handler['Camera position'][1],
-                np.clip(self.handler['Camera position'][2] + diff.y(), -90, 90)]
+        if not self.mousePos == [None, None]:
+            diff = ev.pos() - self.mousePos
+            self.mousePos = ev.pos()
             
-        elif ev.buttons() == QtCore.Qt.MidButton:
-            cPos = self.cameraPosition()
-            cVec = self.opts['center'] - cPos
-            dist = cVec.length()  ## distance from camera to center
-            xDist = dist * 2. * np.tan(0.5 * self.opts['fov'] * np.pi / 180.)  ## approx. width of view at distance of center point
-            xScale = xDist / self.width()
-            zVec = QtGui.QVector3D(0,0,1)
-            xVec = QtGui.QVector3D.crossProduct(zVec, cVec).normalized()
-            yVec = QtGui.QVector3D.crossProduct(xVec, zVec).normalized()
-            self.opts['center'] = (
-                self.opts['center'] 
-                + xVec * xScale * diff.x() 
-                + yVec * xScale * diff.y()  
-                + zVec * xScale * 0)
+            if ev.buttons() == QtCore.Qt.LeftButton:
+                self.handler['Camera position'] = [
+                    self.handler['Camera position'][0],
+                    -diff.x() + self.handler['Camera position'][1],
+                    np.clip(self.handler['Camera position'][2] + diff.y(), -90, 90)]
+                
+            elif ev.buttons() == QtCore.Qt.MidButton:
+                cPos = self.cameraPosition()
+                cVec = self.opts['center'] - cPos
+                dist = cVec.length()  ## distance from camera to center
+                xDist = dist * 2. * np.tan(0.5 * self.opts['fov'] * np.pi / 180.)  ## approx. width of view at distance of center point
+                xScale = xDist / self.width()
+                zVec = QtGui.QVector3D(0,0,1)
+                xVec = QtGui.QVector3D.crossProduct(zVec, cVec).normalized()
+                yVec = QtGui.QVector3D.crossProduct(xVec, zVec).normalized()
+                self.opts['center'] = (
+                    self.opts['center'] 
+                    + xVec * xScale * diff.x() 
+                    + yVec * xScale * diff.y()  
+                    + zVec * xScale * 0)
 
-            self.handler['Center position'] = (np.round(
-                np.array([
-                    round(self.opts['center'][0],4),
-                    round(self.opts['center'][1],4),
-                    round(self.opts['center'][2],4)]) 
-                - self._old_position, decimals = 4)).tolist() 
+                self.handler['Center position'] = (np.round(
+                    np.array([
+                        round(self.opts['center'][0],4),
+                        round(self.opts['center'][1],4),
+                        round(self.opts['center'][2],4)]) 
+                    - self._old_position, decimals = 4)).tolist() 
 
-        elif ev.buttons() == QtCore.Qt.RightButton:
-            cPos = self.cameraPosition()
-            cVec = self.opts['center'] - cPos
-            dist = cVec.length()  ## distance from camera to center
-            xDist = dist * 2. * np.tan(0.5 * self.opts['fov'] * np.pi / 180.)  ## approx. width of view at distance of center point
-            xScale = xDist / self.width()
-            zVec = QtGui.QVector3D(0,0,1)
-            xVec = QtGui.QVector3D.crossProduct(zVec, cVec).normalized()
-            yVec = QtGui.QVector3D.crossProduct(xVec, zVec).normalized()
-            self.opts['center'] = (
-                self.opts['center'] 
-                + xVec * xScale * diff.x() 
-                + yVec * xScale * 0
-                + zVec * xScale * diff.y())
+            elif ev.buttons() == QtCore.Qt.RightButton:
+                cPos = self.cameraPosition()
+                cVec = self.opts['center'] - cPos
+                dist = cVec.length()  ## distance from camera to center
+                xDist = dist * 2. * np.tan(0.5 * self.opts['fov'] * np.pi / 180.)  ## approx. width of view at distance of center point
+                xScale = xDist / self.width()
+                zVec = QtGui.QVector3D(0,0,1)
+                xVec = QtGui.QVector3D.crossProduct(zVec, cVec).normalized()
+                yVec = QtGui.QVector3D.crossProduct(xVec, zVec).normalized()
+                self.opts['center'] = (
+                    self.opts['center'] 
+                    + xVec * xScale * diff.x() 
+                    + yVec * xScale * 0
+                    + zVec * xScale * diff.y())
 
-            self.handler['Center position'] = (np.round(
-                np.array([
-                    round(self.opts['center'][0],4),
-                    round(self.opts['center'][1],4),
-                    round(self.opts['center'][2],4)]) 
-                - self._old_position, decimals = 4)).tolist() 
+                self.handler['Center position'] = (np.round(
+                    np.array([
+                        round(self.opts['center'][0],4),
+                        round(self.opts['center'][1],4),
+                        round(self.opts['center'][2],4)]) 
+                    - self._old_position, decimals = 4)).tolist() 
 
-        self.sphere.resetTransform()
-        self.sphere.translate(
-            self.opts['center'][0],
-            self.opts['center'][1],
-            self.opts['center'][2])
+            self.sphere.resetTransform()
+            self.sphere.translate(
+                self.opts['center'][0],
+                self.opts['center'][1],
+                self.opts['center'][2])
+        else:
+            ray = self._getPickingRay(ev.x(), ev.y())
+            self.pointer.setData(pos =np.array([self.cameraPosition(), ray[:3]]))
+            self.mouse_ray = np.array([self.cameraPosition(), ray[:3]])
+            self.rayUpdate.emit()
+            
+    def _getPickingRay(self,x,y):
+        '''
+        Process the ray for the current
+        mouse position
+        '''
+        viewport    = glGetIntegerv(GL_VIEWPORT)
+        model_mat   = np.array(glGetDoublev(GL_MODELVIEW_MATRIX))
+        proj_mat    = np.array(glGetDoublev(GL_PROJECTION_MATRIX))
+        
+        win_coord   = (x, viewport[3] - y)
+        
+        near_point  = np.array(GLU.gluUnProject(
+            win_coord[0], win_coord[1], 0.0, 
+            model_mat, proj_mat, viewport))
+        far_point   = np.array(GLU.gluUnProject(
+            win_coord[0], win_coord[1], 1.0, 
+            model_mat, proj_mat, viewport))
 
+        return far_point - near_point
+
+            
     def wheelEvent(self, ev):
         delta = 0
 

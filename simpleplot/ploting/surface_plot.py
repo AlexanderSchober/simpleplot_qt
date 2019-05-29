@@ -70,6 +70,7 @@ class SurfacePlot(SessionNode):
         self._scale = np.array([1,1,1])
         self._rotate_angle = np.array([0,0,0])
         self._rotate_axis = np.array([[1,0,0], [0,1,0], [0,0,1]])
+        self._pointer = gl.GLMeshItem()
 
     def initialize(self, **kwargs):
         '''
@@ -515,6 +516,8 @@ class SurfacePlot(SessionNode):
         if self.getParameter('Isocurve')[0]:
             self.drawGLIsocurves()
 
+        self.default_target.view.addItem(self._pointer)
+
     def drawGLSurface(self):
         '''
         Draw the Isocurves in opengl.
@@ -543,7 +546,7 @@ class SurfacePlot(SessionNode):
         kwargs['vertexes']  = self.points
         kwargs['faces']     = self.vertices
         kwargs['smooth']    = True
-        kwargs['drawEdges'] = False
+        kwargs['drawEdges'] = True
         kwargs['shader']    = self.shader_constructor.getShader('height')
         self.draw_items.append(gl.GLMeshItem(**kwargs))
 
@@ -593,3 +596,180 @@ class SurfacePlot(SessionNode):
         for curve in self.draw_items:
             self.default_target.draw_surface.removeItem(curve)
 
+    def processRay(self, ray):
+        '''
+        try to process the ray intersection
+        '''
+        maxima = [
+            np.amax(self.x_data),
+            np.amax(self.y_data),
+            np.amax(self.z_data)]
+
+        minima = [
+            np.amin(self.x_data),
+            np.amin(self.y_data),
+            np.amin(self.z_data)]
+
+        bounding_box = np.array([
+            #top and bottom
+            [
+                [minima[0], minima[1], minima[2]],
+                [maxima[0], minima[1], minima[2]],
+                [minima[0], maxima[1], minima[2]]],
+            [
+                [maxima[0], minima[1], minima[2]],
+                [minima[0], maxima[1], minima[2]],
+                [maxima[0], maxima[1], minima[2]]],
+            [
+                [minima[0], minima[1], maxima[2]],
+                [maxima[0], minima[1], maxima[2]],
+                [minima[0], maxima[1], maxima[2]]],
+            [
+                [maxima[0], minima[1], maxima[2]],
+                [minima[0], maxima[1], maxima[2]],
+                [maxima[0], maxima[1], maxima[2]]],
+
+            #front back
+            [
+                [minima[0], minima[1], minima[2]],
+                [maxima[0], minima[1], minima[2]],
+                [minima[0], minima[1], maxima[2]]],
+            [
+                [minima[0], minima[1], maxima[2]],
+                [maxima[0], minima[1], minima[2]],
+                [maxima[0], minima[1], maxima[2]]],
+            [
+                [minima[0], maxima[1], minima[2]],
+                [maxima[0], maxima[1], minima[2]],
+                [minima[0], maxima[1], maxima[2]]],
+            [
+                [minima[0], maxima[1], maxima[2]],
+                [maxima[0], maxima[1], minima[2]],
+                [maxima[0], maxima[1], maxima[2]]],
+            #left right
+            [
+                [minima[0], minima[1], minima[2]],
+                [minima[0], maxima[1], minima[2]],
+                [minima[0], maxima[1], maxima[2]]],
+            [
+                [minima[0], maxima[1], maxima[2]],
+                [minima[0], minima[1], minima[2]],
+                [minima[0], minima[1], maxima[2]]],
+            [
+                [maxima[0], minima[1], minima[2]],
+                [maxima[0], maxima[1], minima[2]],
+                [maxima[0], maxima[1], maxima[2]]],
+            [
+                [maxima[0], maxima[1], maxima[2]],
+                [maxima[0], minima[1], minima[2]],
+                [maxima[0], minima[1], maxima[2]]]])
+        
+        coordinates = []
+        for i in range(bounding_box.shape[0]):
+            val  = self.rayTriangleIntersection(
+                ray[0], ray[1], [
+                    bounding_box[i,0],
+                    bounding_box[i,1],
+                    bounding_box[i,2]])
+            if val[0]:
+                coordinates.append(val[1])
+
+        if len(coordinates) < 2:
+            return [None]
+
+        coordinates = np.array(coordinates)
+        x_step = self.x_data[1] - self.x_data[0]
+        y_step = self.y_data[1] - self.y_data[0]
+        maxima = [
+            np.amax(coordinates[:,0])+x_step,
+            np.amax(coordinates[:,1])+y_step,
+            np.amax(coordinates[:,2])]
+
+        minima = [
+            np.amin(coordinates[:,0])-x_step,
+            np.amin(coordinates[:,1])-y_step,
+            np.amin(coordinates[:,2])]
+
+        index_x = np.argwhere((self.x_data > minima[0])&((self.x_data < maxima[0])))[:,0]
+        index_y = np.argwhere((self.y_data > minima[1])&((self.y_data < maxima[1])))[:,0]
+
+        if index_x.shape[0] < 2:
+            val = np.argmin(np.abs(self.x_data - minima[0]))
+            index_x = np.arange(val-1, val + 1)
+        if index_y.shape[0] < 2:
+            val = np.argmin(np.abs(self.y_data - minima[1]))
+            index_y = np.arange(val-1, val + 1)
+
+        flat_x_2 = np.arange(index_x[0]*2-2, index_x[-1]*2+2)
+        flat_y_1 = np.arange(index_y[0]-1, index_y[-1]+1)
+
+        flat_x_2 = flat_x_2[np.where(flat_x_2>=0)]
+        flat_x_2 = flat_x_2[np.where(flat_x_2<self.x_data.shape[0]*2)]
+        flat_y_1 = flat_y_1[np.where(flat_y_1>=0)]
+        flat_y_1 = flat_y_1[np.where(flat_y_1<self.y_data.shape[0])]
+
+        flat_index = np.array([
+            flat_x_2 + e*(self.x_data.shape[0]-1)*2 for e in index_y])
+        flat_index = np.reshape(flat_index,(flat_index.shape[0]*flat_index.shape[1]) )
+
+        for i,face in enumerate(self.vertices[flat_index]):
+            test = self.rayTriangleIntersection(
+                ray[0], ray[1], 
+                [
+                    self.points[face[0]],
+                    self.points[face[1]],
+                    self.points[face[2]]])
+
+            if test[0]:
+                self._pointer.setMeshData(
+                    vertexes = np.array([
+                        self.points[face[0]],
+                        self.points[face[1]],
+                        self.points[face[2]]])+np.array([0,0,0.01]), 
+                    faces = np.array([[0,1,2]]))
+                return test[1]
+
+        return [None]
+
+    def rayTriangleIntersection(self, ray_near, ray_dir, v123):
+        """
+        Möller–Trumbore intersection algorithm in pure python
+        Based on http://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+        """
+        v1, v2, v3 = v123
+        eps = 0.000000001
+        edge1 = v2 - v1
+        edge2 = v3 - v1
+        p_vec = np.cross(ray_dir, edge2)
+        det = edge1.dot(p_vec)
+        if abs(det) < eps:
+            return False, None
+        inv_det = 1. / det
+        t_vec = ray_near - v1
+        u = t_vec.dot(p_vec) * inv_det
+        if u < 0. or u > 1.:
+            return False, None
+        q_vec = np.cross(t_vec, edge1)
+        v = ray_dir.dot(q_vec) * inv_det
+        if v < 0. or u + v > 1.:
+            return False, None
+
+        t = edge2.dot(q_vec) * inv_det
+        if t < eps:
+            return False, None
+
+        return True, self.linPlaneCollision([v1,v2,v3], ray_dir, ray_near)
+
+    def linPlaneCollision(self, planePoints, rayDirection, rayPoint, epsilon=1e-6):
+    
+        planeNormal = np.cross(planePoints[1] - planePoints[0], planePoints[2]- planePoints[0])
+        planeNormal = planeNormal/np.linalg.norm(planeNormal)
+        ndotu       = planeNormal.dot(rayDirection)
+
+        if abs(ndotu) < epsilon:
+            raise RuntimeError("no intersection or line is within plane")
+    
+        w = rayPoint - planePoints[0]
+        si = -planeNormal.dot(w) / ndotu
+        Psi = w + si * rayDirection + planePoints[0]
+        return Psi

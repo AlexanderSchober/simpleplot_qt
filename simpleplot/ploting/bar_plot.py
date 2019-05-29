@@ -500,6 +500,7 @@ class BarPlot(SessionNode):
         kwargs['smooth']    = True
         kwargs['drawEdges'] = False
         kwargs['shader']    = self.shader_constructor.getShader('height')
+        kwargs['color']     = [0.1,0.1,0.1,1]
         self.draw_items.append(gl.GLMeshItem(**kwargs))
 
         self.default_target.view.addItem(self.draw_items[-1])
@@ -509,3 +510,10 @@ class BarPlot(SessionNode):
         '''
         for curve in self.draw_items:
             self.default_target.draw_surface.removeItem(curve)
+
+    def processRay(self, ray):
+        '''
+        try to process the ray intersection
+        '''
+        pass
+        

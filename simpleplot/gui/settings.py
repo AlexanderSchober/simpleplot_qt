@@ -32,6 +32,7 @@ from ..model.delegates  import ParameterDelegate
 from .scatter_widget    import ScatterWidget
 from .surface_widget    import SurfaceWidget
 from .bar_widget        import BarWidget
+from .volume_widget     import VolumeWidget
 
 import sys
 import numpy as np
@@ -73,18 +74,22 @@ class PreferenceWindow(QtGui.QMainWindow, Ui_preference_window):
         self._scatter_class     = ScatterWidget()
         self._surface_class     = SurfaceWidget()
         self._bar_class         = BarWidget()
+        self._volume_class      = VolumeWidget()
 
         self._scatter_widget    = self._scatter_class.local_widget
         self._surface_widget    = self._surface_class.local_widget
         self._bar_widget        = self._bar_class.local_widget
+        self._volume_widget     = self._volume_class.local_widget
 
         self.editor_layout.addWidget(self._scatter_widget)
         self.editor_layout.addWidget(self._surface_widget)
         self.editor_layout.addWidget(self._bar_widget)
+        self.editor_layout.addWidget(self._volume_widget)
 
         self._scatter_widget.hide()
         self._surface_widget.hide()
         self._bar_widget.hide()
+        self._volume_widget.hide()
 
         self._current_widget = None
         self._current_class  = None
@@ -139,6 +144,12 @@ class PreferenceWindow(QtGui.QMainWindow, Ui_preference_window):
         elif item.type == 'Bar':
             self._current_widget = self._bar_widget
             self._current_class = self._bar_class
+            self._current_class.link(item)
+            self._current_widget.show()
+
+        elif item.type == 'Volume':
+            self._current_widget = self._volume_widget
+            self._current_class = self._volume_class
             self._current_class.link(item)
             self._current_widget.show()
 

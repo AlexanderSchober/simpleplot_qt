@@ -28,7 +28,7 @@ from .scatter_plot  import ScatterPlot
 from .surface_plot  import SurfacePlot
 from .bar_plot      import BarPlot
 from .volume_plot   import VolumePlot
-
+from .vector_field_plot import VectorFieldPlot
 from ..model.node   import SessionNode
 
 def get_plot_handler(select):
@@ -44,6 +44,8 @@ def get_plot_handler(select):
         return Plot_Handler(select, BarPlot)
     elif select == 'Volume':
         return Plot_Handler(select, VolumePlot)
+    elif select == 'Vector field':
+        return Plot_Handler(select, VectorFieldPlot)
     else:
         print('Could not find the fit class you are looking for. Error...')        
         return None
@@ -90,9 +92,20 @@ class Plot_Handler(SessionNode):
 
     def draw(self, target):
         '''
+        Draw all the items onto the plot
         '''
         for plot_element in self._children:
             if target.handler['Type'] == "2D":
                 plot_element.draw(target)
             elif target.handler['Type'] == "3D":
                 plot_element.drawGL(target)
+
+    def processRay(self, ray):
+        '''
+        Draw all the items onto the plot
+        '''
+        hits = []
+        for plot_element in self._children:
+            hits.append(plot_element.processRay(ray))
+
+        return hits
