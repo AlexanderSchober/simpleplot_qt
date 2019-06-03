@@ -512,9 +512,10 @@ class GraphicsScene(QtGui.QGraphicsScene):
 
         menusToAdd = []
         while item is not self:
+
             if item.parentItem() is None:
-                if not item.parent == None:
-                    item = item.parent
+                if hasattr(item, "parentSubstitute"):
+                    item = item.parentSubstitute
                 else:
                     item = self
             else:
@@ -522,6 +523,7 @@ class GraphicsScene(QtGui.QGraphicsScene):
 
             if not hasattr(item, "getContextMenus"):
                 continue
+                
             subMenus = item.getContextMenus(event) or []
             if isinstance(subMenus, list): ## so that some items (like FlowchartViewBox) can return multiple menus
                 menusToAdd.extend(subMenus)
