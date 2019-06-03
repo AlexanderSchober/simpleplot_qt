@@ -23,8 +23,8 @@
 
 #import dependencies
 from PyQt5 import QtWidgets, QtCore, QtGui
-import pyqtgraph as pg
-import pyqtgraph.opengl as gl
+from ..pyqtgraph import pyqtgraph as pg
+from ..pyqtgraph.pyqtgraph import opengl as gl
 from .custome_grid_item import GLGridItem
 
 from ..model.parameter_node import ParameterNode

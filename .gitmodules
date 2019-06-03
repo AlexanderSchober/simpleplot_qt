@@ -1,0 +1,3 @@
+[submodule "simpleplot/pyqtgraph"]
+	path = simpleplot/pyqtgraph
+	url = https://github.com/AlexanderSchober/pyqtgraph

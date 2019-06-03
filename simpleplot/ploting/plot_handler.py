@@ -21,7 +21,6 @@
 #
 # *****************************************************************************
 
-import pyqtgraph as pg
 import numpy as np
 
 from .scatter_plot  import ScatterPlot
@@ -89,6 +88,15 @@ class Plot_Handler(SessionNode):
         # elif not idx == None:
         #     self.plot_elements[idx].remove_items(target)
         #     del self.plot_elements[idx]
+
+    def clear(self, target):
+        '''
+        Draw all the items onto the plot
+        '''
+        for plot_element in self._children:
+            plot_element.removeItems()
+        
+        self._model.removeRows(0,len(self._children), self)
 
     def draw(self, target):
         '''

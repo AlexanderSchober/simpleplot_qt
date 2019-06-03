@@ -32,7 +32,7 @@ from .grid_gl           import GridGl
 from ..model.node       import SessionNode
 
 from ..ploting.plot_handler import get_plot_handler
-import pyqtgraph as pg
+from ..pyqtgraph import pyqtgraph as pg
 
 from copy import deepcopy
 import numpy as np
@@ -106,11 +106,8 @@ class Artist():
         ability to clear the current content. This is 
         done here by asking everyone to be deleted...
         '''
-        for handler in self.plot_handlers:
-            for element in handler.plot_elements:
-                element.removeItem(self.canvas)
-            handler.plot_elements = []
-
+        for plot_handler in self.canvas._plot_root._children:
+            plot_handler.clear(self.canvas)
 
 class Artist2DNode(SessionNode, Artist):
     '''
@@ -168,20 +165,20 @@ class Artist2DNode(SessionNode, Artist):
             plot_handler.draw(self.canvas)
         self.zoomer.zoom()
 
-    def clear(self):
-        '''
-        Interactive plotting software needs the
-        ability to clear the current content. This is 
-        done here by asking everyone to be deleted...
-        '''
-        for handler in self.plot_handlers:
-            for element in handler.plot_elements:
-                element.removeItems(self.canvas)
-                for item in element.draw_items:
-                    self.legend.legend_item.removeItem(item)
+    # def clear(self):
+    #     '''
+    #     Interactive plotting software needs the
+    #     ability to clear the current content. This is 
+    #     done here by asking everyone to be deleted...
+    #     '''
+    #     for handler in self.plot_handlers:
+    #         for element in handler.plot_elements:
+    #             element.removeItems(self.canvas)
+    #             for item in element.draw_items:
+    #                 self.legend.legend_item.removeItem(item)
                     
-            handler.plot_elements = []
-        self.zoomer.zoom()
+    #         handler.plot_elements = []
+    #     self.zoomer.zoom()
 
     def setup(self):
         '''

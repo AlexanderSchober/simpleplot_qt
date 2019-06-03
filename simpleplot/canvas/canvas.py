@@ -22,18 +22,19 @@
 # *****************************************************************************
 
 #import dependencies
-from pyqtgraph import PlotWidget, ImageView, PlotItem
-import pyqtgraph.opengl as gl
-import pyqtgraph as pg
 from PyQt5 import QtWidgets, QtGui, QtCore
+
 from copy import deepcopy
+import numpy as np
 
 #personal imports
 from ..artist.artist import Artist2DNode, Artist3DNode
 from ..model.node import SessionNode
 from ..model.parameter_class import ParameterHandler 
 from ..model.models import SessionModel
+
 from .SimplePlotGLViewWidget import MyGLViewWidget
+from .SimplePlotWidget import SimplePlotWidget
 
 from OpenGL import GL
 
@@ -144,17 +145,11 @@ class CanvasNode(SessionNode):
         '''
         _populate the ui elements on the grid
         '''
-        self.plot_widget = PlotWidget()
+        self.plot_widget = SimplePlotWidget(self)
         self.draw_surface = self.plot_widget.getPlotItem()
         self.view = self.draw_surface.getViewBox()
         self.view.setMouseMode(self.view.RectMode)
-        self.draw_surface.disableAutoRange()
         
-        self.plot_widget.mouseMoveEvent     = self._mouseMoveEventArtist
-        self.plot_widget.mousePressEvent    = self._mousePressEventArtist
-        self.plot_widget.mouseReleaseEvent  = self._mouseReleaseEventArtist
-        self.view.scene().getContextMenus   = self._getContextMenus
-
         self.grid_layout.addWidget(self.plot_widget, 1, 1)
 
         self.artist = Artist2DNode(name = '2D Artist', parent = self, canvas = self)
@@ -184,27 +179,4 @@ class CanvasNode(SessionNode):
     def _setHorizontalSpacing(self):
         self.grid_layout.setHorizontalSpacing(
             self.handler['Horizontal spacing'])
-
-    def _getContextMenus(self, event):
-        self.view.scene().contextMenuItem = event
-        return self.view.scene().contextMenu
-
-    def _mouseMoveEventArtist(self, ev):
-        '''
-        mouse move event
-        '''
-        self.artist.mouse_move(ev)
-
-    def _mousePressEventArtist(self, ev):
-        '''
-        mouse press event
-        '''
-        self.view.mouseClickEvent(ev)
-        self.artist.mouse_press(ev)
-
-    def _mouseReleaseEventArtist(self, ev):
-        '''
-        mouse release event
-        '''
-        self.artist.mouse_release(ev)
 

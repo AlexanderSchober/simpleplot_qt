@@ -21,8 +21,8 @@
 #
 # *****************************************************************************
 
-import pyqtgraph as pg
-import pyqtgraph.opengl as gl
+from ..pyqtgraph import pyqtgraph as pg
+from ..pyqtgraph.pyqtgraph import opengl as gl
 
 from copy import deepcopy
 from PyQt5 import QtGui
@@ -198,15 +198,18 @@ class ScatterPlot(SessionNode):
             kwargs['symbolBrush'] = self.symbol_brush
             kwargs['pen']         = self.line_pen
             kwargs['shadowPen']   = self.shadow_pen
+            kwargs['antialias']   = True
         elif scatter_present and not line_present:
             scatter_option  = self.getParameter('Style')[scatter_bool.index(True)]
             kwargs['symbol']      = scatter_option
             kwargs['size']  = int(self.getParameter('Style')[-1])
             kwargs['pen']   = self.symbol_pen
             kwargs['brush'] = self.symbol_brush
+            kwargs['antialias']   = True
         elif not scatter_present and line_present:
             kwargs['pen']         = self.line_pen
             kwargs['shadowPen']   = self.shadow_pen
+            kwargs['antialias']   = True
 
         if scatter_present and line_present:
             self.draw_items = [pg.PlotDataItem(

@@ -24,8 +24,8 @@
 #import dependencies
 from PyQt5 import QtWidgets, QtCore, QtGui
 from OpenGL.GL import *
-import pyqtgraph as pg
-import pyqtgraph.opengl as gl
+from ..pyqtgraph import pyqtgraph as pg
+from ..pyqtgraph.pyqtgraph import opengl as gl
 import numpy as np
 
 class GLGridItem(gl.GLGridItem):

@@ -23,8 +23,8 @@
 
 #import dependencies
 from PyQt5 import QtWidgets, QtGui, QtCore
-import pyqtgraph.opengl as gl
-import pyqtgraph as pg
+from ..pyqtgraph import pyqtgraph as pg
+from ..pyqtgraph.pyqtgraph import opengl as gl
 import numpy as np
 
 

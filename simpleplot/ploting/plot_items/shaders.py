@@ -21,8 +21,8 @@
 #
 # *****************************************************************************
 
-from pyqtgraph.opengl.shaders import initShaders
-from pyqtgraph.opengl import shaders
+from ...pyqtgraph.pyqtgraph.opengl.shaders import initShaders
+from ...pyqtgraph.pyqtgraph.opengl import shaders
 from OpenGL.GL import glUseProgram, glGetUniformLocation, glCreateProgram, glAttachShader
 import numpy as np
 

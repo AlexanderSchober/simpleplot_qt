@@ -21,8 +21,8 @@
 #
 # *****************************************************************************
 
-import pyqtgraph as pg
-import pyqtgraph.opengl as gl
+from ..pyqtgraph import pyqtgraph as pg
+from ..pyqtgraph.pyqtgraph import opengl as gl
 
 from copy import deepcopy
 import numpy as np
@@ -522,7 +522,7 @@ class SurfacePlot(SessionNode):
         '''
         Draw the Isocurves in opengl.
         '''
-        #to do cache 
+        # to do cache 
         self.shader_constructor = ShaderConstructor()
         if self.shader_parameters['Bounds z'][0][0] == True:
             self.shader_constructor.setRange(
@@ -551,6 +551,7 @@ class SurfacePlot(SessionNode):
         self.draw_items.append(gl.GLMeshItem(**kwargs))
 
         self.default_target.view.addItem(self.draw_items[-1])
+
 
     def drawGLIsocurves(self):
         '''

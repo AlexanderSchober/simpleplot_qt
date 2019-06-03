@@ -22,7 +22,7 @@
 # *****************************************************************************
 
 
-import pyqtgraph as pg
+from ..pyqtgraph import pyqtgraph as pg
 from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets

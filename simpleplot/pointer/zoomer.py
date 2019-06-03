@@ -22,8 +22,8 @@
 # *****************************************************************************
 
 
-import pyqtgraph as pg
-from pyqtgraph import functions as fn
+from ..pyqtgraph import pyqtgraph as pg
+from ..pyqtgraph.pyqtgraph import functions as fn
 from PyQt5 import QtGui,QtCore
 
 import numpy as np
@@ -33,7 +33,7 @@ class Zoomer:
     '''
     This class will manage the zoom functionality.
     This is that the graph will be resized onto
-    the area selected throught the rectangular
+    the area selected through the rectangular
     selection tool. 
     '''
     

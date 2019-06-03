@@ -26,9 +26,9 @@ from PyQt5 import QtWidgets, QtCore, QtGui, Qt
 from OpenGL.GLUT import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
-import pyqtgraph as pg
-import pyqtgraph.opengl as gl
-from pyqtgraph import functions as fn
+from ..pyqtgraph import pyqtgraph as pg
+from ..pyqtgraph.pyqtgraph import opengl as gl
+from ..pyqtgraph.pyqtgraph import functions as fn
 import numpy as np
 import math
 
