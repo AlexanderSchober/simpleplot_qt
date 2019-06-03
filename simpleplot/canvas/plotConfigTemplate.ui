@@ -372,7 +372,7 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QCheckBox" name="checkBox">
+     <widget class="QCheckBox" name="maximizeRadio">
       <property name="text">
        <string>Maximize</string>
       </property>

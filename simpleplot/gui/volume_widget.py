@@ -26,8 +26,8 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from ..model.modal_items import QColorDialog
 
 from .volume_widget_ui import Ui_VolumeWidget
-from pyqtgraph import GradientWidget
-from pyqtgraph.graphicsItems.GradientEditorItem import GradientEditorItem
+from ..pyqtgraph.pyqtgraph import GradientWidget
+from ..pyqtgraph.pyqtgraph.graphicsItems.GradientEditorItem import GradientEditorItem
 import numpy as np
 
 class VolumeWidget(Ui_VolumeWidget):

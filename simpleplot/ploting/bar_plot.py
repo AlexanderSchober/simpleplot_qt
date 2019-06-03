@@ -21,8 +21,8 @@
 #
 # *****************************************************************************
 
-import pyqtgraph as pg
-import pyqtgraph.opengl as gl
+from ..pyqtgraph import pyqtgraph as pg
+from ..pyqtgraph.pyqtgraph import opengl as gl
 
 from copy import deepcopy
 import numpy as np

@@ -22,10 +22,6 @@
 # *****************************************************************************
 
 #import dependencies
-
-import pyqtgraph.opengl as gl
-import pyqtgraph as pg
-
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from copy import deepcopy
@@ -154,12 +150,6 @@ class CanvasNode(SessionNode):
         self.view = self.draw_surface.getViewBox()
         self.view.setMouseMode(self.view.RectMode)
         
-        
-        # self.plot_widget.mouseMoveEvent     = self._mouseMoveEventArtist
-        # self.plot_widget.mousePressEvent    = self._mousePressEventArtist
-        # self.plot_widget.mouseReleaseEvent  = self._mouseReleaseEventArtist
-        # self.view.scene().getContextMenus   = self._getContextMenus
-
         self.grid_layout.addWidget(self.plot_widget, 1, 1)
 
         self.artist = Artist2DNode(name = '2D Artist', parent = self, canvas = self)

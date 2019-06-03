@@ -26,8 +26,8 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from ..model.modal_items import QColorDialog
 
 from .surface_widget_ui import Ui_SurfaceWidget
-from pyqtgraph import GradientWidget
-from pyqtgraph.graphicsItems.GradientEditorItem import GradientEditorItem
+from ..pyqtgraph.pyqtgraph import GradientWidget
+from ..pyqtgraph.pyqtgraph.graphicsItems.GradientEditorItem import GradientEditorItem
 import numpy as np
 
 class SurfaceWidget(Ui_SurfaceWidget):

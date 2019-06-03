@@ -23,7 +23,6 @@
 
 #import personal dependencies
 from .canvas   import CanvasNode
-
 from ..model.models import SessionModel
 from ..gui.mode_select import ModeSelect
 from ..model.node import SessionNode

@@ -20,15 +20,26 @@
 #   Alexander Schober <alex.schober@mac.com>
 #
 # *****************************************************************************
+
+#public dependencies
+from PyQt5 import QtWidgets, QtGui, QtCore
 from .SimplePlotItem import SimplePlotItem
-from pyqtgraph import PlotWidget
+from ..pyqtgraph.pyqtgraph import PlotWidget
+from ..pyqtgraph.pyqtgraph.WidgetGroup import WidgetGroup
+
+#private dependencies
+from .plotConfigTemplate import *
 
 class SimplePlotWidget(PlotWidget):
 
     def __init__(self, canvas):
         PlotWidget.__init__(self)
+
+        self._setCtrlMenu()
+        self._menuEnabled = True
+
         self.plotItem.sigRangeChanged.disconnect(self.viewRangeChanged)
-        self.plotItem = SimplePlotItem()
+        self.plotItem = SimplePlotItem(canvas, parent = self)
         self.setCentralItem(self.plotItem)
         ## Explicitly wrap methods from plotItem
         ## NOTE: If you change this list, update the documentation above as well.
@@ -41,6 +52,7 @@ class SimplePlotWidget(PlotWidget):
         self.plotItem.sigRangeChanged.connect(self.viewRangeChanged)
         self.setAntialiasing(True)
         self.canvas = canvas
+        
 
     def mouseMoveEvent(self, ev):
         '''
@@ -62,3 +74,52 @@ class SimplePlotWidget(PlotWidget):
         '''
         self.canvas.artist.mouse_release(ev)
         super(PlotWidget, self).mouseReleaseEvent(ev)
+
+    def _setCtrlMenu(self):
+        '''
+        Overwrites the custom provided menu by the 
+        pyqtgraph library and adds a small specific
+        touch to implement simpleplot particularities
+        '''
+        w = QtGui.QWidget()
+        self.ctrl = c = Ui_Form()
+        c.setupUi(w)
+        dv = QtGui.QDoubleValidator(self)
+
+        self.ctrlMenu = QtGui.QMenu()
+
+        self.ctrlMenu.setTitle('Layout')
+        act = QtGui.QWidgetAction(self)
+        act.setDefaultWidget(c.layoutGroup)
+        self.ctrlMenu.addAction(act)
+
+        c.maximizeRadio.stateChanged.connect(self.maximize)
+
+    def maximize(self):
+        '''
+        Update the state of the plot depending on the
+        current state
+        '''
+        if self.ctrl.maximizeRadio.isChecked():
+            self.canvas.multi_canvas.handler['Select'] = self.canvas._name
+        else:
+            self.canvas.multi_canvas.handler['Select'] = 'All'       
+
+    def getContextMenus(self, event):
+        ## called when another item is displaying its context menu; we get to add extras to the end of the menu.
+        if self._menuEnabled:
+            return self.ctrlMenu
+        else:
+            return None
+        
+    def menuEnabled(self):
+        return self._menuEnabled
+
+    def getMenu(self):
+        return self.ctrlMenu
+
+    def setMenuEnabled(self, enableMenu=True):
+        """
+        Enable or disable the context menu for this PlotItem.
+        """
+        self._menuEnabled = enableMenu

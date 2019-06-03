@@ -21,7 +21,6 @@
 #
 # *****************************************************************************
 
-import pyqtgraph as pg
 import numpy as np
 
 from .scatter_plot  import ScatterPlot

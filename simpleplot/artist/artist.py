@@ -32,7 +32,7 @@ from .grid_gl           import GridGl
 from ..model.node       import SessionNode
 
 from ..ploting.plot_handler import get_plot_handler
-import pyqtgraph as pg
+from ..pyqtgraph import pyqtgraph as pg
 
 from copy import deepcopy
 import numpy as np

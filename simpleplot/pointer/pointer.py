@@ -24,7 +24,7 @@
 #import dependencies
 import os
 from PyQt5 import QtCore, QtGui, QtWidgets
-import pyqtgraph as pg
+from ..pyqtgraph import pyqtgraph as pg
 from .pointer_objects import *
 from .pointer_pos import * 
 
