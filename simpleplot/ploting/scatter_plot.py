@@ -84,7 +84,7 @@ class ScatterPlot(SessionNode):
         self.parameters['Symbol color']     = [[QtGui.QColor('blue')]]
         self.parameters['Error color']      = [[QtGui.QColor('grey')]]
 
-        self.parameters['Line thickness']   = [[2]]
+        self.parameters['Line thickness']   = [[4]]
         self.parameters['Shadow thickness'] = [[4]]
         self.parameters['Symbol thickness'] = [[1]]
         self.parameters['Error thickness']  = [[2]]
@@ -192,6 +192,7 @@ class ScatterPlot(SessionNode):
 
         if scatter_present and line_present:
             scatter_option  = self.getParameter('Style')[scatter_bool.index(True)]
+            kwargs['connect']     = 'all'
             kwargs['symbol']      = scatter_option
             kwargs['symbolSize']  = int(self.getParameter('Style')[-1])
             kwargs['symbolPen']   = self.symbol_pen
@@ -201,12 +202,15 @@ class ScatterPlot(SessionNode):
             kwargs['antialias']   = True
         elif scatter_present and not line_present:
             scatter_option  = self.getParameter('Style')[scatter_bool.index(True)]
+            kwargs['connect']     = 'all'
             kwargs['symbol']      = scatter_option
-            kwargs['size']  = int(self.getParameter('Style')[-1])
-            kwargs['pen']   = self.symbol_pen
-            kwargs['brush'] = self.symbol_brush
+            kwargs['symbolSize']  = int(self.getParameter('Style')[-1])
+            kwargs['symbolPen']   = self.symbol_pen
+            kwargs['symbolBrush'] = self.symbol_brush
+            kwargs['pen']         = self.empty_pen
             kwargs['antialias']   = True
         elif not scatter_present and line_present:
+            kwargs['connect']     = 'all'
             kwargs['pen']         = self.line_pen
             kwargs['shadowPen']   = self.shadow_pen
             kwargs['antialias']   = True
@@ -215,10 +219,10 @@ class ScatterPlot(SessionNode):
             self.draw_items = [pg.PlotDataItem(
                 **kwargs)]
         elif scatter_present and not line_present:
-            self.draw_items = [pg.ScatterPlotItem(
+            self.draw_items = [pg.PlotDataItem(
                 **kwargs)]
         elif not scatter_present and line_present:
-            self.draw_items = [pg.PlotCurveItem(
+            self.draw_items = [pg.PlotDataItem(
                 **kwargs)]
             
         if not self.getParameter('Error') == None and self.getParameter('Show error')[0]:
