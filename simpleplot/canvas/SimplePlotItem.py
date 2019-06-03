@@ -35,7 +35,7 @@ class SimplePlotItem(PlotItem):
     def __init__(self, canvas, parent = None):
         PlotItem.__init__(self)
         self.canvas     = canvas
-        # self.parent     = parent
+        self.parentSubstitute  = parent
         self._overwriteCtrlMenu()
         self.disableAutoRange()
         self.hideButtons()
