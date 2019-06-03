@@ -87,8 +87,8 @@ class SimplePlotItem(PlotItem):
         c.gridAlphaSlider.valueChanged.connect(self.updateGrid)
 
         c.fftCheck.toggled.connect(self.updateSpectrumMode)
-        c.logXCheck.toggled.connect(self.updateLogMode)
-        c.logYCheck.toggled.connect(self.updateLogMode)
+        c.logXCheck.toggled.connect(self._updateLogModeproxy)
+        c.logYCheck.toggled.connect(self._updateLogModeproxy)
 
         c.downsampleSpin.valueChanged.connect(self.updateDownsampling)
         c.downsampleCheck.toggled.connect(self.updateDownsampling)
@@ -103,3 +103,35 @@ class SimplePlotItem(PlotItem):
         self.ctrl.maxTracesCheck.toggled.connect(self.updateDecimation)
         self.ctrl.maxTracesSpin.valueChanged.connect(self.updateDecimation)
 
+    def _updateLogModeproxy(self):
+        '''
+        Set the logarythmic mode
+        '''
+        self.canvas.artist.axes.general_handler.items['Log'].updateValue(
+            [self.ctrl.logXCheck.isChecked(),self.ctrl.logYCheck.isChecked()],
+            method = False)
+        self.updateLogMode()
+
+    def updateLogMode(self):
+        '''
+        Update the log mode
+        '''
+        x = self.ctrl.logXCheck.isChecked()
+        y = self.ctrl.logYCheck.isChecked()
+        for i in self.items:
+            if hasattr(i, 'setLogMode'):
+                i.setLogMode(x,y)
+        self.getAxis('bottom').setLogMode(x)
+        self.getAxis('top').setLogMode(x)
+        self.getAxis('left').setLogMode(y)
+        self.getAxis('right').setLogMode(y)
+        self.canvas.artist.zoomer.zoom()
+        self.recomputeAverages()
+
+    def updateSpectrumMode(self, b=None):
+        if b is None:
+            b = self.ctrl.fftCheck.isChecked()
+        for c in self.curves:
+            c.setFftMode(b)
+        self.canvas.artist.zoomer.zoom()
+        self.recomputeAverages()

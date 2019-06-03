@@ -52,7 +52,9 @@ class SimplePlotWidget(PlotWidget):
         self.plotItem.sigRangeChanged.connect(self.viewRangeChanged)
         self.setAntialiasing(True)
         self.canvas = canvas
-        
+
+        self.sceneObj.contextMenu[0].triggered.disconnect(self.sceneObj.showExportDialog)
+        self.sceneObj.contextMenu[0].triggered.connect(self._showExportDialog)
 
     def mouseMoveEvent(self, ev):
         '''
@@ -94,6 +96,10 @@ class SimplePlotWidget(PlotWidget):
         self.ctrlMenu.addAction(act)
 
         c.maximizeRadio.stateChanged.connect(self.maximize)
+
+    def _showExportDialog(self):
+        self.canvas.multi_canvas.bottom_selector.openSettings(
+            mode = 'Save', target = self.canvas._name)
 
     def maximize(self):
         '''

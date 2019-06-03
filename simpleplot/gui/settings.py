@@ -33,6 +33,7 @@ from .scatter_widget    import ScatterWidget
 from .surface_widget    import SurfaceWidget
 from .bar_widget        import BarWidget
 from .volume_widget     import VolumeWidget
+from .export_dialog     import ExportDialog
 
 import sys
 import numpy as np
@@ -67,6 +68,11 @@ class PreferenceWindow(QtGui.QMainWindow, Ui_preference_window):
         self._resizePlotTree()
         self._resizeTree()
 
+        self.export_widget = ExportDialog()
+        self.export_widget.ui.expSubplot.setModel(multi_canvas._model)
+        self.export_widget.ui.expSubplot.currentIndexChanged.connect(self._selectExportCanvas)
+        self.io_layout.addWidget(self.export_widget)
+
     def _initialize(self):
         '''
         Load the widgets
@@ -93,7 +99,6 @@ class PreferenceWindow(QtGui.QMainWindow, Ui_preference_window):
 
         self._current_widget = None
         self._current_class  = None
-        
 
     def _resizeTree(self):
         '''
@@ -215,6 +220,13 @@ class PreferenceWindow(QtGui.QMainWindow, Ui_preference_window):
             self.header,self.rows)
 
         self.plot_data_view.setModel(self.data_model)
+
+    def _selectExportCanvas(self, index):
+        '''
+        send the currently selected subplot top the 
+        export manager
+        '''
+        self.export_widget.refreshSubplot(self.multi_canvas._rootNode._children[index])
 
 class DataTableModel(QtCore.QAbstractTableModel):
     def __init__(self, parent, data_list, col_header,row_header, *args):
