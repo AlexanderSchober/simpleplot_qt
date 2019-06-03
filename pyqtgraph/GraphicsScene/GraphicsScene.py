@@ -514,12 +514,12 @@ class GraphicsScene(QtGui.QGraphicsScene):
         while item is not self:
             if item.parentItem() is None:
                 if not item.parent == None:
-                    item = item_parent
+                    item = item.parent
                 else:
                     item = self
             else:
                 item = item.parentItem()
-                
+
             if not hasattr(item, "getContextMenus"):
                 continue
             subMenus = item.getContextMenus(event) or []
