@@ -176,14 +176,14 @@ class ParameterVector(ParameterMaster, ParameterNode):
         '''
         return [item.getValue() for item in self._vector_elements]
 
-    def updateValue(self, value):
+    def updateValue(self, value, method = True):
         '''
         The values here will be set manually
         '''
         for i, element in enumerate(self._vector_elements):
             element.updateValue(value[i], method = False)
 
-        if 'method' in self.kwargs.keys():
+        if 'method' in self.kwargs.keys() and method:
             self.kwargs['method']()
 
 class ParameterValue(ParameterMaster, ParameterItem):
