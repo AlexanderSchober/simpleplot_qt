@@ -141,7 +141,7 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         self.handler        = ParameterHandler(
             name = 'Multi-canvas options', 
             parent = self._rootNode) 
-
+            
         self.handler.addParameter(
             'x_ratios', self.x_ratios,
             method = self._configureGrid)
