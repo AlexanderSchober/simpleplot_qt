@@ -57,7 +57,7 @@ class ModeSelect(QtWidgets.QHBoxLayout):
             ("Zoom"       , 0),
             ("Measure"    , 1),
             ("Edit"       , 2),
-            ("Settings"   , 3),
+            ("Settings"   , 3)
             ]
         #Grab the Path
         Path = os.path.join(os.path.dirname(__file__),'ressources')
@@ -105,7 +105,7 @@ class ModeSelect(QtWidgets.QHBoxLayout):
                 except:
                     pass
 
-    def openSettings(self, mode = None, target = None):
+    def openSettings(self, ev = None, mode = None, target = None):
         '''
         Open the settings window with the proper mode in
         place
