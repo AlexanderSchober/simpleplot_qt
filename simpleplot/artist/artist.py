@@ -46,7 +46,6 @@ class Artist():
         self.artist_type    = '2D'
         self.child_widgets  = []
 
-
     def addPlot(self, name_type, *args, **kwargs):
         '''
         This method will go through the plot handlers
@@ -109,6 +108,7 @@ class Artist():
         for plot_handler in self.canvas._plot_root._children:
             plot_handler.clear(self.canvas)
 
+
 class Artist2DNode(SessionNode, Artist):
     '''
     This is the 2D artist manager, which can be seen as
@@ -136,23 +136,18 @@ class Artist2DNode(SessionNode, Artist):
         # self.Modifier   = ModificationClass.Modify(self.Canvas)
         # self.Title      = None #TitleClass.TitleClass(self.Canvas)
 
+    def draw(self):
+        '''
+        This method will go through the plot handlers
+        and check if one of them has already the 
+        selected items. if not a new instance will be
+        generated and then fed into the handler system
+        '''
+        for plot_handler in self.canvas._plot_root._children:
+            plot_handler.draw(self.canvas)
 
-    # def draw(self):
-    #     '''
-    #     This method will go through the plot handlers
-    #     and check if one of them has already the 
-    #     selected items. if not a new instance will be
-    #     generated and then fed into the handler system
-    #     '''
-    #     for plot_handler in self.plot_handlers:
-    #         plot_handler.draw(self.canvas)
-
-    #     self.setup()
-    #     for handler in self.plot_handlers:
-    #         for element in handler.plot_elements:
-    #             for item in element.draw_items:
-    #                 if not isinstance(item, pg.ImageItem):
-    #                     self.legend.legend_item.addItem(item, element.getParameter('Name'))
+        self.legend.tearLegendDown()
+        self.legend.buildLegend()
 
     def redraw(self):
         '''
@@ -165,20 +160,16 @@ class Artist2DNode(SessionNode, Artist):
             plot_handler.draw(self.canvas)
         self.zoomer.zoom()
 
-    # def clear(self):
-    #     '''
-    #     Interactive plotting software needs the
-    #     ability to clear the current content. This is 
-    #     done here by asking everyone to be deleted...
-    #     '''
-    #     for handler in self.plot_handlers:
-    #         for element in handler.plot_elements:
-    #             element.removeItems(self.canvas)
-    #             for item in element.draw_items:
-    #                 self.legend.legend_item.removeItem(item)
-                    
-    #         handler.plot_elements = []
-    #     self.zoomer.zoom()
+    def clear(self):
+        '''
+        Interactive plotting software needs the
+        ability to clear the current content. This is 
+        done here by asking everyone to be deleted...
+        '''
+        for plot_handler in self.canvas._plot_root._children:
+            plot_handler.clear(self.canvas)
+
+        self.legend.tearLegendDown()
 
     def setup(self):
         '''
