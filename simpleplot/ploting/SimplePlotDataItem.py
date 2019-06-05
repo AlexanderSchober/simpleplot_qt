@@ -31,31 +31,33 @@ class SimplePlotDataItem(pg.PlotDataItem):
         # Need to switch off the "has no contents" flag
         self.setFlags(self.flags() & ~self.ItemHasNoContents)
 
-    def mouseDragEvent(self, ev):
-        print("drag")
-        if ev.button() != QtCore.Qt.LeftButton:
-            ev.ignore()
-            return
+    # def mouseDragEvent(self, ev):
+    #     self.parentItem().parentItem().parentItem().canvas.artist.zoomer.end_zoom(quiet = True)
+    #     print("drag")
+    #     if ev.button() != QtCore.Qt.LeftButton:
+    #         ev.ignore()
+    #         return
 
-        if ev.isStart():
-            print("start")
-        elif ev.isFinish():
-            print("finish")
+    #     if ev.isStart():
+    #         print("start")
+    #     elif ev.isFinish():
+    #         self.parentItem().parentItem().parentItem().canvas.artist.zoomer.listen()
+    #         print("finish")
 
-    def shape(self):
-        # Inherit shape from the curve item
-        return self.curve.shape()
+    # def shape(self):
+    #     # Inherit shape from the curve item
+    #     return self.curve.shape()
 
-    def boundingRect(self):
-        # All graphics items require this method (unless they have no contents)
-        return self.shape().boundingRect()
+    # def boundingRect(self):
+    #     # All graphics items require this method (unless they have no contents)
+    #     return self.shape().boundingRect()
 
-    def paint(self, p, *args):
-        # All graphics items require this method (unless they have no contents)
-        return
+    # def paint(self, p, *args):
+    #     # All graphics items require this method (unless they have no contents)
+    #     return
 
-    def hoverEvent(self, ev):
-        # This is recommended to ensure that the item plays nicely with 
-        # other draggable items
-        print("hover")
-        ev.acceptDrags(QtCore.Qt.LeftButton)
+    # def hoverEvent(self, ev):
+    #     # This is recommended to ensure that the item plays nicely with 
+    #     # other draggable items
+    #     ev.acceptDrags(QtCore.Qt.LeftButton)
+
