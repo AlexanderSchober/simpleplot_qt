@@ -44,20 +44,21 @@ class SimplePlotDataItem(pg.PlotDataItem):
     #         self.parentItem().parentItem().parentItem().canvas.artist.zoomer.listen()
     #         print("finish")
 
-    # def shape(self):
-    #     # Inherit shape from the curve item
-    #     return self.curve.shape()
+    def shape(self):
+        # Inherit shape from the curve item
+        return self.curve.shape()
 
-    # def boundingRect(self):
-    #     # All graphics items require this method (unless they have no contents)
-    #     return self.shape().boundingRect()
+    def boundingRect(self):
+        # All graphics items require this method (unless they have no contents)
+        return self.shape().boundingRect()
 
-    # def paint(self, p, *args):
-    #     # All graphics items require this method (unless they have no contents)
-    #     return
+    def paint(self, p, *args):
+        # All graphics items require this method (unless they have no contents)
+        return
 
     # def hoverEvent(self, ev):
     #     # This is recommended to ensure that the item plays nicely with 
     #     # other draggable items
-    #     ev.acceptDrags(QtCore.Qt.LeftButton)
+    #     # print('hovering', self.curve.shape())
+    #     # ev.acceptDrags(QtCore.Qt.LeftButton)
 

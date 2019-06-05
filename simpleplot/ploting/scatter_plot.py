@@ -37,7 +37,7 @@ class ScatterPlot(SessionNode):
     This class will be the scatter plots. 
     '''
 
-    def __init__(self, x = None, y = None, z = None,  **kwargs):
+    def __init__(self, x = None, y = None, z = None, name = 'No_name',  **kwargs):
         '''
         This class serves as envelope for the 
         PlotDataItem. Note that the axis of y will be
@@ -56,7 +56,7 @@ class ScatterPlot(SessionNode):
         error: dict of float arrays
             The error of each point
         '''
-        SessionNode.__init__(self, 'No_name')
+        SessionNode.__init__(self, name)
 
         self.x_data = deepcopy(x)
         self.y_data = deepcopy(y)
@@ -75,7 +75,6 @@ class ScatterPlot(SessionNode):
             The parameters passed on by the user that 
             will override the predefined values
         '''
-
         
         self.parameters              = {}
         self.parameters['Color']     = [[QtGui.QColor('b')]]
@@ -93,7 +92,7 @@ class ScatterPlot(SessionNode):
 
         self.parameters['Active']    = [[True]]
         self.parameters['Style']     = [['']]
-        self.parameters['Name']      = [['Non name']]
+        self.parameters['Name']      = [['No name']]
         self.parameters['Log']       = [[False, False]]
         self.parameters['Show error']= [[True]]
         self.parameters['Error']     = [None]

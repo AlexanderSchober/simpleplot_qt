@@ -24,6 +24,7 @@
 #import dependencies
 from PyQt5 import QtWidgets, QtCore, QtGui
 from .SimplePlotlegendItem import SimplePlotLegendItem
+from ..ploting.SimpleErrorBarItem import SimpleErrorBarItem
 from ..pyqtgraph import pyqtgraph as pg
 import numpy as np
 import sys
@@ -45,6 +46,7 @@ class Legend(ParameterHandler):
         self.canvas = canvas
         self._initialize()
         self.legend_item.pos_updated.connect(self._updatePos)
+        self.canvas._plot_model.dataChanged.connect(self.buildLegend)
         
     def _initialize(self):
         '''
@@ -85,8 +87,8 @@ class Legend(ParameterHandler):
         for plot_handler in self.canvas._plot_root._children:
             for element in plot_handler._children:
                 for item in element.draw_items:
-                    if not isinstance(item, pg.ImageItem):
-                        self.legend_item.addItem(item, element.getParameter('Name'))
+                    if not isinstance(item, pg.ImageItem) and not isinstance(item, SimpleErrorBarItem):
+                        self.legend_item.addItem(item, element._name)
 
     def tearLegendDown(self):
         '''
