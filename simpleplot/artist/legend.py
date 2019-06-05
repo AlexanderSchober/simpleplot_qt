@@ -31,56 +31,49 @@ import sys
 from ..model.parameter_node import ParameterNode
 from ..model.parameter_class import ParameterHandler 
 
-class Legend(ParameterNode): 
+class Legend(ParameterHandler): 
     '''
     This will allow an axis management system. 
     Ans will be linked to the sublass of 
     Axis()
     '''
     def __init__(self, canvas):
-        ParameterNode.__init__(self,name = 'Legend', parent = canvas)
-        self.general_handler    = ParameterHandler(
-            name = 'General', parent = self)
+        ParameterHandler.__init__(self,name = 'Legend', parent = canvas)
 
         self.legend_item = SimplePlotLegendItem()
         self.legend_item.setParentItem(canvas.draw_surface)
         self.canvas = canvas
-        self.initialize()
+        self._initialize()
         self.legend_item.pos_updated.connect(self._updatePos)
         
-    def initialize(self):
+    def _initialize(self):
         '''
+        initialise the legend parameter structure
         '''
-        self.general_handler.addParameter(
+        self.addParameter(
             'Active', True,
             method = self._manageLegend)
-
-        self.general_handler.addParameter(
+        self.addParameter(
             'Position', [10, 10],
             names  = ['x', 'y'],
             method = self._setOffset)
-
-        self.general_handler.addParameter(
+        self.addParameter(
             'Text length',  100,
             method = self._setTextLength)
-
-        self.general_handler.addParameter(
+        self.addParameter(
             'Pen color',QtGui.QColor(100,100,100,alpha = 255),
             method = self._setPen)
-
-        self.general_handler.addParameter(
+        self.addParameter(
             'Brush color',QtGui.QColor(100,100,100,alpha = 50),
             method = self._setBrush)
-
-        self.general_handler.addParameter(
+        self.addParameter(
             'Text color',QtGui.QColor(0,0,0,alpha = 50),
             method = self._setTextColor)
-
-        self.general_handler.addParameter(
+        self.addParameter(
             'Text size',  8,
             method = self._setTextSize)
 
-        self.general_handler.runAll()
+        self.runAll()
         self.legend_item._refreshText()
         self.canvas.plot_widget.sceneObj.update()
 
@@ -105,7 +98,7 @@ class Legend(ParameterNode):
         '''
         Build the legend item
         '''
-        if self.general_handler['Active']:
+        if self['Active']:
             self.buildLegend()
         else:
             self.tearLegendDown()
@@ -114,46 +107,46 @@ class Legend(ParameterNode):
         '''
         Set the legend offset
         '''
-        self.legend_item.setOffset(self.general_handler['Position'])
+        self.legend_item.setOffset(self['Position'])
         self.canvas.plot_widget.sceneObj.update()
 
     def _setPen(self):
         '''
         Set the legend offset
         '''
-        self.legend_item.setPen(self.general_handler['Pen color'].getRgb())
+        self.legend_item.setPen(self['Pen color'].getRgb())
         self.canvas.plot_widget.sceneObj.update()
 
     def _setBrush(self):
         '''
         Set the legend offset
         '''
-        self.legend_item.setBrush(self.general_handler['Brush color'].getRgb())
+        self.legend_item.setBrush(self['Brush color'].getRgb())
         self.canvas.plot_widget.sceneObj.update()
 
     def _updatePos(self, x, y):
         '''
         Set the legend offset
         '''
-        self.general_handler.items['Position'].updateValue([x,y], method = False)
+        self.items['Position'].updateValue([x,y], method = False)
 
     def _setTextLength(self):
         '''
         Set the legend offset
         '''
-        self.legend_item.setTextLength(self.general_handler['Text length'])
+        self.legend_item.setTextLength(self['Text length'])
         self.canvas.plot_widget.sceneObj.update()
 
     def _setTextColor(self):
         '''
         Set the legend offset
         '''
-        self.legend_item.setTextColor(self.general_handler['Text color'].name())
+        self.legend_item.setTextColor(self['Text color'].name())
         self.canvas.plot_widget.sceneObj.update()
 
     def _setTextSize(self):
         '''
         Set the legend offset
         '''
-        self.legend_item.setTextSize(self.general_handler['Text size'])
+        self.legend_item.setTextSize(self['Text size'])
         self.canvas.plot_widget.sceneObj.update()
