@@ -77,8 +77,8 @@ def example():
         'Scatter', 
         Name        = 'cos', 
         Style       = ['d','r','20'], 
-        Log         = [False,False])#,
-        # Error       = {})
+        Log         = [False,False],
+        Error       = {})
     third = ex.addPlot(
         'Scatter', 
         Name        = 'tan', 
@@ -93,9 +93,9 @@ def example():
     y_1 = np.cos(x_2+0.5)
     y_2 = np.cos(x_2)+2*np.sin(x_2)
 
-    first.setData(x = x_2, y = y)
-    second.setData(x = x_2, y = y_1)#, error = {'width' : 0.1,'height': 0.1})
-    third.setData(x = x_2, y = y_2)
+    first.setData(x = x_2, y = y+2)
+    second.setData(x = x_2, y = y_1+3, error = {'width' : 0.1,'height': 0.1})
+    third.setData(x = x_2, y = y_2+4)
     ex.zoomer.zoom()
 
     #example of 3D data

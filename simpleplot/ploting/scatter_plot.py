@@ -24,6 +24,7 @@
 from ..pyqtgraph import pyqtgraph as pg
 from ..pyqtgraph.pyqtgraph import opengl as gl
 from .SimplePlotDataItem import SimplePlotDataItem
+from .SimpleErrorBarItem import SimpleErrorBarItem
 
 from copy import deepcopy
 from PyQt5 import QtGui
@@ -228,7 +229,7 @@ class ScatterPlot(SessionNode):
             
         if not self.getParameter('Error') == None and self.getParameter('Show error')[0]:
             self.draw_items.append(
-                pg.ErrorBarItem(
+                SimpleErrorBarItem(
                     x   = kwargs['x'], 
                     y   = kwargs['y'],
                     pen = self.error_pen,
