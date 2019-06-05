@@ -260,12 +260,14 @@ class Artist2DNode(SessionNode, Artist):
         for child in self.canvas._plot_root.childFromName('Surface')._children:
             child.setColor(colors, positions)
 
-    def mouse_move(self,event):
+    def mouseMove(self,event):
         self.mouse.move(event)
-    def mouse_press(self,event):
+    def mousePress(self,event):
         self.mouse.press(event)
-    def mouse_release(self,event):
+    def mouseRelease(self,event):
         self.mouse.release(event)
+    def mouseDrag(self,event):
+        self.mouse.drag(event)
 
 class Artist3DNode(SessionNode, Artist):
     '''
@@ -285,7 +287,6 @@ class Artist3DNode(SessionNode, Artist):
         self.axes = Axes3D(canvas)
 
         self.canvas.view.rayUpdate.connect(self.processRay)
-
 
     def setup(self):
         '''
