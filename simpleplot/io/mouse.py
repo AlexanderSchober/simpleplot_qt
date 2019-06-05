@@ -174,6 +174,7 @@ class Mouse:
         Input: 
         - Qt based mouse ev
         '''
+        
         try:
             self.released.remove(ev.button())
         except:

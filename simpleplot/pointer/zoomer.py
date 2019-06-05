@@ -178,7 +178,6 @@ class Zoomer(ParameterHandler):
         '''
         End the zoom method and kill all the listeners
         ''' 
-        print(self.reset_pos[0],ev.x(), self.reset_pos[1], ev.y())
         if self.reset_pos[0] == ev.x() or self.reset_pos[1] == ev.y():
             self.canvas.artist.pointer.unbindPointer()
             self.canvas.draw_surface.autoRange()
