@@ -57,7 +57,7 @@ class ModeSelect(QtWidgets.QHBoxLayout):
             ("Zoom"       , 0),
             ("Measure"    , 1),
             ("Edit"       , 2),
-            ("Settings"   , 3),
+            ("Settings"   , 3)
             ]
         #Grab the Path
         Path = os.path.join(os.path.dirname(__file__),'ressources')
@@ -105,9 +105,19 @@ class ModeSelect(QtWidgets.QHBoxLayout):
                 except:
                     pass
 
-    def openSettings(self):
-        self.settings = PreferenceWindow(self.multi_canvas)
-        self.settings.show()
+    def openSettings(self, ev = None, mode = None, target = None):
+        '''
+        Open the settings window with the proper mode in
+        place
+        '''
+        if mode == None and target == None:
+            self.settings = PreferenceWindow(self.multi_canvas)
+            self.settings.show()
+        elif mode == 'Save' and not target == None:
+            self.settings = PreferenceWindow(self.multi_canvas)
+            self.settings.tabWidget.setCurrentIndex(3)
+            self.settings.export_widget.ui.expSubplot.setCurrentText(target)
+            self.settings.show()
         
 
 

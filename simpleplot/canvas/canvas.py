@@ -27,6 +27,8 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from copy import deepcopy
 import numpy as np
 
+from ..pyqtgraph.pyqtgraph.graphicsItems.ViewBox import ViewBox
+
 #personal imports
 from ..artist.artist import Artist2DNode, Artist3DNode
 from ..model.node import SessionNode
@@ -148,7 +150,6 @@ class CanvasNode(SessionNode):
         self.plot_widget = SimplePlotWidget(self)
         self.draw_surface = self.plot_widget.getPlotItem()
         self.view = self.draw_surface.getViewBox()
-        self.view.setMouseMode(self.view.RectMode)
         
         self.grid_layout.addWidget(self.plot_widget, 1, 1)
 

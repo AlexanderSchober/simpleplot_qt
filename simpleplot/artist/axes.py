@@ -123,17 +123,9 @@ class Axes(SessionNode):
             names  = ['left', 'bottom', 'right', 'top'],
             method = self.setLabel)   
 
-    def processAllParameters(self):
-        '''
-        Will run through the items and set all the 
-        properties thorugh the linked method
-        '''
-        self.activateAxes()
-        self.showLabel()
-        self.setAxisStyle()
-        self.setGrid()
-        self.setLog()
-        self.setLabel()
+        self.general_handler.runAll()
+        self.tick_handler.runAll()
+        self.label_handler.runAll()
 
     def __getitem__(self, location):
         '''

@@ -52,28 +52,38 @@ class SimplePlotWidget(PlotWidget):
         self.plotItem.sigRangeChanged.connect(self.viewRangeChanged)
         self.setAntialiasing(True)
         self.canvas = canvas
-        
+
+        self.sceneObj.contextMenu[0].triggered.disconnect(self.sceneObj.showExportDialog)
+        self.sceneObj.contextMenu[0].triggered.connect(self._showExportDialog)
+        self.plotItem.getViewBox().mouseDragEvent = self.mouseDragEvent
 
     def mouseMoveEvent(self, ev):
         '''
         mouse move event
         '''
-        self.canvas.artist.mouse_move(ev)
+        self.canvas.artist.mouseMove(ev)
         super(PlotWidget, self).mouseMoveEvent(ev)
 
     def mousePressEvent(self, ev):
         '''
         mouse press event
         '''
-        self.canvas.artist.mouse_press(ev)
+        self.canvas.artist.mousePress(ev)
         super(PlotWidget, self).mousePressEvent(ev)
 
     def mouseReleaseEvent(self, ev):
         '''
         mouse release event
         '''
-        self.canvas.artist.mouse_release(ev)
+        self.canvas.artist.mouseRelease(ev)
         super(PlotWidget, self).mouseReleaseEvent(ev)
+
+    def mouseDragEvent(self, ev):
+        '''
+        mouse release event
+        '''
+        self.canvas.artist.mouseDrag(ev)
+        # super(PlotWidget, self).mouseReleaseEvent(ev)
 
     def _setCtrlMenu(self):
         '''
@@ -94,6 +104,10 @@ class SimplePlotWidget(PlotWidget):
         self.ctrlMenu.addAction(act)
 
         c.maximizeRadio.stateChanged.connect(self.maximize)
+
+    def _showExportDialog(self):
+        self.canvas.multi_canvas.bottom_selector.openSettings(
+            mode = 'Save', target = self.canvas._name)
 
     def maximize(self):
         '''

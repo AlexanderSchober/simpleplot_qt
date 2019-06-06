@@ -87,9 +87,15 @@ def example():
         Log         = [False,False])
 
     ex.draw()
-    first.setData(x = x, y = y)
-    second.setData(x = x, y = y_1, error = {'width' : 0.1,'height': 0.1})
-    third.setData(x = x, y = y_2)
+
+    x_2 = np.linspace(np.pi, 4*np.pi, 100)
+    y = np.sin(x_2)
+    y_1 = np.cos(x_2+0.5)
+    y_2 = np.cos(x_2)+2*np.sin(x_2)
+
+    first.setData(x = x_2, y = y+2)
+    second.setData(x = x_2, y = y_1+3, error = {'width' : 0.1,'height': 0.1})
+    third.setData(x = x_2, y = y_2+4)
     ex.zoomer.zoom()
 
     #example of 3D data

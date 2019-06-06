@@ -23,6 +23,8 @@
 
 from ..pyqtgraph import pyqtgraph as pg
 from ..pyqtgraph.pyqtgraph import opengl as gl
+from .SimplePlotDataItem import SimplePlotDataItem
+from .SimpleErrorBarItem import SimpleErrorBarItem
 
 from copy import deepcopy
 from PyQt5 import QtGui
@@ -35,7 +37,7 @@ class ScatterPlot(SessionNode):
     This class will be the scatter plots. 
     '''
 
-    def __init__(self, x = None, y = None, z = None,  **kwargs):
+    def __init__(self, x = None, y = None, z = None, name = 'No_name',  **kwargs):
         '''
         This class serves as envelope for the 
         PlotDataItem. Note that the axis of y will be
@@ -54,7 +56,7 @@ class ScatterPlot(SessionNode):
         error: dict of float arrays
             The error of each point
         '''
-        SessionNode.__init__(self, 'No_name')
+        SessionNode.__init__(self, name)
 
         self.x_data = deepcopy(x)
         self.y_data = deepcopy(y)
@@ -73,7 +75,6 @@ class ScatterPlot(SessionNode):
             The parameters passed on by the user that 
             will override the predefined values
         '''
-
         
         self.parameters              = {}
         self.parameters['Color']     = [[QtGui.QColor('b')]]
@@ -84,14 +85,14 @@ class ScatterPlot(SessionNode):
         self.parameters['Symbol color']     = [[QtGui.QColor('blue')]]
         self.parameters['Error color']      = [[QtGui.QColor('grey')]]
 
-        self.parameters['Line thickness']   = [[2]]
+        self.parameters['Line thickness']   = [[4]]
         self.parameters['Shadow thickness'] = [[4]]
         self.parameters['Symbol thickness'] = [[1]]
         self.parameters['Error thickness']  = [[2]]
 
         self.parameters['Active']    = [[True]]
         self.parameters['Style']     = [['']]
-        self.parameters['Name']      = [['Non name']]
+        self.parameters['Name']      = [['No name']]
         self.parameters['Log']       = [[False, False]]
         self.parameters['Show error']= [[True]]
         self.parameters['Error']     = [None]
@@ -192,6 +193,7 @@ class ScatterPlot(SessionNode):
 
         if scatter_present and line_present:
             scatter_option  = self.getParameter('Style')[scatter_bool.index(True)]
+            kwargs['connect']     = 'all'
             kwargs['symbol']      = scatter_option
             kwargs['symbolSize']  = int(self.getParameter('Style')[-1])
             kwargs['symbolPen']   = self.symbol_pen
@@ -201,29 +203,32 @@ class ScatterPlot(SessionNode):
             kwargs['antialias']   = True
         elif scatter_present and not line_present:
             scatter_option  = self.getParameter('Style')[scatter_bool.index(True)]
+            kwargs['connect']     = 'all'
             kwargs['symbol']      = scatter_option
-            kwargs['size']  = int(self.getParameter('Style')[-1])
-            kwargs['pen']   = self.symbol_pen
-            kwargs['brush'] = self.symbol_brush
+            kwargs['symbolSize']  = int(self.getParameter('Style')[-1])
+            kwargs['symbolPen']   = self.symbol_pen
+            kwargs['symbolBrush'] = self.symbol_brush
+            kwargs['pen']         = self.empty_pen
             kwargs['antialias']   = True
         elif not scatter_present and line_present:
+            kwargs['connect']     = 'all'
             kwargs['pen']         = self.line_pen
             kwargs['shadowPen']   = self.shadow_pen
             kwargs['antialias']   = True
 
         if scatter_present and line_present:
-            self.draw_items = [pg.PlotDataItem(
+            self.draw_items = [SimplePlotDataItem(
                 **kwargs)]
         elif scatter_present and not line_present:
-            self.draw_items = [pg.ScatterPlotItem(
+            self.draw_items = [SimplePlotDataItem(
                 **kwargs)]
         elif not scatter_present and line_present:
-            self.draw_items = [pg.PlotCurveItem(
+            self.draw_items = [SimplePlotDataItem(
                 **kwargs)]
             
         if not self.getParameter('Error') == None and self.getParameter('Show error')[0]:
             self.draw_items.append(
-                pg.ErrorBarItem(
+                SimpleErrorBarItem(
                     x   = kwargs['x'], 
                     y   = kwargs['y'],
                     pen = self.error_pen,

@@ -26,10 +26,13 @@ from ..pyqtgraph import pyqtgraph as pg
 from ..pyqtgraph.pyqtgraph import functions as fn
 from PyQt5 import QtGui,QtCore
 
+from ..model.parameter_node import ParameterNode
+from ..model.parameter_class import ParameterHandler 
+
 import numpy as np
 
 
-class Zoomer:
+class Zoomer(ParameterHandler):
     '''
     This class will manage the zoom functionality.
     This is that the graph will be resized onto
@@ -38,116 +41,91 @@ class Zoomer:
     '''
     
     def __init__(self, canvas):
-        
-        #Bind to the canvas.
+        ParameterHandler.__init__(self,name = 'Zoom / Pan', parent = canvas)
+
         self.canvas = canvas
+        self._initialize()
+        self._initRect()
     
-        #launch defaults
-        self.init_parameters()
-    
-    def init_parameters(self):
+    def _initialize(self):
         '''
-        Set the initial parameters of the zoombox
+        initialise the legend parameter structure
         '''
-        #cursor parameters
-        self.color      = 'black'
-        self.thickness  = 2
-        self.roundness  = 5
-        self.fixed      = [False, False]
-        self.fixed_range= [None, None, None, None]
+        self.addParameter(
+            'Mode', 'Zoom',
+            choices = ['Zoom', 'Pan'],
+            method = self._setMode)
+        self.addParameter(
+            'Zoom fixed', [False, False],
+            names = ['X', 'Y'],
+            method = self.zoom)
+        self.addParameter(
+            'Zoom fixed range', [0.0, 1.0,0.0,1.0],
+            names = ['X min','X max', 'Y min','Y max'],
+            method = self.zoom)
+        self.addParameter(
+            'Zoom precision', 3)
+        self.addParameter(
+            'Zoom box', [QtGui.QColor(50,50,50,255),QtGui.QColor(50,50,50,100),1],
+            names = ['Pen color','Brush color', 'Pen thickness'],
+            method = self._initRect)
 
         self.start_pos     = [0,0]
         self.end_pos       = [0,0]
+        self.reset_pos     = [0,0]
 
+    def _initRect(self):
+        '''
+        Initialise the zoom rectangle upon changes of the 
+        parameters
+        '''
         self.rbScaleBox = QtGui.QGraphicsRectItem(0, 0, 1, 1)
-        self.rbScaleBox.setPen(fn.mkPen((50,50,50), width=1))
-        self.rbScaleBox.setBrush(fn.mkBrush(50,50,50,100))
+        self.rbScaleBox.setPen(fn.mkPen(
+            self['Zoom box'][0].getRgb(), 
+            width=self['Zoom box'][2]))
+        self.rbScaleBox.setBrush(fn.mkBrush(self['Zoom box'][1].getRgb()))
         self.rbScaleBox.setZValue(1e9)
         self.rbScaleBox.hide()
         self.canvas.view.addItem(self.rbScaleBox, ignoreBounds=True)
+
+    def _setMode(self):
+        pass
 
     def listen(self):
         '''
         Make the class listen to the click event 
         related to the zoom initializingevent.
         '''
-        self.canvas.artist.mouse.bind('press', self.start_zoom, 'start_zoom', 1)
+        self.canvas.artist.mouse.bind('press', self.resetStart, 'reset_start', 1, True)
+        self.canvas.artist.mouse.bind('release', self.resetEnd, 'reset_end', 1, True)
+        self.canvas.artist.mouse.bind('drag', self.zoomHandler, 'zoom_handler', 1)
+        self.canvas.artist.mouse.bind('drag', self.scaleHandler, 'start_scale', 2)
 
     def quiet(self):
         '''
         Quiet the zoom functionality.]
         '''
-        self.canvas.artist.mouse.unbind('press', 'start_zoom')
+        self.canvas.artist.mouse.unbind('press', 'reset_start')
+        self.canvas.artist.mouse.unbind('release', 'reset_end')
+        self.canvas.artist.mouse.unbind('drag', 'zoom_handler')
+        self.canvas.artist.mouse.unbind('drag', 'start_scale')
 
-    def set_pen(self):
-        '''
-        This method will initialise the Qpen as the
-        the QPainter method
-        '''
-        #initialise the pen
-        self.pen = pg.mkPen({
-                'color': QtGui.QColor(self.color),
-                'width': self.thickness
-            })
-
-    def set_fixed(self, fixed = False, fixed_range= [None, None, None, None]):
-        '''
-        Sometimes the user wants to lock the zoom in
-        place. 
-        ''' 
-        self.fixed = fixed
-        self.fixed_range = fixed_range
-
-    def set_brush(self):
-        '''
-        This method will initialise the Qpen as the
-        the QPainter method
-        '''
-        #initialise the pen
-        self.brush = pg.mkBrush(self.color)
-
-    def start_zoom(self):
+    def zoomHandler(self, x, y, drag_start, drag_end):
         '''
         Start to draw the zoom box. 
         ''' 
-        #grab the actual cursor position from the Pointer class
-        x,y = self.canvas.artist.mouse.get_pos()
-        
-        self.start_pos     = [x,y]
-        self.end_pos       = [x,y]
-
-        r = QtCore.QRectF(QtCore.QPointF(*self.start_pos),QtCore.QPointF(*self.end_pos))
+        r = QtCore.QRectF(QtCore.QPointF(x[0], y[0]),QtCore.QPointF(x[-1], y[-1]))
         self.rbScaleBox.setPos(r.topLeft())
         self.rbScaleBox.resetTransform()
         self.rbScaleBox.scale(r.width(), r.height())
         self.rbScaleBox.show()
 
-        #link the move lsitener
-        self.canvas.artist.mouse.bind('move', self.update_zoom, 'update_zoom')
-        self.canvas.artist.mouse.bind('release', self.end_zoom, 'end_zoom', 1)
-
-        #remove the pointer
-        self.canvas.artist.pointer.unbindPointer()
-        
-    def update_zoom(self,x,y):
-        '''
-        Updat the box as the mouse moves
-        ''' 
-
-        self.end_pos       = [x,y]
-
-        r = QtCore.QRectF(QtCore.QPointF(*self.start_pos),QtCore.QPointF(*self.end_pos))
-        self.rbScaleBox.setPos(r.topLeft())
-        self.rbScaleBox.resetTransform()
-        self.rbScaleBox.scale(r.width(), r.height())
-        self.rbScaleBox.show()
-        
         self.canvas.multi_canvas.bottom_selector.label.setText(
             str(
-                "  x 0 = %."+str(self.roundness)+"f"
-                ", x 1 = %."+str(self.roundness)+"f"
-                ", y 0 = %."+str(self.roundness)+"f"
-                ", y 1 = %."+str(self.roundness)+"f"
+                "  x 0 = %."+str(self['Zoom precision'])+"f"
+                ", x 1 = %."+str(self['Zoom precision'])+"f"
+                ", y 0 = %."+str(self['Zoom precision'])+"f"
+                ", y 1 = %."+str(self['Zoom precision'])+"f"
                 )%(
                     self.start_pos[0],
                     self.end_pos[0],
@@ -156,56 +134,112 @@ class Zoomer:
 
         self.canvas.multi_canvas.bottom_selector.label.repaint()
 
-    def end_zoom(self):
+        if drag_start:
+            self.canvas.artist.pointer.unbindPointer()
+
+        if drag_end:
+            self.start_pos  = [x[0], y[0]]
+            self.end_pos    = [x[-1], y[-1]]
+            self.endZoom()
+        
+    def scaleHandler(self,x, y, drag_start, drag_end):
+        '''
+        ''' 
+        pos     = pg.Point(x[2], y[2])
+        last    = pg.Point(x[1], y[1])
+        pos     =  self.canvas.draw_surface.vb.mapViewToDevice(pos)
+        last    =  self.canvas.draw_surface.vb.mapViewToDevice(last)
+
+        dif = np.array([
+            pos.x() - last.x(), 
+            pos.y() - last.y()])
+
+        dif[0] *= -1
+        s = (np.array([1.,1.])*0.02+1.) ** dif
+        
+        tr = self.canvas.view.childGroup.transform()
+        tr = fn.invertQTransform(tr)
+        
+        x_new = s[0] 
+        y_new = s[1]
+        
+        center = pg.Point(x[0],y[0])
+        self.canvas.view._resetTarget()
+        self.canvas.view.scaleBy(x=x_new, y=y_new, center=center)
+        self.canvas.view.sigRangeChangedManually.emit(self.canvas.view.state['mouseEnabled'])
+
+    def resetStart(self, ev):
         '''
         End the zoom method and kill all the listeners
         ''' 
-        
+        self.reset_pos     = [ev.x(),ev.y()]
+
+    def resetEnd(self, ev):
+        '''
+        End the zoom method and kill all the listeners
+        ''' 
+        if self.reset_pos[0] == ev.x() or self.reset_pos[1] == ev.y():
+            self.canvas.artist.pointer.unbindPointer()
+            self.canvas.draw_surface.autoRange()
+
+            #check for fixed
+            if self['Zoom fixed'][0]:
+                self.canvas.draw_surface.setXRange(
+                    self['Zoom fixed range'][0], 
+                    self['Zoom fixed range'][1])
+            
+            if self['Zoom fixed'][1]:
+                self.canvas.draw_surface.setYRange(
+                    self['Zoom fixed range'][2], 
+                    self['Zoom fixed range'][3])
+
+            self.canvas.artist.pointer.bindPointer()
+
+    def endZoom(self, quiet = False):
+        '''
+        End the zoom method and kill all the listeners
+        ''' 
         self.rbScaleBox.hide()
-
-        self.zoom()
-
-        #shut down the links
-        self.canvas.artist.mouse.unbind('move', 'update_zoom')
-        self.canvas.artist.mouse.unbind('release','end_zoom')
-        
-        #try to project the information onto the first two free
-        #fields of the main canvas
+        if not quiet:
+            self.zoom()
         self.canvas.multi_canvas.bottom_selector.label.setText('')
 
     def zoom(self):
         '''
         This processes the zoom method
         ''' 
-
         if (self.start_pos[0] == self.end_pos[0]) or (self.start_pos[1] == self.end_pos[1]): 
             self.canvas.artist.pointer.unbindPointer()
             self.canvas.draw_surface.autoRange()
 
             #check for fixed
-            if self.fixed[0]:
-                self.canvas.draw_surface.setXRange(self.fixed_range[0], self.fixed_range[1])
+            if self['Zoom fixed'][0]:
+                self.canvas.draw_surface.setXRange(
+                    self['Zoom fixed range'][0], 
+                    self['Zoom fixed range'][1])
             
-            if self.fixed[1]:
-                self.canvas.draw_surface.setYRange(self.fixed_range[2], self.fixed_range[3])
+            if self['Zoom fixed'][1]:
+                self.canvas.draw_surface.setYRange(
+                    self['Zoom fixed range'][2], 
+                    self['Zoom fixed range'][3])
 
             self.canvas.artist.pointer.bindPointer()
 
-
         else:
-
-            #set possible rnages
+            #set possible ranges
             xRange = (self.start_pos[0], self.end_pos[0])
             yRange = (self.start_pos[1], self.end_pos[1])
 
             #check for fixed
-            if self.fixed[0]:
-
-                xRange = (self.fixed_range[0], self.fixed_range[1])
+            if self['Zoom fixed'][0]:
+                xRange = (
+                    self['Zoom fixed range'][0], 
+                    self['Zoom fixed range'][1])
             
-            if self.fixed[1]:
-    
-                xRange = (self.fixed_range[2], self.fixed_range[3])
+            if self['Zoom fixed'][1]:
+                xRange = (
+                    self['Zoom fixed range'][2], 
+                    self['Zoom fixed range'][3])
 
             #finally zoom
             self.canvas.artist.pointer.unbindPointer()

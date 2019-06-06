@@ -141,7 +141,7 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         self.handler        = ParameterHandler(
             name = 'Multi-canvas options', 
             parent = self._rootNode) 
-
+            
         self.handler.addParameter(
             'x_ratios', self.x_ratios,
             method = self._configureGrid)
@@ -152,15 +152,6 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
             'Select', 'All',
             choices = ['All']+self.subplot_names,
             method = self._selectPlot)
-        # self.handler.addParameter(
-        #     'Background',  QtGui.QColor('white'),
-        #     method = self._setBackground)
-        # self.handler.addParameter(
-        #     'Horizontal spacing', 1,
-        #     method = self._setHorizontalSpacing)
-        # self.handler.addParameter(
-        #     'Vertical spacing', 1,
-        #     method = self._setVerticalSpacing)
 
     def _placeObjects(self):
         '''
