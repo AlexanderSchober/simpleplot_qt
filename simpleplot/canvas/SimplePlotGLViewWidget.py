@@ -121,7 +121,7 @@ class MyGLViewWidget(gl.GLViewWidget):
         Store the position of the mouse press for later use.
         '''
         super(MyGLViewWidget, self).mousePressEvent(ev)
-        self._downpos = self.mousePos
+        self._downpos = ev.pos()
 
         if self.handler['Show center']:
             self.addItem(self.sphere)
@@ -252,7 +252,7 @@ class MyGLViewWidget(gl.GLViewWidget):
         model_mat   = np.array(glGetDoublev(GL_MODELVIEW_MATRIX))
         proj_mat    = np.array(glGetDoublev(GL_PROJECTION_MATRIX))
         
-        win_coord   = (x, viewport[3] - y)
+        win_coord   = (x*2, viewport[3] - y*2)
         
         near_point  = np.array(GLU.gluUnProject(
             win_coord[0], win_coord[1], 0.0, 

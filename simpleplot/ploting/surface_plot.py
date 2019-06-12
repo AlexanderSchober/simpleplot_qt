@@ -665,6 +665,13 @@ class SurfacePlot(SessionNode):
                 [maxima[0], minima[1], minima[2]],
                 [maxima[0], minima[1], maxima[2]]]])
         
+        # print(np.reshape(bounding_box, (bounding_box.shape[0]*bounding_box.shape[1],3)))
+        # print(np.reshape(np.arange(0,bounding_box.shape[0]*bounding_box.shape[1]),(int((bounding_box.shape[0]*bounding_box.shape[1])/3),3)))
+        # self._pointer.setMeshData(
+        #     drawEdges = True,
+        #     vertexes = np.reshape(bounding_box, (bounding_box.shape[0]*bounding_box.shape[1],3)), 
+        #     faces = np.reshape(np.arange(0,bounding_box.shape[0]*bounding_box.shape[1]),(int((bounding_box.shape[0]*bounding_box.shape[1])/3),3)))
+
         coordinates = []
         for i in range(bounding_box.shape[0]):
             val  = self.rayTriangleIntersection(
@@ -676,7 +683,7 @@ class SurfacePlot(SessionNode):
                 coordinates.append(val[1])
 
         if len(coordinates) < 2:
-            return [None]
+            return None
 
         coordinates = np.array(coordinates)
         x_step = self.x_data[1] - self.x_data[0]
@@ -709,10 +716,10 @@ class SurfacePlot(SessionNode):
         flat_y_1 = flat_y_1[np.where(flat_y_1>=0)]
         flat_y_1 = flat_y_1[np.where(flat_y_1<self.y_data.shape[0])]
 
-        flat_index = np.array([
-            flat_x_2 + e*(self.x_data.shape[0]-1)*2 for e in index_y])
+        flat_index = np.array([flat_x_2 + e*(self.x_data.shape[0]-1)*2 for e in index_y])
         flat_index = np.reshape(flat_index,(flat_index.shape[0]*flat_index.shape[1]) )
-
+        flat_index = flat_index[np.where(flat_index<self.vertices.shape[0])]
+    
         for i,face in enumerate(self.vertices[flat_index]):
             test = self.rayTriangleIntersection(
                 ray[0], ray[1], 
@@ -730,7 +737,7 @@ class SurfacePlot(SessionNode):
                     faces = np.array([[0,1,2]]))
                 return test[1]
 
-        return [None]
+        return None
 
     def rayTriangleIntersection(self, ray_near, ray_dir, v123):
         """
