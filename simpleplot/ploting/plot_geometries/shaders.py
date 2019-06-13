@@ -153,6 +153,33 @@ class ShaderConstructor:
 
             fragment_text += str(temp_1)
         
+        #the start
+        temp_1 = (
+            """
+            if (z_norm < position[0]){;
+                color.x = 0.;
+                color.y = 0.;
+                color.z = 0.;
+                color.w = 0.; 
+            }
+            """)
+
+        fragment_text += str(temp_1)
+
+        #the end
+        temp_1 = (
+            """
+            if (z_norm > position[0]){
+                color.x = 0.;
+                color.y = 0.;
+                color.z = 0.;
+                color.w = 0.; 
+            }
+            """)
+
+        temp_1 = temp_1.replace('position[0]', 'position['+str(len(self._colors)-1)+']')
+        fragment_text += str(temp_1)
+
         fragment_text += ('gl_FragColor = color;}')
 
         # make the vertex
