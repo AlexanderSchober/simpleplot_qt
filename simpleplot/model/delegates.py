@@ -62,7 +62,7 @@ class ParameterDelegate(QtWidgets.QStyledItemDelegate):
             grad    = item.data(index.column()).getGradient()
 
             grad.setStart(rect.x(), rect.y())
-            grad.setStart(rect.x() + rect.width(), rect.y())
+            grad.setFinalStop(rect.x() + rect.width(), rect.y())
 
             brush   = QtGui.QBrush(grad)
             painter.fillRect(rect, brush)
