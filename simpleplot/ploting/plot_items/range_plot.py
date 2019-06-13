@@ -21,13 +21,14 @@
 #
 # *****************************************************************************
 
-from ..pyqtgraph import pyqtgraph as pg
-from ..pyqtgraph.pyqtgraph import opengl as gl
 import numpy as np
 
 
+from ...pyqtgraph import pyqtgraph as pg
+from ...pyqtgraph.pyqtgraph import opengl as gl
+
+
 class RangePlot():
-    
     '''
     ##############################################
     This class will be the plots. 

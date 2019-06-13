@@ -23,11 +23,13 @@
 
 #import dependencies
 from PyQt5 import QtWidgets, QtCore, QtGui
-from .SimplePlotlegendItem import SimplePlotLegendItem
-from ..ploting.SimpleErrorBarItem import SimpleErrorBarItem
-from ..pyqtgraph import pyqtgraph as pg
 import numpy as np
 import sys
+
+from ..pyqtgraph import pyqtgraph as pg
+
+from .SimplePlotlegendItem import SimplePlotLegendItem
+from ..ploting.custom_pg_items.SimpleErrorBarItem import SimpleErrorBarItem
 
 from ..model.parameter_node import ParameterNode
 from ..model.parameter_class import ParameterHandler 

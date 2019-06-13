@@ -23,18 +23,18 @@
 
 #import dependencies
 from PyQt5 import QtWidgets, QtGui, QtCore
-from ..pyqtgraph import pyqtgraph as pg
-from ..pyqtgraph.pyqtgraph import opengl as gl
 import numpy as np
 
+from ..pyqtgraph            import pyqtgraph as pg
+from ..pyqtgraph.pyqtgraph  import opengl as gl
 
 from OpenGL.GL import glReadPixels, GL_RGBA,  GL_FLOAT, glPixelStorei, GL_UNPACK_ALIGNMENT, glFlush, glFinish, glGetIntegerv, glGetDoublev, GL_PROJECTION_MATRIX, GL_VIEWPORT, GL_MODELVIEW_MATRIX
 
 import OpenGL.GLU as GLU
 
 #personal imports
-from ..ploting.plot_items.shaders import ShaderConstructor
-from ..model.parameter_class import ParameterHandler 
+from ..ploting.plot_geometries.shaders      import ShaderConstructor
+from ..model.parameter_class                import ParameterHandler 
 
 class MyGLViewWidget(gl.GLViewWidget):
     ''' 

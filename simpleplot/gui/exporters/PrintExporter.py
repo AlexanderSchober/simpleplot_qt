@@ -1,8 +1,14 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-from .Exporter import Exporter
-from ...pyqtgraph.pyqtgraph.parametertree.Parameter import Parameter
-from ...canvas.SimplePlotItem import SimplePlotItem as PlotItem
+import numpy as np
+
 from ...pyqtgraph.pyqtgraph.Qt import QtGui, QtCore, QtSvg, QT_LIB
+from ...pyqtgraph.pyqtgraph import functions as fn
+from ...pyqtgraph.pyqtgraph.parametertree.Parameter import Parameter
+
+from ...simpleplot_widgets.SimplePlotItem import SimplePlotItem as PlotItem
+
+from .Exporter import Exporter
+
 import re
 
 __all__ = ['PrintExporter']  

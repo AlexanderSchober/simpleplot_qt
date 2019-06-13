@@ -22,11 +22,16 @@
 # *****************************************************************************
 
 #import dependencies
-from PyQt5 import QtWidgets, QtCore, QtGui
-from OpenGL.GL import *
-from ..pyqtgraph import pyqtgraph as pg
-from ..pyqtgraph.pyqtgraph import opengl as gl
+#import dependencies
+from PyQt5 import QtWidgets, QtCore, QtGui, Qt
+from OpenGL.GLUT    import *
+from OpenGL.GL      import *
+from OpenGL.GLU     import *
+
 import numpy as np
+
+from ..pyqtgraph            import pyqtgraph as pg
+from ..pyqtgraph.pyqtgraph  import opengl as gl
 
 class GLGridItem(gl.GLGridItem):
     def __init__(self, *args, **kwargs):

@@ -22,10 +22,10 @@
 # *****************************************************************************
 
 #import dependencies
-from PyQt5 import QtWidgets, QtGui, QtCore
-
-from copy import deepcopy
-import numpy as np
+from PyQt5      import QtWidgets, QtGui, QtCore
+from OpenGL     import GL
+from copy       import deepcopy
+import numpy    as np
 
 from ..pyqtgraph.pyqtgraph.graphicsItems.ViewBox import ViewBox
 
@@ -35,10 +35,8 @@ from ..model.node import SessionNode
 from ..model.parameter_class import ParameterHandler 
 from ..model.models import SessionModel
 
-from .SimplePlotGLViewWidget import MyGLViewWidget
-from .SimplePlotWidget import SimplePlotWidget
-
-from OpenGL import GL
+from ..simpleplot_widgets.SimplePlotGLViewWidget import MyGLViewWidget
+from ..simpleplot_widgets.SimplePlotWidget import SimplePlotWidget
 
 class CanvasNode(SessionNode):
 

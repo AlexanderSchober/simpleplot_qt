@@ -21,8 +21,9 @@
 #
 # *****************************************************************************
 from PyQt5 import QtGui
-from ..pyqtgraph import pyqtgraph as pg
 import numpy as np
+
+from ...pyqtgraph import pyqtgraph as pg
 
 class SimpleErrorBarItem(pg.ErrorBarItem): 
     '''

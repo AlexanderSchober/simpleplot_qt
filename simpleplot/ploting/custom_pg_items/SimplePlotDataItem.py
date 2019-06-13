@@ -21,8 +21,10 @@
 #
 # *****************************************************************************
 
-from ..pyqtgraph import pyqtgraph as pg
 from PyQt5 import QtCore
+
+from ...pyqtgraph import pyqtgraph as pg
+
 
 
 class SimplePlotDataItem(pg.PlotDataItem):

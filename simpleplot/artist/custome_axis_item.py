@@ -23,18 +23,20 @@
 
 #import dependencies
 from PyQt5 import QtWidgets, QtCore, QtGui, Qt
-from OpenGL.GLUT import *
-from OpenGL.GL import *
-from OpenGL.GLU import *
-from ..pyqtgraph import pyqtgraph as pg
-from ..pyqtgraph.pyqtgraph import opengl as gl
-from ..pyqtgraph.pyqtgraph import functions as fn
+from OpenGL.GLUT    import *
+from OpenGL.GL      import *
+from OpenGL.GLU     import *
+
 import numpy as np
 import math
 
-from ..ploting.plot_items.points import Point
-from ..ploting.plot_items.transformations import *
-from ..ploting.plot_items.operations import *
+from ..pyqtgraph            import pyqtgraph as pg
+from ..pyqtgraph.pyqtgraph  import opengl as gl
+from ..pyqtgraph.pyqtgraph  import functions as fn
+
+from ..ploting.plot_geometries.points           import Point
+from ..ploting.plot_geometries.transformations  import *
+from ..ploting.plot_geometries.operations       import *
 
 class GLAxisItem(gl.GLAxisItem):
     def __init__(self, location = None):

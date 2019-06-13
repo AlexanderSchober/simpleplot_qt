@@ -21,18 +21,18 @@
 #
 # *****************************************************************************
 
-from ..pyqtgraph import pyqtgraph as pg
-from ..pyqtgraph.pyqtgraph import opengl as gl
-
+from PyQt5 import QtGui
 from copy import deepcopy
 import numpy as np
-from PyQt5 import QtGui
 
-from .plot_items.surfaces   import QuadSurface
-from .plot_items.points     import Point
-from .plot_items.shaders    import ShaderConstructor
+from ...pyqtgraph import pyqtgraph as pg
+from ...pyqtgraph.pyqtgraph import opengl as gl
 
-from ..model.node   import SessionNode
+from ..plot_geometries.surfaces   import QuadSurface
+from ..plot_geometries.points     import Point
+from ..plot_geometries.shaders    import ShaderConstructor
+
+from ...model.node   import SessionNode
 
 class BarPlot(SessionNode): 
     '''

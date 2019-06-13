@@ -20,16 +20,24 @@
 #   Alexander Schober <alex.schober@mac.com>
 #
 # *****************************************************************************
+
 from PyQt5 import QtWidgets, QtCore, QtGui, Qt
-from OpenGL.GL import *
-from ..pyqtgraph.pyqtgraph import functions as fn
-from .custome_axis_item import GLAxisItem
+from OpenGL.GLUT    import *
+from OpenGL.GL      import *
+from OpenGL.GLU     import *
+
 import numpy as np
 import math
 
-from ..ploting.plot_items.points import Point
-from ..ploting.plot_items.transformations import *
-from ..ploting.plot_items.operations import *
+from ..pyqtgraph            import pyqtgraph as pg
+from ..pyqtgraph.pyqtgraph  import opengl as gl
+from ..pyqtgraph.pyqtgraph  import functions as fn
+
+from ..ploting.plot_geometries.points           import Point
+from ..ploting.plot_geometries.transformations  import *
+from ..ploting.plot_geometries.operations       import *
+
+from .custome_axis_item import GLAxisItem
 
 class GLLabelItem(GLAxisItem):
     def __init__(self, location = None):

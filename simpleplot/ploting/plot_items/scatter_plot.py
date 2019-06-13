@@ -21,16 +21,17 @@
 #
 # *****************************************************************************
 
-from ..pyqtgraph import pyqtgraph as pg
-from ..pyqtgraph.pyqtgraph import opengl as gl
-from .SimplePlotDataItem import SimplePlotDataItem
-from .SimpleErrorBarItem import SimpleErrorBarItem
-
-from copy import deepcopy
 from PyQt5 import QtGui
+from copy import deepcopy
 import numpy as np
 
-from ..model.node   import SessionNode
+from ...pyqtgraph import pyqtgraph as pg
+from ...pyqtgraph.pyqtgraph import opengl as gl
+
+from ..custom_pg_items.SimplePlotDataItem import SimplePlotDataItem
+from ..custom_pg_items.SimpleErrorBarItem import SimpleErrorBarItem
+
+from ...model.node   import SessionNode
 
 class ScatterPlot(SessionNode): 
     '''

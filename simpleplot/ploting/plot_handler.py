@@ -23,12 +23,12 @@
 
 import numpy as np
 
-from .scatter_plot  import ScatterPlot
-from .surface_plot  import SurfacePlot
-from .bar_plot      import BarPlot
-from .volume_plot   import VolumePlot
-from .vector_field_plot import VectorFieldPlot
-from ..model.node   import SessionNode
+from .plot_items.scatter_plot       import ScatterPlot
+from .plot_items.surface_plot       import SurfacePlot
+from .plot_items.bar_plot           import BarPlot
+from .plot_items.volume_plot        import VolumePlot
+from .plot_items.vector_field_plot  import VectorFieldPlot
+from ..model.node                   import SessionNode
 
 def get_plot_handler(select):
     '''

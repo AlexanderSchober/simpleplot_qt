@@ -27,7 +27,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from . import exporters as exporters
 from ..pyqtgraph.pyqtgraph import functions as fn
 from ..pyqtgraph.pyqtgraph.graphicsItems.ViewBox import ViewBox
-from ..canvas.SimplePlotItem import SimplePlotItem as PlotItem
+from ..simpleplot_widgets.SimplePlotItem import SimplePlotItem as PlotItem
 from . import exportDialogTemplate_ui as exportDialogTemplate
 
 class ExportDialog(QtGui.QWidget):
