@@ -183,7 +183,7 @@ class QuadSurface(Surface):
         if not isinstance(self.topography, type(None)):
             self.applyTopography()
 
-    def setTopography(self, topography, color, x_axis = None, y_axis = None, scale = 1):
+    def setTopography(self, topography, x_axis = None, y_axis = None, scale = 1):
         '''
         This function will allow to add a topography
         to the surface element. The topography will be
@@ -194,7 +194,6 @@ class QuadSurface(Surface):
         A scalding factor is given to account for
         '''
         self.topography = np.asarray(topography)
-        self.color = color
 
         self.changeResolution(
             topography.shape[0],

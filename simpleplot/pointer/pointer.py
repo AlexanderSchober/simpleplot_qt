@@ -218,16 +218,19 @@ class Pointer(SessionNode):
             self.cursor_y = y
 
             self.cursor_z = 0
-            self.pointer_position.evaluate()
-            self.canvas.multi_canvas.bottom_selector.label.setText(
-                str(
-                    "  x = %"+str(self.pointer_handler['Precision'])+"f"
-                    ", y = %"+str(self.pointer_handler['Precision'])+"f"
-                    ", z = %"+str(self.pointer_handler['Precision'])+"f"
-                    )%(
-                        self.cursor_x,
-                        self.cursor_y,
-                        self.cursor_z))
+            try:
+                self.pointer_position.evaluate()
+                self.canvas.multi_canvas.bottom_selector.label.setText(
+                    str(
+                        "  x = %"+str(self.pointer_handler['Precision'])+"f"
+                        ", y = %"+str(self.pointer_handler['Precision'])+"f"
+                        ", z = %"+str(self.pointer_handler['Precision'])+"f"
+                        )%(
+                            self.cursor_x,
+                            self.cursor_y,
+                            self.cursor_z))
+            except:
+                pass
         
         if self.pointer_handler['Live']:
             self.draw()

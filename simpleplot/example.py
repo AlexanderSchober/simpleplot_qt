@@ -6,7 +6,62 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import sys
 import numpy as np
 
+def exampleLinePlot():
+    #set upt the window and the plot widget
+    app 	        = QtWidgets.QApplication(sys.argv)
+    widget          = QtWidgets.QWidget()
+    multi_canvas    = MultiCanvasItem(
+        widget = widget,        
+        grid        = [[True]],
+        element_types = [['2D']],
+        x_ratios    = [1],
+        y_ratios    = [1],
+        background  = "b",
+        highlightthickness = 0)
+    
+    #link to the subplots
+    ax = multi_canvas.getSubplot(0,0)    
+    
+    x = np.linspace(-4*np.pi, 4*np.pi, 100)
+    y = np.sin(x)
+    z = np.cos(x)
+    y_1 = np.cos(x+0.5)
+    y_2 = np.cos(x)+2*np.sin(x)
 
+    #set the ax plot
+    first = ax.addPlot(
+        'Scatter', 
+        Name        = 'sin', 
+        Style       = ['-','d','r', '10'], 
+        Log         = [False,False])
+    second = ax.addPlot(
+        'Scatter', 
+        Name        = 'cos', 
+        Style       = ['d','r','20'], 
+        Log         = [False,False],
+        Error       = {})
+    third = ax.addPlot(
+        'Scatter', 
+        Name        = 'tan', 
+        Line_thickness   = 3, 
+        Style       = ['-'], 
+        Log         = [False,False])
+
+    ax.draw()
+
+    x_2 = np.linspace(np.pi, 4*np.pi, 100)
+    y = np.sin(x_2)
+    y_1 = np.cos(x_2+0.5)
+    y_2 = np.cos(x_2)+2*np.sin(x_2)
+
+    first.setData(x = x_2, y = y+2)
+    second.setData(x = x_2, y = y_1+3, error = {'width' : 0.1,'height': 0.1})
+    third.setData(x = x_2, y = y_2+4)
+    ax.zoomer.zoom()
+
+    #show widget
+    widget.show()
+    sys.exit(app.exec_())
 
 def example():
 
@@ -64,7 +119,7 @@ def example():
 
     bx.axes['bottom'].setScale(8*np.pi/100)
     bx.axes['left'].setScale(8*np.pi/100)
-    bx.setHistogram('right', surf)
+    # bx.setHistogram('right', surf)
     bx.zoomer.zoom()
     
     #set the ax plot
@@ -155,4 +210,5 @@ def example():
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
+    # exampleLinePlot()
     example()

@@ -45,10 +45,13 @@ class PointerPosition:
 
         for plot_handler in self.parent.canvas._plot_root._children:
             for plot_element in plot_handler._children:
-                self.mapping.append([plot_handler.name,plot_element])
-                self.data.append([plot_element.x_data, plot_element.y_data])
-                if plot_handler.name == 'Surface':
-                    self.data[-1].append(plot_element.z_data)
+                try:
+                    self.mapping.append([plot_handler.name,plot_element])
+                    self.data.append([plot_element.x_data, plot_element.y_data])
+                    if plot_handler.name == 'Surface':
+                        self.data[-1].append(plot_element.z_data)
+                except:
+                    pass
 
     def evaluate(self):
         '''

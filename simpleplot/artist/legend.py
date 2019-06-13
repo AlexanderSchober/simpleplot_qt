@@ -88,9 +88,10 @@ class Legend(ParameterHandler):
         self.tearLegendDown()
         for plot_handler in self.canvas._plot_root._children:
             for element in plot_handler._children:
-                for item in element.draw_items:
-                    if not isinstance(item, pg.ImageItem) and not isinstance(item, SimpleErrorBarItem):
-                        self.legend_item.addItem(item, element._name)
+                if hasattr(element, 'draw_items'):
+                    for item in element.draw_items:
+                        if not isinstance(item, pg.ImageItem) and not isinstance(item, SimpleErrorBarItem):
+                            self.legend_item.addItem(item, element._name)
 
     def tearLegendDown(self):
         '''

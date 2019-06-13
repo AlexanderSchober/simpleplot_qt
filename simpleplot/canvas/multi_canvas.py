@@ -126,7 +126,7 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
 
         self._initialise()
 
-        self._proxyModel    = QtCore.QSortFilterProxyModel(self)
+        # self._proxyModel    = QtCore.QSortFilterProxyModel(self)
         self._model         = SessionModel(
             self._rootNode, self, 
             max([4,len(self.x_ratios), 

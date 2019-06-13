@@ -252,8 +252,8 @@ class MyGLViewWidget(gl.GLViewWidget):
         model_mat   = np.array(glGetDoublev(GL_MODELVIEW_MATRIX))
         proj_mat    = np.array(glGetDoublev(GL_PROJECTION_MATRIX))
         
-        win_coord   = (x*2, viewport[3] - y*2)
-        
+        # win_coord   = (x*2, viewport[3] - y*2)
+        win_coord   = (x, viewport[3] - y)
         near_point  = np.array(GLU.gluUnProject(
             win_coord[0], win_coord[1], 0.0, 
             model_mat, proj_mat, viewport))

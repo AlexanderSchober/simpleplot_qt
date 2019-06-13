@@ -22,7 +22,8 @@
 # *****************************************************************************
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+from ..pyqtgraph.pyqtgraph import GradientWidget
+from ..pyqtgraph.pyqtgraph.graphicsItems.GradientEditorItem import GradientEditorItem
 
 class spinBoxConstructor:
 
@@ -111,9 +112,9 @@ class lineEditConstructor:
 
     def create(self,parent, value = None, index = None):
         self._index = QtCore.QModelIndex(index)
-        item = QtWidgets.QLineEdit(parent)
-        item.textChanged.connect(self.updateInternals)
-        return item
+        self._item = QtWidgets.QLineEdit(parent)
+        self._item.textChanged.connect(self.updateInternals)
+        return self._item
 
     def updateInternals(self, value):
         '''
@@ -133,6 +134,43 @@ class lineEditConstructor:
 
     def retrieveData(self, editor):
         return editor.text()
+
+class gradientConstructor:
+
+    def __init__(self, parent = None): 
+        self.manager = parent
+        
+
+    def create(self,parent, value = None, index = None):
+        self._index = QtCore.QModelIndex(index)
+        self._item = GradientWidget(parent = parent,orientation = 'bottom')
+        self._item.sigGradientChanged.connect(self.updateInternals)
+
+        return self._item
+
+    def updateInternals(self):
+        '''
+        '''
+        temp = GradientEditorItem()
+        temp.restoreState(self._item.saveState())
+
+        self.manager._value = temp
+        # self.manager._model.dataChanged.emit(
+        #     self._index,
+        #     self._index)
+
+        if 'method' in self.manager.kwargs.keys():
+            self.manager.kwargs['method']()
+
+        # self.manager.parent().setString()
+
+    def setEditorData(self, editor):
+        editor.restoreState(self.manager._value.saveState())
+
+    def retrieveData(self, editor):
+        temp = GradientEditorItem()
+        temp.restoreState(editor.saveState())
+        return temp
 
 class checkBoxConstructor:
 

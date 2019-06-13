@@ -31,6 +31,8 @@ from ...pyqtgraph.pyqtgraph import opengl as gl
 from ..custom_pg_items.SimplePlotDataItem import SimplePlotDataItem
 from ..custom_pg_items.SimpleErrorBarItem import SimpleErrorBarItem
 
+from ..plot_data_types.line_data import LineData
+
 from ...model.node   import SessionNode
 
 class ScatterPlot(SessionNode): 
@@ -58,10 +60,14 @@ class ScatterPlot(SessionNode):
             The error of each point
         '''
         SessionNode.__init__(self, name)
-
+        self._plot_data = LineData(x = x, y = y, z = z)
+        self.addChild(self._plot_data)
+        
+        #TO-DO: Remove
         self.x_data = deepcopy(x)
         self.y_data = deepcopy(y)
         self.z_data = deepcopy(z)
+
         self.initialize(**kwargs)
         self._mode = '2D'
         self.type  = 'Scatter'
@@ -147,18 +153,19 @@ class ScatterPlot(SessionNode):
         Set the data of the plot manually after the plot item 
         has been actualized
         '''
+        self._plot_data.setData(**kwargs)
 
-        if 'x' in kwargs.keys():
-            self.x_data = kwargs['x']
-            kwargs['x'] = np.log10(kwargs['x']) if self.getParameter('Log')[0] else kwargs['x']
+        # if 'x' in kwargs.keys():
+        #     self.x_data = kwargs['x']
+        #     kwargs['x'] = np.log10(kwargs['x']) if self.getParameter('Log')[0] else kwargs['x']
             
-        if 'y' in kwargs.keys():
-            self.y_data = kwargs['y']
-            kwargs['y'] = np.log10(kwargs['y']) if self.getParameter('Log')[0] else kwargs['y']
+        # if 'y' in kwargs.keys():
+        #     self.y_data = kwargs['y']
+        #     kwargs['y'] = np.log10(kwargs['y']) if self.getParameter('Log')[0] else kwargs['y']
             
-        if 'z' in kwargs.keys():
-            self.z_data = kwargs['z']
-            kwargs['z'] = np.log10(kwargs['z']) if self.getParameter('Log')[0] else kwargs['z']
+        # if 'z' in kwargs.keys():
+        #     self.z_data = kwargs['z']
+        #     kwargs['z'] = np.log10(kwargs['z']) if self.getParameter('Log')[0] else kwargs['z']
             
         if 'error' in kwargs.keys():
             self.parameters['Error']  = [kwargs['error']]
@@ -188,9 +195,10 @@ class ScatterPlot(SessionNode):
 
         scatter_present = any(scatter_bool)
         line_present    = ('-' in self.getParameter('Style'))
+        data = self._plot_data.getData()
 
-        kwargs['x'] = np.log10(self.x_data) if self.getParameter('Log')[0] else self.x_data
-        kwargs['y'] = np.log10(self.y_data) if self.getParameter('Log')[1] else self.y_data
+        kwargs['x'] = data[0]
+        kwargs['y'] = data[1]
 
         if scatter_present and line_present:
             scatter_option  = self.getParameter('Style')[scatter_bool.index(True)]
@@ -218,14 +226,11 @@ class ScatterPlot(SessionNode):
             kwargs['antialias']   = True
 
         if scatter_present and line_present:
-            self.draw_items = [SimplePlotDataItem(
-                **kwargs)]
+            self.draw_items = [SimplePlotDataItem(**kwargs)]
         elif scatter_present and not line_present:
-            self.draw_items = [SimplePlotDataItem(
-                **kwargs)]
+            self.draw_items = [SimplePlotDataItem(**kwargs)]
         elif not scatter_present and line_present:
-            self.draw_items = [SimplePlotDataItem(
-                **kwargs)]
+            self.draw_items = [SimplePlotDataItem(**kwargs)]
             
         if not self.getParameter('Error') == None and self.getParameter('Show error')[0]:
             self.draw_items.append(

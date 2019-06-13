@@ -22,6 +22,7 @@
 # *****************************************************************************
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from ..pyqtgraph.pyqtgraph.graphicsItems.GradientEditorItem import GradientEditorItem
 
 class ParameterDelegate(QtWidgets.QStyledItemDelegate):
     def createEditor(self, parent, option, index):
@@ -56,8 +57,21 @@ class ParameterDelegate(QtWidgets.QStyledItemDelegate):
             check_box_style_option.state |= QtWidgets.QStyle.State_Enabled
             QtWidgets.QApplication.style().drawControl(
                 QtWidgets.QStyle.CE_CheckBox, check_box_style_option, painter)
+        elif type(item.data(index.column())) == GradientEditorItem:
+            rect    = self.getGradRect(option)
+            grad    = item.data(index.column()).getGradient()
+
+            grad.setStart(rect.x(), rect.y())
+            grad.setStart(rect.x() + rect.width(), rect.y())
+
+            brush   = QtGui.QBrush(grad)
+            painter.fillRect(rect, brush)
+
         else:
             super().paint(painter, option, index)
+
+    def getGradRect(self, option):
+        return option.rect
 
     def getCheckBoxRect(self, option):
         check_box_style_option = QtWidgets.QStyleOptionButton()
@@ -69,6 +83,14 @@ class ParameterDelegate(QtWidgets.QStyledItemDelegate):
             - check_box_rect.height() / 2)
 
         return QtCore.QRect(check_box_point, check_box_rect.size())
+
+    def sizeHint(self, option, index):
+        item    = index.model().getNode(index) 
+        size    = super(ParameterDelegate, self).sizeHint(option, index)
+        if type(item.data(index.column())) == GradientEditorItem:
+            size = super(ParameterDelegate, self).sizeHint(option, index)
+            size.setHeight(27)
+        return size
 
 if __name__ == '__main__':
 
