@@ -26,14 +26,15 @@ from copy import deepcopy
 import numpy as np
 from scipy.spatial.distance import pdist
 
-from ...pyqtgraph                   import pyqtgraph as pg
-from ...pyqtgraph.pyqtgraph         import opengl as gl
-from ..plot_geometries.shaders      import ShaderConstructor
-from ..plot_data_types.surface_data import SurfaceData
-from ...model.node                  import SessionNode
+from ..pyqtgraph                   import pyqtgraph as pg
+from ..pyqtgraph.pyqtgraph         import opengl as gl
+from .plot_geometries.shaders      import ShaderConstructor
+from .plot_data_types.surface_data import SurfaceData
+from ..model.node                  import SessionNode
 
-from .surface_plot      import SurfacePlot
-from .isosurface_plot   import IsoCurvePlot
+from .plot_items.surface_plot      import SurfacePlot
+from .plot_items.iso_curve_plot    import IsoCurvePlot
+from .plot_ray_handlers.surface    import SurfaceRayHandler
 
 class SurfacePlotHandler(SessionNode): 
     '''
@@ -63,6 +64,9 @@ class SurfacePlotHandler(SessionNode):
 
         self._plot_data     = SurfaceData(x = x, y = y, z = z)
         self.addChild(self._plot_data)
+
+        self._ray_handler   = SurfaceRayHandler()
+        self.addChild(self._ray_handler)
 
         self.addChild(SurfacePlot(**kwargs))
         self.addChild(IsoCurvePlot(**kwargs))

@@ -151,11 +151,11 @@ class QuadSurface(Surface):
         for j,i in [(j,i) for j in range(self.resolution_y) for i in range(self.resolution_x)]:
             p_0_bis = (
                 (self.border_points[3].vec - self.border_points[0].vec) 
-                / self.resolution_y) * j + self.border_points[0].vec
+                / (self.resolution_y-1)) * j + self.border_points[0].vec
             p_1_bis = (
                 (self.border_points[2].vec - self.border_points[1].vec) 
-                / self.resolution_y) * j + self.border_points[1].vec           
-            self.np_points[j,i] = ( (p_1_bis - p_0_bis) / self.resolution_x) * i + p_0_bis
+                /(self.resolution_y-1)) * j + self.border_points[1].vec           
+            self.np_points[j,i] = ( (p_1_bis - p_0_bis) / (self.resolution_x-1)) * i + p_0_bis
 
         self.faces = np.zeros(
             (self.np_points.shape[0]-1, self.np_points.shape[1]-1, 2, 3), 
@@ -164,13 +164,10 @@ class QuadSurface(Surface):
         for j,i in [(j,i) for j in range(self.resolution_y-1) for i in range(self.resolution_x-1)]:
             self.faces[j,i] = (
             np.array([
-                ([ids[j,i], ids[j,i+1], ids[j+1,i]]) if i%2 == 0 
-                else ([ids[j,i], ids[j+1,i], ids[j+1,i+1]]),
-                [ids[j,i+1], ids[j+1,i+1], ids[j+1,i]] if i%2 == 0 
-                else [ids[j,i], ids[j,i+1], ids[j+1,i+1]]]
-            if j%2==0 else
-            [
-                [ids[j,i], ids[j+1,i], ids[j+1,i+1]] if i%2 == 0 
+                [ids[j,i], ids[j,i+1], ids[j+1,i]] if i%2 == 0 else [ids[j,i], ids[j+1,i+1], ids[j+1,i]],
+                [ids[j,i+1], ids[j+1,i+1], ids[j+1,i]] if i%2 == 0 else [ids[j,i], ids[j,i+1], ids[j+1,i+1]]]
+            if j%2==0 else [
+                [ids[j,i], ids[j+1,i+1], ids[j+1,i]] if i%2 == 0 
                 else [ids[j,i], ids[j,i+1], ids[j+1,i]],
                 [ids[j,i], ids[j,i+1], ids[j+1,i+1]] if i%2 == 0 
                 else [ids[j,i+1], ids[j+1,i+1], ids[j+1,i]]]))
@@ -179,7 +176,6 @@ class QuadSurface(Surface):
         self.points     = [Point(str(i), *self.np_points[i].tolist()) for i in range(self.np_points.shape[0])]
         self.faces      = self.faces.reshape(((self.resolution_x-1)*(self.resolution_y-1)*2,3)).tolist()
 
-        #apply topo
         if not isinstance(self.topography, type(None)):
             self.applyTopography()
 
@@ -194,11 +190,7 @@ class QuadSurface(Surface):
         A scalding factor is given to account for
         '''
         self.topography = np.asarray(topography)
-
-        self.changeResolution(
-            topography.shape[0],
-            topography.shape[1])
-            
+        self.changeResolution(topography.shape[0],topography.shape[1])
         self.trace()
 
     def applyTopography(self):

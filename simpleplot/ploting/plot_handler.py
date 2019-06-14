@@ -24,7 +24,7 @@
 import numpy as np
 
 from .plot_items.scatter_plot       import ScatterPlot
-from .plot_items.surface_plot_handler       import SurfacePlotHandler
+from .surface_plot_handler          import SurfacePlotHandler
 from .plot_items.bar_plot           import BarPlot
 from .plot_items.volume_plot        import VolumePlot
 from .plot_items.vector_field_plot  import VectorFieldPlot
@@ -110,10 +110,12 @@ class Plot_Handler(SessionNode):
 
     def processRay(self, ray):
         '''
-        Draw all the items onto the plot
+        process the ray tracing and then give
+        the result back as a hits
         '''
         hits = []
         for plot_element in self._children:
-            hits.append(plot_element.processRay(ray))
+            if hasattr(plot_element, '_ray_handler'):
+                plot_element._ray_handler.processRay(ray)
 
         return hits
