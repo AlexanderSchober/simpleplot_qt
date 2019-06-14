@@ -114,9 +114,7 @@ class VectorFieldPlot(SessionNode):
         depending on the input
         '''
         self.shader_constructor = ShaderConstructor()
-        self.shader_constructor.setColors(
-            self.parameters['Colors'], 
-            self.parameters['Positions'])
+
         
 
     def setData(self, **kwargs):

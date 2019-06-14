@@ -217,17 +217,17 @@ class BarPlot(SessionNode):
                 kwargs['faces']     = self.vertices
                 surface.setMeshData(**kwargs)
 
-                if self.shader_parameters['Bounds z'][0][0] == True:
-                    self.shader_constructor.setRange(
-                        np.amin([np.amin(self.z_data), self.getParameter('Lower')[0]])-1.0e-6 if self.z_lower_data is None else np.amin([np.amin(self.z_data), np.amin(self.z_lower_data)]), np.amax(self.z_data)+1.0e-6 if self.z_lower_data is None else np.amax([np.amax(self.z_data), np.amax(self.z_lower_data)])+1.0e-6)
-                else:
-                    self.shader_constructor.setRange(
-                        0, 
-                        self.shader_parameters['Bounds z'][0][2]+1.0e-6)
+                # if self.shader_parameters['Bounds z'][0][0] == True:
+                #     self.shader_constructor.setRange(
+                #         np.amin([np.amin(self.z_data), self.getParameter('Lower')[0]])-1.0e-6 if self.z_lower_data is None else np.amin([np.amin(self.z_data), np.amin(self.z_lower_data)]), np.amax(self.z_data)+1.0e-6 if self.z_lower_data is None else np.amax([np.amax(self.z_data), np.amax(self.z_lower_data)])+1.0e-6)
+                # else:
+                #     self.shader_constructor.setRange(
+                #         0, 
+                #         self.shader_parameters['Bounds z'][0][2]+1.0e-6)
 
-                self.shader_constructor.setColors(
-                    self.parameters['Colors'][0],
-                    self.parameters['Positions'][0])
+                # self.shader_constructor.setColors(
+                #     self.parameters['Colors'][0],
+                #     self.parameters['Positions'][0])
 
 
                 surface.setShader(self.shader_constructor.getShader('height'))
@@ -477,16 +477,18 @@ class BarPlot(SessionNode):
         '''
         self.shader_constructor = ShaderConstructor()
         if self.shader_parameters['Bounds z'][0][0] == True:
-            self.shader_constructor.setRange(
-                np.amin([np.amin(self.z_data), self.getParameter('Lower')[0]])-1.0e-6 if self.z_lower_data is None else np.amin([np.amin(self.z_data), np.amin(self.z_lower_data)]), np.amax(self.z_data)+1.0e-6 if self.z_lower_data is None else np.amax([np.amax(self.z_data), np.amax(self.z_lower_data)])+1.0e-6)
+            pass
+            # self.shader_constructor.setRange(
+            #     np.amin([np.amin(self.z_data), self.getParameter('Lower')[0]])-1.0e-6 if self.z_lower_data is None else np.amin([np.amin(self.z_data), np.amin(self.z_lower_data)]), np.amax(self.z_data)+1.0e-6 if self.z_lower_data is None else np.amax([np.amax(self.z_data), np.amax(self.z_lower_data)])+1.0e-6)
         else:
-            self.shader_constructor.setRange(
-                0, 
-                self.shader_parameters['Bounds z'][0][2]+1.0e-6)
+            pass
+            # self.shader_constructor.setRange(
+            #     0, 
+            #     self.shader_parameters['Bounds z'][0][2]+1.0e-6)
 
-        self.shader_constructor.setColors(
-            self.parameters['Colors'][0],
-            self.parameters['Positions'][0])
+        # self.shader_constructor.setColors(
+        #     self.parameters['Colors'][0],
+        #     self.parameters['Positions'][0])
 
         self.buildVerticeMap()
 

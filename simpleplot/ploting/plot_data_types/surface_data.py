@@ -86,6 +86,7 @@ class SurfaceData(PlotData, SessionNode):
                 self._buildVerticeMap()
             elif changed[2] and not changed[0] and not changed[1]:
                 self._updateTopography()
+            self._setBoundingBox()
 
     def getData(self):
         '''
@@ -113,6 +114,13 @@ class SurfaceData(PlotData, SessionNode):
         level omn the present data
         '''
         return functions.isocurve(self._data[2], level, connected = True)
+
+    def getBoundingBox(self):
+        '''
+        Returns the x,y,z isocurve position fo the given
+        level omn the present data
+        '''
+        return self._boundingBox
 
     def _sanity(self, elements):
         '''
@@ -154,3 +162,65 @@ class SurfaceData(PlotData, SessionNode):
         self._points     = self._shape.getVertices()
         self._vertices   = self._shape.getFaces()
         
+    def _setBoundingBox(self):
+        '''
+        Update the topography of the surface
+        '''
+        bounds = self._bounds
+
+        bounding_box = np.array([
+            #top and bottom
+            [
+                [bounds[0][0], bounds[1][0], bounds[2][0]],
+                [bounds[0][1], bounds[1][0], bounds[2][0]],
+                [bounds[0][0], bounds[1][1], bounds[2][0]]],
+            [
+                [bounds[0][1], bounds[1][0], bounds[2][0]],
+                [bounds[0][0], bounds[1][1], bounds[2][0]],
+                [bounds[0][1], bounds[1][1], bounds[2][0]]],
+            [
+                [bounds[0][0], bounds[1][0], bounds[2][1]],
+                [bounds[0][1], bounds[1][0], bounds[2][1]],
+                [bounds[0][0], bounds[1][1], bounds[2][1]]],
+            [
+                [bounds[0][1], bounds[1][0], bounds[2][1]],
+                [bounds[0][0], bounds[1][1], bounds[2][1]],
+                [bounds[0][1], bounds[1][1], bounds[2][1]]],
+
+            #front back
+            [
+                [bounds[0][0], bounds[1][0], bounds[2][0]],
+                [bounds[0][1], bounds[1][0], bounds[2][0]],
+                [bounds[0][0], bounds[1][0], bounds[2][1]]],
+            [
+                [bounds[0][0], bounds[1][0], bounds[2][1]],
+                [bounds[0][1], bounds[1][0], bounds[2][0]],
+                [bounds[0][1], bounds[1][0], bounds[2][1]]],
+            [
+                [bounds[0][0], bounds[1][1], bounds[2][0]],
+                [bounds[0][1], bounds[1][1], bounds[2][0]],
+                [bounds[0][0], bounds[1][1], bounds[2][1]]],
+            [
+                [bounds[0][0], bounds[1][1], bounds[2][1]],
+                [bounds[0][1], bounds[1][1], bounds[2][0]],
+                [bounds[0][1], bounds[1][1], bounds[2][1]]],
+                
+            #left right
+            [
+                [bounds[0][0], bounds[1][0], bounds[2][0]],
+                [bounds[0][0], bounds[1][1], bounds[2][0]],
+                [bounds[0][0], bounds[1][1], bounds[2][1]]],
+            [
+                [bounds[0][0], bounds[1][1], bounds[2][1]],
+                [bounds[0][0], bounds[1][0], bounds[2][0]],
+                [bounds[0][0], bounds[1][0], bounds[2][1]]],
+            [
+                [bounds[0][1], bounds[1][0], bounds[2][0]],
+                [bounds[0][1], bounds[1][1], bounds[2][0]],
+                [bounds[0][1], bounds[1][1], bounds[2][1]]],
+            [
+                [bounds[0][1], bounds[1][1], bounds[2][1]],
+                [bounds[0][1], bounds[1][0], bounds[2][0]],
+                [bounds[0][1], bounds[1][0], bounds[2][1]]]])
+
+        self._boundingBox = bounding_box

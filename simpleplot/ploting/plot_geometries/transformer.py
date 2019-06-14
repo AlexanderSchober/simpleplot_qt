@@ -23,22 +23,23 @@
 # *****************************************************************************
 
 import numpy as np
-from ...model.node   import SessionNode
+from ...model.parameter_class       import ParameterHandler 
 
-class Transformer: 
+class Transformer(ParameterHandler): 
     '''
     This will be the main data class purposed
     to be inherited by variations with different
     variations.
     '''
     def __init__(self):
+        ParameterHandler.__init__(self, 'Transform')
+
         self._position      = np.array([0.,0.,0.])
         self._scale         = np.array([1.,1.,1.])
         self._rotate_angle  = np.array([0.,0.,0.])
         self._rotate_axis   = np.array([[1.,0.,0.], [0.,1.,0.], [0.,0.,1.]])
 
-    def addParameter(self):
-        pass
+        self._setTransformerParameters()
 
     def _setTransformerParameters(self):
         '''
@@ -71,7 +72,7 @@ class Transformer:
     def unTransform(self):
         '''
         '''
-        if self._mode == '3D':
+        if self.parent()._mode =='3D':
             self.temp_position  = np.array(self._position)
             self.temp_scale     = np.array(self._scale)
             self.temp_angle     = np.array(self._rotate_angle)
@@ -82,7 +83,7 @@ class Transformer:
             self._rotate_angle  = np.array([0.,0.,0.])
             self._rotate_axis   = np.array([[1.,0.,0.], [0.,1.,0.], [0.,0.,1.]])
 
-            for draw_item in self.draw_items:
+            for draw_item in self.parent().draw_items:
                 if isinstance(draw_item, list):
                     for item in draw_item:
                         item.resetTransform()
@@ -92,7 +93,7 @@ class Transformer:
     def reTransform(self):
         '''
         '''
-        if self._mode == '3D':
+        if self.parent()._mode == '3D':
             self.translate(self.temp_position)
             self.scale(self.temp_scale)
             self.rotate(self.temp_angle, self.temp_axis)
@@ -104,8 +105,8 @@ class Transformer:
         if position is None:
             position = np.array(self['Position'])
 
-        if self._mode == '3D' and hasattr(self, 'draw_items'):
-            for draw_item in self.draw_items:
+        if hasattr(self.parent(), 'draw_items') and self.parent()._mode =='3D':
+            for draw_item in self.parent().draw_items:
                 if isinstance(draw_item, list):
                     for item in draw_item:
                         self.translateItem(item, position)
@@ -132,8 +133,8 @@ class Transformer:
             if scale[i] == 0. :
                 scale[i] = 1.
 
-        if self._mode == '3D' and hasattr(self, 'draw_items'):
-            for draw_item in self.draw_items:
+        if hasattr(self.parent(), 'draw_items') and self.parent()._mode =='3D':
+            for draw_item in self.parent().draw_items:
                 if isinstance(draw_item, list):
                     for item in draw_item:
                         self.scaleItem(item, scale)
@@ -162,8 +163,8 @@ class Transformer:
             angles = np.array([e[0] for e in elements])
             axes = np.array([e[1:] for e in elements])
 
-        if self._mode == '3D' and hasattr(self, 'draw_items'):
-            for draw_item in self.draw_items:
+        if hasattr(self.parent(), 'draw_items') and self.parent()._mode =='3D':
+            for draw_item in self.parent().draw_items:
                 if isinstance(draw_item, list):
                     for item in draw_item:
                         self.rotateItem(item,  angles, axes)

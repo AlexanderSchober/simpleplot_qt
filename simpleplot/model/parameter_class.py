@@ -202,8 +202,10 @@ class ParameterValue(ParameterMaster, ParameterItem):
         
         if type(value) == int or isinstance(value, np.integer):
             self._constructor = spinBoxConstructor(self)
+            self._value = int(self._value)
         elif type(value) == float or isinstance(value, np.floating):
             self._constructor = doubleSpinBoxConstructor(self)
+            self._value = float(self._value)
         elif type(value) == str:
             if not 'choices' in kwargs.keys():
                 self._constructor = lineEditConstructor(self)

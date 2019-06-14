@@ -163,14 +163,14 @@ def example():
         Colors      = Colors,
         Positions   = Positions)
     
-    ax.addPlot(
-        'Surface', 
-        x = x,
-        y = x,
-        z = -np.cos(xv)-np.sin(yv)+2,
-        Name        = 'key',
-        Colors      = Colors[::-1],
-        Positions   = Positions)
+    # ax.addPlot(
+    #     'Surface', 
+    #     x = x,
+    #     y = x,
+    #     z = -np.cos(xv)-np.sin(yv)+2,
+    #     Name        = 'key',
+    #     Colors      = Colors[::-1],
+    #     Positions   = Positions)
 
     ax.draw()
 

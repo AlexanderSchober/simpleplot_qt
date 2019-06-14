@@ -408,7 +408,7 @@ class VolumePlot(SessionNode):
         kwargs['vertexes']  = vertices
         kwargs['faces']     = faces
         kwargs['smooth']    = False
-        kwargs['drawEdges'] = True
+        kwargs['drawEdges'] = False
         kwargs['color']     = self.getParameter('Iso color')[0]
         kwargs['shader']    = 'viewNormalColor'#self.shader_constructor.getShader('height')
         kwargs['glOptions'] = 'opaque'

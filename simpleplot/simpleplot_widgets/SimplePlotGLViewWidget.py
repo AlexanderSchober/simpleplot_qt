@@ -49,10 +49,7 @@ class MyGLViewWidget(gl.GLViewWidget):
         gl.GLViewWidget.__init__(self)
         self._initialize(parent)
         self.setMouseTracking(True)
-        self.pointer = gl.GLLinePlotItem(mode = 'line_strip')
-        self.addItem(self.pointer)
         self.mouse_ray = np.array([[0,0,0],[0,0,0]])
-
 
     def _initialize(self, parent):
         '''
@@ -239,7 +236,6 @@ class MyGLViewWidget(gl.GLViewWidget):
                 self.opts['center'][2])
         else:
             ray = self._getPickingRay(ev.x(), ev.y())
-            self.pointer.setData(pos =np.array([self.cameraPosition(), ray[:3]]))
             self.mouse_ray = np.array([self.cameraPosition(), ray[:3]])
             self.rayUpdate.emit()
             
