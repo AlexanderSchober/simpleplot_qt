@@ -245,6 +245,7 @@ class SurfacePlot(ParameterHandler, Transformer):
         kwargs['drawEdges'] = self['Draw edges']
 
         self.draw_items.append(gl.GLMeshItem(**kwargs))
+        self.draw_items[-1].setGLOptions('opaque')
         self.default_target.view.addItem(self.draw_items[-1])
         self.setColor()
 

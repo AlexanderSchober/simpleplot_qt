@@ -126,10 +126,10 @@ class ShaderConstructor:
         # out varying vec4 color;    
         fragment_text = (
             """
-            varying vec4 pos;
+            varying vec3 pos;
             varying vec3 normal;
             void main() {
-                vec4 color;
+                vec4 color = gl_Color;
                 float z_norm = ((pos.z-factor[1])*factor[0]);
                 float z_local;
             """)
@@ -180,18 +180,24 @@ class ShaderConstructor:
         temp_1 = temp_1.replace('position[0]', 'position['+str(len(self._colors)-1)+']')
         fragment_text += str(temp_1)
 
-        fragment_text += ('gl_FragColor = color;}')
+        fragment_text += ("""
+            float p = dot(normalize(vec3(1.0, 1.0, 1.0)),normal);
+            p = p < 0. ? 0. : p * 0.8;
+            color.x = color.x * (0.2 + p);
+            color.y = color.y * (0.2 + p);
+            color.z = color.z * (0.2 + p);
+            gl_FragColor = color;}""")
 
         # make the vertex
         vertex  = shaders.VertexShader(
             """
-            varying vec4 pos;
+            varying vec3 pos;
             varying vec3 normal;
             void main() {
                 normal = normalize(gl_NormalMatrix * gl_Normal);
                 gl_FrontColor = gl_Color;
                 gl_BackColor = gl_Color;
-                pos = gl_Vertex;
+                pos = vec3( gl_Vertex);
                 gl_Position = ftransform();
             }
             """)
