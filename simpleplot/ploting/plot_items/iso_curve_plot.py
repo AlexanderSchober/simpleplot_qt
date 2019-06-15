@@ -94,9 +94,9 @@ class IsoCurvePlot(ParameterHandler):
         program decide which procedure to target Note
         that this routine aims at updating the data only
         '''
-        if hasattr(self, 'draw_items'):
-            self.childFromName('Transform').unTransform()
+        self.childFromName('Transform').unTransform()
 
+        if hasattr(self, 'draw_items'):
             isocurves = []
             for draw_item in self.draw_items:
                 if isinstance(draw_item, pg.IsocurveItem) or isinstance(draw_item, list):
@@ -118,10 +118,10 @@ class IsoCurvePlot(ParameterHandler):
                         self.childFromName('Shader').runShader()
                         
                 elif self._mode == '3D':
-                    for i,level in enumerate(self._processLevels()[::-1]):
+                    for i in range(len(self.draw_items))[::-1]:
                             for item in self.draw_items[i]:
                                 self.default_target.view.removeItem(item)
-                            del self.draw_items[i]
+                    self.draw_items = []
                     self.drawGL()
                     self.childFromName('Shader').runShader()
 
@@ -133,7 +133,7 @@ class IsoCurvePlot(ParameterHandler):
                         elif self._mode == '3D':
                             for item in self.draw_items[i]:
                                 self.default_target.view.removeItem(item)
-                        del self.draw_items[i]
+                self.draw_items = []
 
         else:
             if self._mode == '2D':

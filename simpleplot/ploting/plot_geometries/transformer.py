@@ -83,6 +83,9 @@ class Transformer(ParameterHandler):
             self._rotate_angle  = np.array([0.,0.,0.])
             self._rotate_axis   = np.array([[1.,0.,0.], [0.,1.,0.], [0.,0.,1.]])
 
+            if not hasattr(self.parent(), 'draw_items'):
+                return None
+
             for draw_item in self.parent().draw_items:
                 if isinstance(draw_item, list):
                     for item in draw_item:
