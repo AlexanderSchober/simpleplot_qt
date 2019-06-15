@@ -24,7 +24,6 @@
 from PyQt5 import QtGui
 from copy import deepcopy
 import numpy as np
-from scipy.spatial.distance import pdist
 
 from ...pyqtgraph                   import pyqtgraph as pg
 from ...pyqtgraph.pyqtgraph         import opengl as gl
@@ -69,7 +68,6 @@ class SurfacePlot(ParameterHandler):
         This class will be the scatter plots. 
         The arguments are given as kwargs 
         '''
-
         self.addParameter(
             'Visible', True, 
             method = self.refresh)
@@ -92,12 +90,12 @@ class SurfacePlot(ParameterHandler):
         self.childFromName('Transform').unTransform()
 
         if hasattr(self, 'draw_items'):
-            surface = None
-            for draw_item in self.draw_items:
-                if isinstance(draw_item, pg.ImageItem) or isinstance(draw_item, gl.GLMeshItem):
-                    surface = draw_item
-                    
             if self['Visible']:
+                surface = None
+                for draw_item in self.draw_items:
+                    if isinstance(draw_item, pg.ImageItem) or isinstance(draw_item, gl.GLMeshItem):
+                        surface = draw_item
+                    
                 if surface == None:
                     if self._mode == '2D':
                         self.draw()
@@ -131,6 +129,11 @@ class SurfacePlot(ParameterHandler):
                         elif self._mode == '3D':
                             self.default_target.view.removeItem(self.draw_items[i])
                         del self.draw_items[i]
+        else:
+            if self._mode == '2D':
+                self.draw()
+            elif self._mode == '3D':
+                self.drawGL()
 
         self.childFromName('Transform').reTransform()
         

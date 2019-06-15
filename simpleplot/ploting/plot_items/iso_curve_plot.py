@@ -179,12 +179,6 @@ class IsoCurvePlot(ParameterHandler):
 
         if not len(isocurves) == 0:
             for i in range(self['Levels']):
-                if isinstance(self.parent()['Data'].getData()[2], np.ndarray):
-                    level = (
-                        (np.amax(self.parent()['Data'].getData()[2]) - np.amin(self.parent()['Data'].getData()[2]))/self['Levels'] * i + np.amin(self.parent()['Data'].getData()[2]))
-                else:
-                    level = 0
-            
                 if self._mode == '2D':
                     pen = pg.mkPen({
                         'color': colors[i], 

@@ -34,7 +34,7 @@ from ..custom_pg_items.SimpleErrorBarItem import SimpleErrorBarItem
 from ...model.parameter_class       import ParameterHandler 
 from ..plot_geometries.transformer  import Transformer
 
-class ScatterPlot(ParameterHandler): 
+class LinePlot(ParameterHandler): 
     '''
     This class will be the scatter plots. 
     '''
@@ -58,7 +58,7 @@ class ScatterPlot(ParameterHandler):
         error: dict of float arrays
             The error of each point
         '''
-        ParameterHandler.__init__(self, 'Scatter')
+        ParameterHandler.__init__(self, 'Line')
         self.addChild(Transformer())
         
         self._initialize(**kwargs)
@@ -74,44 +74,26 @@ class ScatterPlot(ParameterHandler):
             The parameters passed on by the user that 
             will override the predefined values
         '''
-        style           = kwargs['Style'] if 'Style' in kwargs.keys() else []
-        options         = ['o', 'd', 's', 't']
-        scatter_bool    = [element in options for element in style]
-        symbol = options[scatter_bool.index(True)] if any(scatter_bool) else 'o'
+        style  = kwargs['Style'] if 'Style' in kwargs.keys() else []
         color  = QtGui.QColor(kwargs['Color']) if 'Color' in kwargs.keys() else QtGui.QColor('blue')
-        if any(scatter_bool):
-            if type(kwargs['Style'][-1]) is int:
-                size   = kwargs['Style'][-1]
-            else:
-                size = 10
-        else:
-            size = 10
 
         self.addParameter(
-            'Visible', True if any(scatter_bool) else False, 
+            'Visible', True if '-' in style else False, 
             method = self.refresh)
         self.addParameter(
-            'Symbol', [True, QtGui.QColor('blue'),10,4], 
-            names   = ['Show', 'Color','Size', 'Thickness'],
-            method  = self.refresh)
-        self.addParameter(
-            'Type', symbol ,
-            names   = options,
-            method  = self.refresh)
-        self.addParameter(
-            'Size', size ,
-            method  = self.refresh)
-        self.addParameter(
-            'Fill color', color ,
-            method  = self.refresh)
-        self.addParameter(
-            'Line color', QtGui.QColor('black') ,
-            method  = self.refresh)
-        self.addParameter(
-            'Line width', 3 ,
-            method  = self.refresh)
-        self.addParameter(
             'Antialiassing', True ,
+            method  = self.refresh)
+        self.addParameter(
+            'Line color', QtGui.QColor('blue') ,
+            method  = self.refresh)
+        self.addParameter(
+            'Line width', kwargs['Thickness'] if 'Thickness' in kwargs.keys() else 3 ,
+            method  = self.refresh)
+        self.addParameter(
+            'Shadow color', QtGui.QColor('black') ,
+            method  = self.refresh)
+        self.addParameter(
+            'Shadow width', 5 ,
             method  = self.refresh)
 
     def _setVisual(self):
@@ -119,36 +101,37 @@ class ScatterPlot(ParameterHandler):
         This method will initialise the Qpen as the
         the QPainter method
         '''
-        self.symbol_pen = pg.mkPen({
+        self.line_pen = pg.mkPen({
             'color': self['Line color'],
             'width': self['Line width']})
-        self.symbol_brush = pg.mkBrush(
-            self['Fill color'])
 
+        self.shadow_pen = pg.mkPen({
+            'color': self['Shadow color'],
+            'width': self['Shadow width']})
+            
     def _getDictionary(self):
         '''
         Build the dictionary used for plotting
         '''
         kwargs = {}
-
         if self._mode == '2D':
+
             self._setVisual()
             data = self.parent()._plot_data.getData()
 
-            kwargs['x']             = data[0]
-            kwargs['y']             = data[1]
-            kwargs['symbol']        = self['Type']
-            kwargs['symbolSize']    = self['Size']
-            kwargs['symbolPen']     = self.symbol_pen
-            kwargs['symbolBrush']   = self.symbol_brush
-            kwargs['antialias']     = self['Antialiassing']
+            kwargs['x']         = data[0]
+            kwargs['y']         = data[1]
+            kwargs['connect']   = 'all'
+            kwargs['pen']       = self.line_pen
+            kwargs['shadowPen'] = self.shadow_pen
+            kwargs['antialias'] = True
 
         elif self._mode == '3D':
             data = self.parent()._plot_data.getData(['x','y','z'])
             
             kwargs['pos']   = np.vstack(data).transpose()
             kwargs['color'] = self['Line color'].getRgbF()
-            kwargs['size']  = self['Size']
+            kwargs['width'] = self['Line width']
 
         return kwargs
 
@@ -190,7 +173,7 @@ class ScatterPlot(ParameterHandler):
             self.default_target = target_surface
 
         self.draw_items = []
-        kwargs = self._getDictionary()
+        kwargs          = self._getDictionary()
         self.draw_items = [SimplePlotDataItem(**kwargs)]
             
         # if not self.getParameter('Error') == None and self.getParameter('Show error')[0]:
@@ -214,9 +197,9 @@ class ScatterPlot(ParameterHandler):
 
         self.draw_items = []
         kwargs = self._getDictionary()
-        self.draw_items.append(gl.GLScatterPlotItem(**kwargs))
+        self.draw_items.append(gl.GLLinePlotItem(**kwargs))
         self.draw_items[-1].setGLOptions('translucent')
-            
+
         for curve in self.draw_items:
             self.default_target.view.addItem(curve)
 

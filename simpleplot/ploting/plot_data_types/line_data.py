@@ -32,7 +32,7 @@ class LineData(PlotData, SessionNode):
     to be inherited by variations with different
     variations.
     '''
-    def __init__(self,x = None, y = None, z = None, **kwargs):
+    def __init__(self,x = None, y = None, z = None, error = None, **kwargs):
         PlotData.__init__(self, **kwargs) 
         SessionNode.__init__(self, 'Data')
 
@@ -59,7 +59,17 @@ class LineData(PlotData, SessionNode):
             if element is None:
                 elements[i] = np.zeros(shape)
 
+        if 'error' in kwargs.keys():
+            self._setError(kwargs['error'])
+
         self._data = elements
+
+    def _setError(self, error):
+        '''
+        set the local data manually even after
+        initialization of the class
+        '''
+        self._error = error
 
     def getData(self, axis = ['x', 'y']):
         '''
@@ -67,3 +77,13 @@ class LineData(PlotData, SessionNode):
         wanted orientation
         '''
         return [self._data[self._axes.index(value)] for value in axis]
+
+    def getError(self):
+        '''
+        return a dataset as the data on the 
+        wanted orientation
+        '''
+        if hasattr(self, '_error'):
+            return self._error
+        else:
+            return None

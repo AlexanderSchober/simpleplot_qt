@@ -34,12 +34,12 @@ from ..custom_pg_items.SimpleErrorBarItem import SimpleErrorBarItem
 from ...model.parameter_class       import ParameterHandler 
 from ..plot_geometries.transformer  import Transformer
 
-class ScatterPlot(ParameterHandler): 
+class ErrorPlot(ParameterHandler): 
     '''
     This class will be the scatter plots. 
     '''
 
-    def __init__(self,  **kwargs):
+    def __init__(self, **kwargs):
         '''
         This class serves as envelope for the 
         PlotDataItem. Note that the axis of y will be
@@ -58,7 +58,7 @@ class ScatterPlot(ParameterHandler):
         error: dict of float arrays
             The error of each point
         '''
-        ParameterHandler.__init__(self, 'Scatter')
+        ParameterHandler.__init__(self, 'Error')
         self.addChild(Transformer())
         
         self._initialize(**kwargs)
@@ -74,44 +74,20 @@ class ScatterPlot(ParameterHandler):
             The parameters passed on by the user that 
             will override the predefined values
         '''
-        style           = kwargs['Style'] if 'Style' in kwargs.keys() else []
-        options         = ['o', 'd', 's', 't']
-        scatter_bool    = [element in options for element in style]
-        symbol = options[scatter_bool.index(True)] if any(scatter_bool) else 'o'
-        color  = QtGui.QColor(kwargs['Color']) if 'Color' in kwargs.keys() else QtGui.QColor('blue')
-        if any(scatter_bool):
-            if type(kwargs['Style'][-1]) is int:
-                size   = kwargs['Style'][-1]
-            else:
-                size = 10
-        else:
-            size = 10
-
         self.addParameter(
-            'Visible', True if any(scatter_bool) else False, 
+            'Visible', True , 
             method = self.refresh)
         self.addParameter(
-            'Symbol', [True, QtGui.QColor('blue'),10,4], 
-            names   = ['Show', 'Color','Size', 'Thickness'],
-            method  = self.refresh)
-        self.addParameter(
-            'Type', symbol ,
-            names   = options,
-            method  = self.refresh)
-        self.addParameter(
-            'Size', size ,
-            method  = self.refresh)
-        self.addParameter(
-            'Fill color', color ,
-            method  = self.refresh)
-        self.addParameter(
-            'Line color', QtGui.QColor('black') ,
-            method  = self.refresh)
-        self.addParameter(
-            'Line width', 3 ,
-            method  = self.refresh)
-        self.addParameter(
             'Antialiassing', True ,
+            method  = self.refresh)
+        self.addParameter(
+            'Line color', QtGui.QColor('grey') ,
+            method  = self.refresh)
+        self.addParameter(
+            'Line width', 1,
+            method  = self.refresh)
+        self.addParameter(
+            'Beam', 0.1 ,
             method  = self.refresh)
 
     def _setVisual(self):
@@ -119,36 +95,35 @@ class ScatterPlot(ParameterHandler):
         This method will initialise the Qpen as the
         the QPainter method
         '''
-        self.symbol_pen = pg.mkPen({
+        self.line_pen = pg.mkPen({
             'color': self['Line color'],
             'width': self['Line width']})
-        self.symbol_brush = pg.mkBrush(
-            self['Fill color'])
 
     def _getDictionary(self):
         '''
         Build the dictionary used for plotting
         '''
         kwargs = {}
-
         if self._mode == '2D':
+
             self._setVisual()
-            data = self.parent()._plot_data.getData()
+            data    = self.parent()._plot_data.getData()
+            error   = self.parent()._plot_data.getError()
 
-            kwargs['x']             = data[0]
-            kwargs['y']             = data[1]
-            kwargs['symbol']        = self['Type']
-            kwargs['symbolSize']    = self['Size']
-            kwargs['symbolPen']     = self.symbol_pen
-            kwargs['symbolBrush']   = self.symbol_brush
-            kwargs['antialias']     = self['Antialiassing']
+            if error is None:
+                error = {'width':0, 'height':0}
+                kwargs['x']         = data[0]
+                kwargs['y']         = data[1]
+                kwargs['pen']       = self.line_pen
+                kwargs['beam']      = 0
+                kwargs = {**kwargs, **error}
+            else:
 
-        elif self._mode == '3D':
-            data = self.parent()._plot_data.getData(['x','y','z'])
-            
-            kwargs['pos']   = np.vstack(data).transpose()
-            kwargs['color'] = self['Line color'].getRgbF()
-            kwargs['size']  = self['Size']
+                kwargs['x']         = data[0]
+                kwargs['y']         = data[1]
+                kwargs['pen']       = self.line_pen
+                kwargs['beam']      = self['Beam']
+                kwargs = {**kwargs, **error}
 
         return kwargs
 
@@ -159,25 +134,17 @@ class ScatterPlot(ParameterHandler):
         '''
         self.childFromName('Transform').unTransform()
         if hasattr(self, 'draw_items'):
-
             if self['Visible'] and self._mode == '2D':
-                kwargs = self._getDictionary()
-                self.draw_items[0].setData(**kwargs)
-            elif self['Visible'] and self._mode == '3D':
                 kwargs = self._getDictionary()
                 self.draw_items[0].setData(**kwargs)
             else:
                 for i in range(len(self.draw_items))[::-1]:
                     if self._mode == '2D':
                         self.default_target.draw_surface.removeItem(self.draw_items[i])
-                    elif self._mode == '3D':
-                        self.default_target.view.removeItem(self.draw_items[i])
                 del self.draw_items
         else:
             if self['Visible'] and self._mode == '2D':
                 self.draw()
-            elif self['Visible'] and self._mode == '3D':
-                self.drawGL()
 
         self.childFromName('Transform').reTransform()
 
@@ -190,35 +157,11 @@ class ScatterPlot(ParameterHandler):
             self.default_target = target_surface
 
         self.draw_items = []
-        kwargs = self._getDictionary()
-        self.draw_items = [SimplePlotDataItem(**kwargs)]
-            
-        # if not self.getParameter('Error') == None and self.getParameter('Show error')[0]:
-        #     self.draw_items.append(
-        #         SimpleErrorBarItem(
-        #             x   = kwargs['x'], 
-        #             y   = kwargs['y'],
-        #             pen = self.error_pen,
-        #             **self.getParameter('Error')))
+        kwargs          = self._getDictionary()
+        self.draw_items.append(SimpleErrorBarItem(**kwargs))
 
         for curve in self.draw_items:
             self.default_target.draw_surface.addItem(curve)
-
-    def drawGL(self, target_view = None):
-        '''
-        Draw the objects.
-        '''
-        self._mode = '3D'
-        if not target_view == None:
-            self.default_target = target_view
-
-        self.draw_items = []
-        kwargs = self._getDictionary()
-        self.draw_items.append(gl.GLScatterPlotItem(**kwargs))
-        self.draw_items[-1].setGLOptions('translucent')
-            
-        for curve in self.draw_items:
-            self.default_target.view.addItem(curve)
 
     def removeItems(self):
         '''

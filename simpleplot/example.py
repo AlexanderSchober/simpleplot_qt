@@ -38,8 +38,7 @@ def exampleLinePlot():
         'Scatter', 
         Name        = 'cos', 
         Style       = ['d','r','20'], 
-        Log         = [False,False],
-        Error       = {})
+        Log         = [False,False])
     third = ax.addPlot(
         'Scatter', 
         Name        = 'tan', 
@@ -55,7 +54,7 @@ def exampleLinePlot():
     y_2 = np.cos(x_2)+2*np.sin(x_2)
 
     first.setData(x = x_2, y = y+2)
-    second.setData(x = x_2, y = y_1+3, error = {'width' : 0.1,'height': 0.1})
+    second.setData(x = x_2, y = y_1+3, error = {'width' : 0.1,'height': 0.5})
     third.setData(x = x_2, y = y_2+4)
     ax.zoomer.zoom()
 
@@ -210,5 +209,5 @@ def example():
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
-    # exampleLinePlot()
-    example()
+    exampleLinePlot()
+    # example()

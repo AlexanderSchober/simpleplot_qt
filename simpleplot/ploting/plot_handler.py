@@ -23,7 +23,7 @@
 
 import numpy as np
 
-from .plot_items.scatter_plot       import ScatterPlot
+from .scatter_plot_handler          import ScatterPlotHandler
 from .surface_plot_handler          import SurfacePlotHandler
 from .plot_items.bar_plot           import BarPlot
 from .plot_items.volume_plot        import VolumePlot
@@ -36,7 +36,7 @@ def get_plot_handler(select):
     on the initial input
     '''
     if select == 'Scatter':
-        return Plot_Handler(select, ScatterPlot)
+        return Plot_Handler(select, ScatterPlotHandler)
     elif select == 'Surface':
         return Plot_Handler(select, SurfacePlotHandler)
     elif select == 'Bar':
