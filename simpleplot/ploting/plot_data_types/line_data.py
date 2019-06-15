@@ -44,16 +44,18 @@ class LineData(PlotData, SessionNode):
         set the local data manually even after
         initialization of the class
         '''
-        elements = [None]*len(self._axes)
+        elements = [None for i in self._axes]
 
         for i,value in enumerate(self._axes):
-            if value in kwargs.keys():
-                elements[i] = kwargs[value]
+            if value in kwargs.keys() and not kwargs[value] is None :
+                elements[i] = np.array(kwargs[value])
 
         shape = np.amax(
-            np.array([np.array(elements)[i].shape[0] 
-            if not np.array(elements)[i] is None else 0 
-            for i in range(np.array(elements).shape[0])]))
+            np.array(
+                [0 if elements[i] is None else elements[i].shape[0]
+                for i in range(len(self._axes))]
+                )
+            )
 
         for i,element in enumerate(elements):
             if element is None:
