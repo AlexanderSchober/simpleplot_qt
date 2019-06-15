@@ -148,6 +148,7 @@ class Artist2DNode(SessionNode, Artist):
 
         self.legend.tearLegendDown()
         self.legend.buildLegend()
+        self.zoomer.zoom()
 
     def redraw(self):
         '''
