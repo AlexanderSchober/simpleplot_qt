@@ -21,8 +21,10 @@
 #
 # *****************************************************************************
 
+from PyQt5 import QtGui
 import numpy as np
 from ...pyqtgraph.pyqtgraph     import opengl as gl
+from ..custom_pg_items.GLLinePlotItem import GLLinePlotItem
 from ...model.parameter_class   import ParameterHandler 
 
 class SurfaceRayHandler(ParameterHandler): 
@@ -49,6 +51,26 @@ class SurfaceRayHandler(ParameterHandler):
         self.addParameter(
             'Computation', 'Fast', 
             choices = ['Fast','Mixed', 'Precise'],
+            method = self._dispatchCoordinate)
+        self.addParameter(
+            'Width', 0.1, 
+            method = self._dispatchCoordinate)
+        self.addParameter(
+            'Color', QtGui.QColor('Black'), 
+            method = self._dispatchCoordinate)
+        self.addParameter(
+            'Offset', 0.001, 
+            method = self._dispatchCoordinate)
+        self.addParameter(
+            'Line mode', 'line_strip', 
+            choices = ['line_strip','lines'],
+            method = self._dispatchCoordinate)
+        self.addParameter(
+            'GL options', 'opaque', 
+            choices = ['opaque','translucent', 'additive'],
+            method = self._dispatchCoordinate)
+        self.addParameter(
+            'Antialiasing', True,
             method = self._dispatchCoordinate)
 
     def drawGL(self,target):
@@ -103,12 +125,14 @@ class SurfaceRayHandler(ParameterHandler):
         data_xz = data[2][index_x,:]
 
         self.pointer_elements.append(
-            gl.GLLinePlotItem(
-                pos   = np.vstack([data_xx, data_xy, data_xz]).transpose(),
-                color = [1,1,1,1],
-                width = 3,
-                mode  = 'line_strip'))
-        self.pointer_elements[-1].setGLOptions('opaque')
+            GLLinePlotItem(
+                pos     = np.vstack([data_xx, data_xy, data_xz + self['Offset']]).transpose(),
+                color   = self['Color'].getRgbF(),
+                width   = self['Width'],
+                mode    = self['Line mode'],
+                antialias = self['Antialiasing'],
+                direction = 'y'))
+        self.pointer_elements[-1].setGLOptions(self['GL options'])
         self.pointer_elements[-1].applyTransform(tranform, False)
         self.default_target.view.addItem(self.pointer_elements[-1])
 
@@ -117,12 +141,14 @@ class SurfaceRayHandler(ParameterHandler):
         data_yz = data[2][:,index_y]
 
         self.pointer_elements.append(   
-            gl.GLLinePlotItem(
-                pos = np.vstack([data_yx,data_yy,data_yz]).transpose(),
-                color = [1,1,1,1],
-                width = 3,
-                mode = 'line_strip'))
-        self.pointer_elements[-1].setGLOptions('opaque')
+            GLLinePlotItem(
+                pos     = np.vstack([data_yx,data_yy,data_yz + self['Offset']]).transpose(),
+                color   = self['Color'].getRgbF(),
+                width   = self['Width'],
+                mode    = self['Line mode'],
+                antialias = self['Antialiasing'],
+                direction = 'x'))
+        self.pointer_elements[-1].setGLOptions(self['GL options'])
         self.pointer_elements[-1].applyTransform(tranform, False)
         self.default_target.view.addItem(self.pointer_elements[-1])
 
@@ -140,15 +166,16 @@ class SurfaceRayHandler(ParameterHandler):
 
         for curve in iso_curves:
             self.pointer_elements.append(
-                gl.GLLinePlotItem(
-                    pos=np.vstack([
-                        [(item[0]-0.5) / (data[2].shape[0]-1) * x_fac + bounds[0][0] for item in curve],
-                        [(item[1]-0.5) / (data[2].shape[1]-1) * y_fac + bounds[1][0] for item in curve],
-                        [level+0.01 for item in curve]]).transpose(),
-                    color = [1,1,1,1],
-                    width = 3,
-                    mode = 'line_strip'))
-            self.pointer_elements[-1].setGLOptions('opaque')
+                GLLinePlotItem(
+                    pos     =np.vstack([
+                                [(item[0]-0.5) / (data[2].shape[0]-1) * x_fac + bounds[0][0] for item in curve],
+                                [(item[1]-0.5) / (data[2].shape[1]-1) * y_fac + bounds[1][0] for item in curve],
+                                [level + self['Offset']for item in curve]]).transpose(),
+                    color   = self['Color'].getRgb(),
+                    width   = self['Width'],
+                    mode    = self['Line mode'],
+                    antialias = self['Antialiasing']))
+            self.pointer_elements[-1].setGLOptions(self['GL options'])
             self.pointer_elements[-1].applyTransform(tranform, False)
             self.default_target.view.addItem(self.pointer_elements[-1])
 

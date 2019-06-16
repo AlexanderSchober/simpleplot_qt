@@ -29,10 +29,10 @@ from PyQt5 import QtWidgets
 from .setting_window_ui import Ui_preference_window
 from ..model.delegates  import ParameterDelegate
 
-from .scatter_widget    import ScatterWidget
-from .surface_widget    import SurfaceWidget
-from .bar_widget        import BarWidget
-from .volume_widget     import VolumeWidget
+# from .scatter_widget    import ScatterWidget
+# from .surface_widget    import SurfaceWidget
+# from .bar_widget        import BarWidget
+# from .volume_widget     import VolumeWidget
 from .export_dialog     import ExportDialog
 
 import sys

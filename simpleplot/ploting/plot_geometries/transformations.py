@@ -49,6 +49,9 @@ class Rotation:
         status: active
         ##############################################
         '''
+        self.setParameters(axis, angle)
+
+    def setParameters(self, axis, angle, origin = [0,0,0]):
         self.axis   = axis
         self.origin = origin
         self.angle  = np.pi * angle / 180.
@@ -98,6 +101,37 @@ class Rotation:
 
             point.setAbsolutePosition(*list(result))
 
+
+    def applyNumpy(self, points):
+        '''
+        ##############################################
+        rotate the passed point element. 
+        ———————
+        Input: -
+        ———————
+        Output: -
+        ———————
+        status: active
+        ##############################################
+        '''
+
+        for point in points:
+
+            coordinates = point
+
+            result = np.dot(
+                self.t_t,
+                list(np.dot(
+                    self.rotation_m,
+                    np.dot(
+                        self.t,
+                        coordinates.tolist()+[1])
+                    )
+                )
+                +[1])
+
+            point[:] = result
+
 class Translation:
     
     def __init__(self, vector):
@@ -113,11 +147,17 @@ class Translation:
         status: active
         ##############################################
         '''
+
+        self.setParameters(vector)
+
+    def setParameters(self, vector):
+
         self.vector     = vector
         self.t          = np.zeros((3,4))
         np.fill_diagonal(self.t,1)
         self.t[0:3,3]   = np.asarray(self.vector)[:]
         
+
     def apply(self, points):
         '''
         ##############################################
@@ -138,6 +178,22 @@ class Translation:
             result = np.dot(self.t, coordinates+[1])
 
             point.setAbsolutePosition(*list(result))
+
+    def applyNumpy(self, points):
+        '''
+        ##############################################
+        rotate the passed point element. 
+        ———————
+        Input: -
+        ———————
+        Output: -
+        ———————
+        status: active
+        ##############################################
+        '''
+
+        for point in points:
+            point += point +self.vector
 
 class Move(Translation):
     

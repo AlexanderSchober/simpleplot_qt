@@ -34,6 +34,8 @@ from ..custom_pg_items.SimpleErrorBarItem import SimpleErrorBarItem
 from ...model.parameter_class       import ParameterHandler 
 from ..plot_geometries.transformer  import Transformer
 
+from ..custom_pg_items.GLLinePlotItem import GLLinePlotItem
+
 class LinePlot(ParameterHandler): 
     '''
     This class will be the scatter plots. 
@@ -131,7 +133,7 @@ class LinePlot(ParameterHandler):
             
             kwargs['pos']   = np.vstack(data).transpose()
             kwargs['color'] = self['Line color'].getRgbF()
-            kwargs['width'] = self['Line width']
+            kwargs['width'] = self['Line width']/100
 
         return kwargs
 
@@ -197,7 +199,7 @@ class LinePlot(ParameterHandler):
 
         self.draw_items = []
         kwargs = self._getDictionary()
-        self.draw_items.append(gl.GLLinePlotItem(**kwargs))
+        self.draw_items.append(GLLinePlotItem(**kwargs))
         self.draw_items[-1].setGLOptions('translucent')
 
         for curve in self.draw_items:

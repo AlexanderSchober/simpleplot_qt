@@ -62,6 +62,53 @@ def exampleLinePlot():
     widget.show()
     sys.exit(app.exec_())
 
+def exampleSurfacePlot():
+    #set upt the window and the plot widget
+    app 	        = QtWidgets.QApplication(sys.argv)
+    widget          = QtWidgets.QWidget()
+    multi_canvas    = MultiCanvasItem(
+        widget = widget,        
+        grid        = [[True]],
+        element_types = [['3D']],
+        x_ratios    = [1],
+        y_ratios    = [1],
+        background  = "b",
+        highlightthickness = 0)
+    
+    #link to the subplots
+    ax = multi_canvas.getSubplot(0,0)    
+    
+    x = np.linspace(-4*np.pi, 4*np.pi, 100)
+    xv, yv = np.meshgrid(x, x)
+    y = np.sin(x)
+    z = np.cos(x)
+    y_1 = np.cos(x+0.5)
+    y_2 = np.cos(x)+2*np.sin(x)
+
+    Colors = [
+            [0.,1.,1.],
+            [0.,0.,1.],
+            [0.,1.,0.],
+            [1.,0.,0.],
+            [0.,1.,0.],
+        ]
+    Positions = [0,0.25,0.5,0.75,1.]
+
+    #set the ax plot
+    ax.addPlot(
+        'Surface', 
+        x = x,
+        y = x,
+        z = np.cos(xv)+np.sin(yv)-2,
+        Name        = 'key',
+        Colors      = Colors,
+        Positions   = Positions)
+    ax.draw()
+
+    #show widget
+    widget.show()
+    sys.exit(app.exec_())
+
 def example():
 
     #set upt the window and the plot widget
@@ -211,3 +258,4 @@ def example():
 if __name__ == '__main__':
     exampleLinePlot()
     # example()
+    # exampleSurfacePlot()

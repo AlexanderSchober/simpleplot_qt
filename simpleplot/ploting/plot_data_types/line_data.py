@@ -89,3 +89,5 @@ class LineData(PlotData, SessionNode):
             return self._error
         else:
             return None
+
+            
