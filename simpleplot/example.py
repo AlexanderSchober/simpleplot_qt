@@ -257,5 +257,5 @@ def example():
 
 if __name__ == '__main__':
     # exampleLinePlot()
-    # example()
-    exampleSurfacePlot()
+    example()
+    # exampleSurfacePlot()
