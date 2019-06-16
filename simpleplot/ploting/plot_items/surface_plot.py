@@ -95,15 +95,6 @@ class SurfacePlot(ParameterHandler):
                 for draw_item in self.draw_items:
                     if isinstance(draw_item, pg.ImageItem) or isinstance(draw_item, gl.GLMeshItem):
                         surface = draw_item
-                    
-                if surface == None:
-                    if self._mode == '2D':
-                        self.draw()
-                    elif self._mode == '3D':
-                        self.drawGL()
-                    for draw_item in self.draw_items:
-                        if isinstance(draw_item, pg.ImageItem) or isinstance(draw_item, gl.GLMeshItem):
-                            surface = draw_item
                             
                 if self._mode == '2D':
                     surface.setImage(self.parent()._plot_data.getData()[2])
@@ -128,7 +119,7 @@ class SurfacePlot(ParameterHandler):
                             self.default_target.draw_surface.removeItem(self.draw_items[i])
                         elif self._mode == '3D':
                             self.default_target.view.removeItem(self.draw_items[i])
-                        del self.draw_items[i]
+                del self.draw_items
         else:
             if self._mode == '2D':
                 self.draw()
@@ -144,20 +135,14 @@ class SurfacePlot(ParameterHandler):
         here allow the setting of colors either through the 
         color map or through shaders.
         '''
-        surface = None
-        for draw_item in self.draw_items:
-            if isinstance(draw_item, pg.ImageItem) or isinstance(draw_item, gl.GLMeshItem):
-                surface = draw_item
-
-        if self._mode == '2D' and not surface == None:
+        if self._mode == '2D':
             color_map = pg.ColorMap(
                 self.childFromName('Shader')._positions,
                 np.array(self.childFromName('Shader')._colors, dtype=np.uint)*255)
-            surface.setLookupTable(color_map.getLookupTable(0.0, 1.0, alpha = False))
+            self.draw_items[0].setLookupTable(color_map.getLookupTable(0.0, 1.0, alpha = False))
 
         elif self._mode == '3D':
-            if not surface == None:
-                surface.setShader(self.childFromName('Shader').getShader('height'))
+            self.draw_items[0].setShader(self.childFromName('Shader').getShader('height'))
 
     def draw(self, target_surface = None):
         '''

@@ -62,8 +62,8 @@ class SurfaceRayHandler(ParameterHandler):
             'Offset', 0.001, 
             method = self._dispatchCoordinate)
         self.addParameter(
-            'Line mode', 'line_strip', 
-            choices = ['line_strip','lines'],
+            'Line mode', 'tube', 
+            choices = ['line_strip','lines', 'tube'],
             method = self._dispatchCoordinate)
         self.addParameter(
             'GL options', 'opaque', 

@@ -46,6 +46,7 @@ class GLLinePlotItem(GLGraphicsItem):
                                        segment.
                               'line_strip': All vertexes are drawn as a
                                             continuous set of line segments.
+                                'tube': makes tubes
         ====================  ==================================================
         """
         args = ['pos', 'color', 'width', 'mode', 'antialias', 'direction']
@@ -64,7 +65,7 @@ class GLLinePlotItem(GLGraphicsItem):
     def initializeGL(self):
         pass
 
-    def _drawAxis(self):
+    def _drawTube(self):
         '''
         Draw the line a s cylinder 
         as the line width is not supported
@@ -94,7 +95,12 @@ class GLLinePlotItem(GLGraphicsItem):
         To avoid the computation of all elements on 
         any frame redraw the values are buffered here
         '''
-        self.vertices = 10
+
+
+        if self.antialias:
+            glEnable(GL_LINE_SMOOTH)
+            glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
+        glColor4f(*self.color)
 
         if self.direction in ['x', 'y', 'z']:
             self._template = np.zeros((self.vertices + 1, 3))
@@ -158,18 +164,52 @@ class GLLinePlotItem(GLGraphicsItem):
                     + self.width * math.sin(2 * math.pi * (i/self.vertices)) * new_y
                     +self.pos[self.pos.shape[0]-1])
 
+    def _drawLine(self):
+        
+        glEnableClientState(GL_VERTEX_ARRAY)
+
+        try:
+            glVertexPointerf(self.pos)
+            
+            if isinstance(self.color, np.ndarray):
+                glEnableClientState(GL_COLOR_ARRAY)
+                glColorPointerf(self.color)
+            else:
+                if isinstance(self.color, (str, QtGui.QColor)):
+                    glColor4f(*fn.glColor(self.color))
+                else:
+                    glColor4f(*self.color)
+            glLineWidth(self.width)
+            
+            if self.antialias:
+                glEnable(GL_LINE_SMOOTH)
+                glEnable(GL_BLEND)
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
+                
+            if self.mode == 'line_strip':
+                glDrawArrays(GL_LINE_STRIP, 0, int(self.pos.size / self.pos.shape[-1]))
+            elif self.mode == 'lines':
+                glDrawArrays(GL_LINES, 0, int(self.pos.size / self.pos.shape[-1]))
+            else:
+                raise Exception("Unknown line mode '%s'. (must be 'lines' or 'line_strip')" % self.mode)
+                
+        finally:
+            glDisableClientState(GL_COLOR_ARRAY)
+            glDisableClientState(GL_VERTEX_ARRAY)
+
     def paint(self):
         '''
         Paint the elements of the axis.
         This includes the axis line,
         the ticks and the lables
         '''
-        
+        if self.pos is None:
+            return
         self.setupGLState()
-        if self.antialias:
-            glEnable(GL_LINE_SMOOTH)
-            glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
-        glColor4f(*self.color)
 
-        self._preprocess()
-        self._drawAxis()
+        if self.mode == 'tube':
+            self._preprocess()
+            self._drawTube()
+        else:
+            self._drawLine()

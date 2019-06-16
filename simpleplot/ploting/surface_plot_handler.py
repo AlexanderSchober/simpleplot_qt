@@ -62,14 +62,15 @@ class SurfacePlotHandler(SessionNode):
         SessionNode.__init__(self, 'No_name')
         self.add_options    = ['Isocurve', 'Projection']
 
-        self._plot_data     = SurfaceData(x = x, y = y, z = z)
+        self._plot_data     = SurfaceData()
         self.addChild(self._plot_data)
-
+        self.addChild(SurfacePlot(**kwargs))
+        self.addChild(IsoCurvePlot(**kwargs))
         self._ray_handler   = SurfaceRayHandler()
         self.addChild(self._ray_handler)
 
-        self.addChild(SurfacePlot(**kwargs))
-        self.addChild(IsoCurvePlot(**kwargs))
+        self._plot_data.setData(x = x, y = y, z = z)
+
 
     def __getitem__(self, value):
         '''
@@ -102,6 +103,8 @@ class SurfacePlotHandler(SessionNode):
         '''
         Draw the objects on a 3D canvas
         '''
+        self['Data'].set3D()
+
         for child in self._children:
             if hasattr(child, 'drawGL'):
                 child.drawGL(target_view)

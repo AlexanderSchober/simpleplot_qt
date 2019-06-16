@@ -47,7 +47,7 @@ class ShaderConstructor(ParameterHandler):
             [0.,0.,1., 1.],
             [0.,1.,0., 1.],
             [1.,0.,0., 1.],
-            [0.,1.,1., 1.]]
+            [1.,0.,1., 1.]]
         state = {
             'ticks':[[self._positions[i],np.array(self._colors)[i]*255] 
             for i in range(len(self._colors))],

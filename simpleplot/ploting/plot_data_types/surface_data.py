@@ -37,13 +37,13 @@ class SurfaceData(PlotData, SessionNode):
     to be inherited by variations with different
     variations.
     '''
-    def __init__(self,x = None, y = None, z = None, **kwargs):
+    def __init__(self, **kwargs):
         PlotData.__init__(self, **kwargs) 
         SessionNode.__init__(self,'Data')
 
         self._axes = ['x','y','z']
         self._data = [None, None, None]
-        self.setData(x = x, y = y, z = z)
+
         
     def setData(self, **kwargs):
         '''
@@ -80,13 +80,23 @@ class SurfaceData(PlotData, SessionNode):
                 changed[self._axes.index('y')] = True
 
         if self._sanity(elements):
-            self._data = elements
+
+            self._data = elements 
             self._setBounds()
-            if changed[0] or changed[1]:
-                self._buildVerticeMap()
-            elif changed[2] and not changed[0] and not changed[1]:
-                self._updateTopography()
-            self._setBoundingBox()
+
+            if self.parent().childFromName('Surface')._mode == '3D':
+                self.set3D(changed = changed)
+
+    def set3D(self, changed = [True, True, True]):
+        '''
+        return a dataset as the data on the 
+        wanted orientation
+        '''
+        if changed[0] or changed[1]:
+            self._buildVerticeMap()
+        elif changed[2] and not changed[0] and not changed[1]:
+            self._updateTopography()
+        self._setBoundingBox()
 
     def getData(self):
         '''
