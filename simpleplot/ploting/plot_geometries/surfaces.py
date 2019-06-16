@@ -70,7 +70,7 @@ class Surface:
         Sends out the vertices for ploting in the
         desired numpy format. 
         '''
-        vertices = np.asarray([ list(point.vec) for point in self.points ])
+        vertices = np.asarray(self.points)
         return vertices
 
     def getFaces(self):
@@ -172,8 +172,7 @@ class QuadSurface(Surface):
                 [ids[j,i], ids[j,i+1], ids[j+1,i+1]] if i%2 == 0 
                 else [ids[j,i+1], ids[j+1,i+1], ids[j+1,i]]]))
 
-        self.np_points  = self.np_points.reshape((self.resolution_x*self.resolution_y,3))
-        self.points     = [Point(str(i), *self.np_points[i].tolist()) for i in range(self.np_points.shape[0])]
+        self.points     = self.np_points.reshape((self.resolution_x*self.resolution_y,3))
         self.faces      = self.faces.reshape(((self.resolution_x-1)*(self.resolution_y-1)*2,3)).tolist()
 
         if not isinstance(self.topography, type(None)):
@@ -197,10 +196,14 @@ class QuadSurface(Surface):
         '''
         This function applies the provided topography 
         '''
-        for j in range(self.resolution_y):
-            for i in range(self.resolution_x):
-                translate = Translation(self.normal_vector * self.topography[i,j])
-                translate.apply([self.points[j * self.resolution_x + i]]) 
+        if all([self.normal_vector[i] == element for i,element in enumerate([0,0,1])]):
+            self.points[:,2] = np.reshape(self.topography.transpose(),(self.points.shape[0]))
+
+        else:
+            for j in range(self.resolution_y):
+                for i in range(self.resolution_x):
+                    translate = Translation(self.normal_vector * self.topography[i,j])
+                    translate.apply([self.points[j * self.resolution_x + i]]) 
 
 
 class Disk(QuadSurface):
