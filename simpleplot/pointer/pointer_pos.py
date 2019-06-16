@@ -89,8 +89,7 @@ class Type_0_Position(PointerPosition):
             points.append(nodes[distance.cdist([node], nodes).argmin()])
 
         nodes   = points
-        deltas  = nodes - node
-        select  = closest_index = distance.cdist([node], nodes).argmin()
+        select  = distance.cdist([node], nodes).argmin()
         point   = nodes[select]
 
         self.parent.cursor_x = np.log10(point[0]) if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else point[0]
