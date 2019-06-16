@@ -40,31 +40,63 @@ class SurfaceRayHandler(ParameterHandler):
         '''
         '''
         self.addParameter(
+            'Active', True, 
+            method = self._setActive)
+        self.addParameter(
             'Mode', 'Projection', 
             choices = ['IsoCurve', 'Projection'],
+            method = self._dispatchCoordinate)
+        self.addParameter(
+            'Computation', 'Fast', 
+            choices = ['Fast','Mixed', 'Precise'],
             method = self._dispatchCoordinate)
 
     def drawGL(self,target):
         self.default_target = target
 
+    def reset(self):
+        '''
+        reprocess pointer
+        '''
+        self.point = None
+        self._dispatchCoordinate()
+
+    def _setActive(self):
+        '''
+        '''
+        if not self['Active']:
+            self._destroyPointer()
+
+    def _destroyPointer(self):
+        '''
+        '''
+        for element in self.pointer_elements:
+            if element in self.default_target.view.items:
+                self.default_target.view.removeItem(element)
+        self.pointer_elements = []
+
     def _dispatchCoordinate(self):
         '''
         '''
-        if self['Mode'] == 'IsoCurve' and not self.point is None:
-            self._isoCurve(self.point[2])
-        elif self['Mode'] == 'Projection' and not self.point is None:
-            self._dataCurve(self.point[0], self.point[1])
+        if self['Active']:
+            if self['Mode'] == 'IsoCurve' and not self.point is None:
+                self._isoCurve(self.point[2])
+            elif self['Mode'] == 'Projection' and not self.point is None:
+                self._dataCurve(self.point[0], self.point[1])
+            else:
+                self._destroyPointer()
+        else:
+            self._destroyPointer()
 
     def _dataCurve(self,x,y):
         '''
         '''
-        for element in self.pointer_elements:
-            self.default_target.view.removeItem(element)
-        self.pointer_elements = []
+        self._destroyPointer()
 
-        data = self.parent()['Data'].getData()
-        index_x = np.argmin(np.abs(x-data[0]))
-        index_y = np.argmin(np.abs(y-data[1]))
+        tranform    = self.parent()['Surface'].draw_items[0].viewTransform()
+        data        = self.parent()['Data'].getData()
+        index_x     = np.argmin(np.abs(x-data[0]))
+        index_y     = np.argmin(np.abs(y-data[1]))
 
         data_xx = [data[0][index_x] for e in range(data[1].shape[0])]
         data_xy = data[1]
@@ -77,6 +109,7 @@ class SurfaceRayHandler(ParameterHandler):
                 width = 3,
                 mode  = 'line_strip'))
         self.pointer_elements[-1].setGLOptions('opaque')
+        self.pointer_elements[-1].applyTransform(tranform, False)
         self.default_target.view.addItem(self.pointer_elements[-1])
 
         data_yx = data[0]
@@ -90,20 +123,20 @@ class SurfaceRayHandler(ParameterHandler):
                 width = 3,
                 mode = 'line_strip'))
         self.pointer_elements[-1].setGLOptions('opaque')
+        self.pointer_elements[-1].applyTransform(tranform, False)
         self.default_target.view.addItem(self.pointer_elements[-1])
 
     def _isoCurve(self,level):
         '''
         '''
-        for element in self.pointer_elements:
-            self.default_target.view.removeItem(element)
-        self.pointer_elements = []
+        self._destroyPointer()
 
-        iso_curves = self.parent()['Data'].getIsocurve(level)
-        data    = self.parent()['Data'].getData()
-        bounds  = self.parent()['Data'].getBounds()
-        x_fac   = (bounds[0][1] - bounds[0][0])
-        y_fac   = (bounds[1][1] - bounds[1][0])
+        tranform    = self.parent()['Surface'].draw_items[0].viewTransform()
+        iso_curves  = self.parent()['Data'].getIsocurve(level)
+        data        = self.parent()['Data'].getData()
+        bounds      = self.parent()['Data'].getBounds()
+        x_fac       = (bounds[0][1] - bounds[0][0])
+        y_fac       = (bounds[1][1] - bounds[1][0])
 
         for curve in iso_curves:
             self.pointer_elements.append(
@@ -116,6 +149,7 @@ class SurfaceRayHandler(ParameterHandler):
                     width = 3,
                     mode = 'line_strip'))
             self.pointer_elements[-1].setGLOptions('opaque')
+            self.pointer_elements[-1].applyTransform(tranform, False)
             self.default_target.view.addItem(self.pointer_elements[-1])
 
     def closestPointOnLine(self, a, b, p):
@@ -207,30 +241,55 @@ class SurfaceRayHandler(ParameterHandler):
         flat_index = np.reshape(flat_index,(flat_index.shape[0]*flat_index.shape[1]) )
         flat_index = flat_index[np.where(flat_index<vert_data[1].shape[0])]
             
-        points = []
-        for face in vert_data[1][flat_index]:
-            points.append(face[0])
-            points.append(face[1])
-            points.append(face[2])
-        points = vert_data[0][np.array(list(set(points)))]
-        
-        ray_norm = np.linalg.norm(ray[1] - ray[0])
-        distance = np.zeros(points.shape[0])
+        if self['Computation'] in ('Fast','Mixed'): 
+            points = []
+            for face in vert_data[1][flat_index]:
+                points.append(face[0])
+                points.append(face[1])
+                points.append(face[2])
+            points = vert_data[0][np.array(list(set(points)))]
+            
+            ray_norm = np.linalg.norm(ray[1] - ray[0])
+            distance = np.zeros(points.shape[0])
 
-        point_vectors = points - ray[0]
-        for i in range(distance.shape[0]):
-            distance[i] = self.closestPointOnLine(ray[1], ray[0],points[i])
+            point_vectors = points - ray[0]
+            for i in range(distance.shape[0]):
+                distance[i] = self.closestPointOnLine(ray[1], ray[0],points[i])
 
-        idx = np.argpartition(distance, 3)
+            idx = np.argpartition(distance, 3)
 
-        transform   = np.array([self.parent().childFromName('Surface').draw_items[0].viewTransform().data()[0+i*4:4+i*4]for i in range(4)])
-        triangle = np.array([
-                np.dot(np.array(points[idx[0]].tolist()+[1]) , transform)[0:3],
-                np.dot(np.array(points[idx[1]].tolist()+[1]) , transform)[0:3],
-                np.dot(np.array(points[idx[2]].tolist()+[1]) , transform)[0:3]])
+            transform   = np.array([self.parent().childFromName('Surface').draw_items[0].viewTransform().data()[0+i*4:4+i*4]for i in range(4)])
+            triangle = np.array([
+                    points[idx[0]],
+                    points[idx[1]],
+                    points[idx[2]]])
+            test = self.rayTriangleIntersection(ray[0], ray[1], triangle)
 
-        test = self.rayTriangleIntersection(ray[0], ray[1], triangle)
-        return test[1]
+
+            if test[1] is None and self['Computation'] == 'Mixed':
+                for face in vert_data[1][flat_index]:
+                    triangle    = vert_data[0][np.array([face[0],face[1],face[2]])]
+                    test        = self.rayTriangleIntersection(ray[0], ray[1], triangle)
+                    if test[0]:
+                        return test[1]
+            else:
+                return test[1]
+            
+        if self['Computation'] == 'Precise':
+            points = []
+            for face in vert_data[1][flat_index]:
+                triangle    = vert_data[0][np.array([face[0],face[1],face[2]])]
+                z_values    = [triangle[i,2]>minima[2] and triangle[i,2]<maxima[2] for i in range(3)]
+                if any(z_values):
+                    test        = self.rayTriangleIntersection(ray[0], ray[1], triangle)
+                    if test[0]:
+                        points.append(test[1])
+
+            if not len(points) == 0:
+                points_scalar = np.array([np.linalg.norm(point-ray[0]) for point in points ])
+                return points[np.argmin(points_scalar)]
+            else:
+                return None
 
     def rayTriangleIntersection(self, ray_near, ray_dir, v123):
         """

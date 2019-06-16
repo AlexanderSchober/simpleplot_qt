@@ -118,6 +118,9 @@ class Transformer(ParameterHandler):
 
             self._position = position
 
+        if hasattr(self.parent().parent(), '_ray_handler'):
+             self.parent().parent()._ray_handler.reset()
+
     def translateItem(self, item, position):
         '''
         translate in the 3D view
@@ -145,6 +148,9 @@ class Transformer(ParameterHandler):
                     self.scaleItem(draw_item, scale)
 
             self._scale = scale
+
+        if hasattr(self.parent().parent(), '_ray_handler'):
+             self.parent().parent()._ray_handler.reset()
 
     def scaleItem(self, item, scale):
         '''
@@ -176,6 +182,9 @@ class Transformer(ParameterHandler):
 
             self._rotate_angle = angles
             self._rotate_axis  = axes
+
+        if hasattr(self.parent().parent(), '_ray_handler'):
+             self.parent().parent()._ray_handler.reset()
 
     def rotateItem(self, item, angles, axes):
         '''
