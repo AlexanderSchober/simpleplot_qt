@@ -235,7 +235,10 @@ class MyGLViewWidget(gl.GLViewWidget):
                 self.opts['center'][1],
                 self.opts['center'][2])
         else:
-            ray = self._getPickingRay(ev.x(), ev.y())
+            screens = QtWidgets.QApplication.instance().screens()
+            num     = QtWidgets.QApplication.instance().desktop().screenNumber(self)
+            ratio   = QtGui.QScreen.devicePixelRatio(screens[num])
+            ray     = self._getPickingRay(ev.x()*ratio, ev.y()*ratio)
             self.mouse_ray = np.array([self.cameraPosition(), ray[:3]])
             self.rayUpdate.emit()
             
