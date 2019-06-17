@@ -62,7 +62,7 @@ class Legend(ParameterHandler):
             names  = ['x', 'y'],
             method = self._setOffset)
         self.addParameter(
-            'Text length',  100,
+            'Text length',  130,
             method = self._setTextLength)
         self.addParameter(
             'Pen color',QtGui.QColor(100,100,100,alpha = 255),
@@ -74,7 +74,7 @@ class Legend(ParameterHandler):
             'Text color',QtGui.QColor(0,0,0,alpha = 50),
             method = self._setTextColor)
         self.addParameter(
-            'Text size',  8,
+            'Text size',  9,
             method = self._setTextSize)
 
         self.runAll()
