@@ -84,7 +84,7 @@ class ErrorPlot(ParameterHandler):
             'Line color', QtGui.QColor('grey') ,
             method  = self.refresh)
         self.addParameter(
-            'Line width', 1,
+            'Line width', 2,
             method  = self.refresh)
         self.addParameter(
             'Beam', 0.1 ,
@@ -118,7 +118,6 @@ class ErrorPlot(ParameterHandler):
                 kwargs['beam']      = 0
                 kwargs = {**kwargs, **error}
             else:
-
                 kwargs['x']         = data[0]
                 kwargs['y']         = data[1]
                 kwargs['pen']       = self.line_pen
@@ -127,7 +126,7 @@ class ErrorPlot(ParameterHandler):
 
         return kwargs
 
-    def refresh(self, **kwargs):
+    def refresh(self):
         '''
         Set the data of the plot manually after the plot item 
         has been actualized
@@ -159,6 +158,7 @@ class ErrorPlot(ParameterHandler):
         self.draw_items = []
         kwargs          = self._getDictionary()
         self.draw_items.append(SimpleErrorBarItem(**kwargs))
+        self.draw_items[-1].setZValue(-75)
 
         for curve in self.draw_items:
             self.default_target.draw_surface.addItem(curve)

@@ -190,16 +190,9 @@ class ScatterPlot(ParameterHandler):
             self.default_target = target_surface
 
         self.draw_items = []
-        kwargs = self._getDictionary()
+        kwargs          = self._getDictionary()
         self.draw_items = [SimplePlotDataItem(**kwargs)]
-            
-        # if not self.getParameter('Error') == None and self.getParameter('Show error')[0]:
-        #     self.draw_items.append(
-        #         SimpleErrorBarItem(
-        #             x   = kwargs['x'], 
-        #             y   = kwargs['y'],
-        #             pen = self.error_pen,
-        #             **self.getParameter('Error')))
+        self.draw_items[-1].setZValue(-25)
 
         for curve in self.draw_items:
             self.default_target.draw_surface.addItem(curve)

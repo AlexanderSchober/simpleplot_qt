@@ -89,13 +89,13 @@ class LinePlot(ParameterHandler):
             'Line color', QtGui.QColor('blue') ,
             method  = self.refresh)
         self.addParameter(
-            'Line width', kwargs['Thickness'] if 'Thickness' in kwargs.keys() else 3 ,
+            'Line width', kwargs['Thickness'] if 'Thickness' in kwargs.keys() else 1 ,
             method  = self.refresh)
         self.addParameter(
             'Shadow color', QtGui.QColor('black') ,
             method  = self.refresh)
         self.addParameter(
-            'Shadow width', 5 ,
+            'Shadow width', 0 ,
             method  = self.refresh)
 
     def _setVisual(self):
@@ -177,14 +177,7 @@ class LinePlot(ParameterHandler):
         self.draw_items = []
         kwargs          = self._getDictionary()
         self.draw_items = [SimplePlotDataItem(**kwargs)]
-            
-        # if not self.getParameter('Error') == None and self.getParameter('Show error')[0]:
-        #     self.draw_items.append(
-        #         SimpleErrorBarItem(
-        #             x   = kwargs['x'], 
-        #             y   = kwargs['y'],
-        #             pen = self.error_pen,
-        #             **self.getParameter('Error')))
+        self.draw_items[-1].setZValue(-50)
 
         for curve in self.draw_items:
             self.default_target.draw_surface.addItem(curve)
