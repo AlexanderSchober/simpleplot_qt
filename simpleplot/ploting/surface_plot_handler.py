@@ -53,7 +53,11 @@ class SurfacePlotHandler(SessionNode):
         error: dict of float arrays
             The error of each point
         '''
-        SessionNode.__init__(self, 'No_name')
+        if 'Name' in kwargs.keys():
+            SessionNode.__init__(self, kwargs['Name'])
+        else:
+            SessionNode.__init__(self, 'No_name')
+            
         self.add_options    = []
 
         self._plot_data     = SurfaceData()
@@ -110,3 +114,9 @@ class SurfacePlotHandler(SessionNode):
         for child in self._children:
             if hasattr(child, 'removeItems'):
                 child.removeItems()
+
+    def legendItems(self):
+        '''
+        return to the legend the items to be used
+        '''
+        return [self.childFromName('Surface')]
