@@ -137,6 +137,7 @@ class ScatterPlot(ParameterHandler):
 
             kwargs['x']             = data[0]
             kwargs['y']             = data[1]
+            kwargs['pen']           = None
             kwargs['symbol']        = self['Type']
             kwargs['symbolSize']    = self['Size']
             kwargs['symbolPen']     = self.symbol_pen
