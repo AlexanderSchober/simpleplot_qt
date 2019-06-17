@@ -20,15 +20,15 @@
 #   Alexander Schober <alexander.schober@mac.com>
 #
 # *****************************************************************************
-
+from PyQt5 import QtGui, QtCore
 import numpy as np
 
-from .scatter_plot  import ScatterPlot
-from .surface_plot  import SurfacePlot
-from .bar_plot      import BarPlot
-from .volume_plot   import VolumePlot
-from .vector_field_plot import VectorFieldPlot
-from ..model.node   import SessionNode
+from .scatter_plot_handler          import ScatterPlotHandler
+from .surface_plot_handler          import SurfacePlotHandler
+from .plot_items.bar_plot           import BarPlot
+from .plot_items.volume_plot        import VolumePlot
+from .plot_items.vector_field_plot  import VectorFieldPlot
+from ..model.node                   import SessionNode
 
 def get_plot_handler(select):
     '''
@@ -36,24 +36,25 @@ def get_plot_handler(select):
     on the initial input
     '''
     if select == 'Scatter':
-        return Plot_Handler(select, ScatterPlot)
+        return PlotHandler(select, ScatterPlotHandler)
     elif select == 'Surface':
-        return Plot_Handler(select, SurfacePlot)
+        return PlotHandler(select, SurfacePlotHandler)
     elif select == 'Bar':
-        return Plot_Handler(select, BarPlot)
+        return PlotHandler(select, BarPlot)
     elif select == 'Volume':
-        return Plot_Handler(select, VolumePlot)
+        return PlotHandler(select, VolumePlot)
     elif select == 'Vector field':
-        return Plot_Handler(select, VectorFieldPlot)
+        return PlotHandler(select, VectorFieldPlot)
     else:
         print('Could not find the fit class you are looking for. Error...')        
         return None
 
-class Plot_Handler(SessionNode):
+class PlotHandler(SessionNode):
     '''
     This class will be the manager of all the 
     scatter plots. 
     '''
+
     def __init__(self, name, target_class):
         SessionNode.__init__(self,name)
         self.identifier     = 0
@@ -68,7 +69,6 @@ class Plot_Handler(SessionNode):
         '''
         self._children.append(self.target_class(*args,**kwargs))
         self._children[-1]._parent = self
-
         return self._children[-1]
 
     def removeItem(self, name = '', idx = None, target = None):
@@ -110,10 +110,12 @@ class Plot_Handler(SessionNode):
 
     def processRay(self, ray):
         '''
-        Draw all the items onto the plot
+        process the ray tracing and then give
+        the result back as a hits
         '''
         hits = []
         for plot_element in self._children:
-            hits.append(plot_element.processRay(ray))
+            if hasattr(plot_element, '_ray_handler'):
+                plot_element._ray_handler.processRay(ray)
 
         return hits

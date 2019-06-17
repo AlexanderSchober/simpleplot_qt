@@ -67,7 +67,7 @@ class SessionNode(QtGui.QStandardItem):
         return self._parent
     
     def row(self):
-        if self._parent is not None:
+        if self.parent() is not None:
             return self._parent._children.index(self)
 
     def log(self, tabLevel=-1):
@@ -109,8 +109,11 @@ class SessionNode(QtGui.QStandardItem):
     def setString(self):
         pass
 
-    # def index(self):
-    #     if self.parent() == None:
-    #         return QtCore.QModelIndex()
-    #     else:
-    #         return QtCore.QModelIndex(self.row(), 0, self.parent().index())
+    def model(self):
+        return self._model
+        
+    def index(self):
+        if not self.row() is None:
+            return self._model.createIndex(self.row(),0,self)
+        else:
+            return QtCore.QModelIndex()

@@ -23,18 +23,18 @@
 
 #import dependencies
 from PyQt5 import QtWidgets, QtGui, QtCore
-from ..pyqtgraph import pyqtgraph as pg
-from ..pyqtgraph.pyqtgraph import opengl as gl
 import numpy as np
 
+from ..pyqtgraph            import pyqtgraph as pg
+from ..pyqtgraph.pyqtgraph  import opengl as gl
 
 from OpenGL.GL import glReadPixels, GL_RGBA,  GL_FLOAT, glPixelStorei, GL_UNPACK_ALIGNMENT, glFlush, glFinish, glGetIntegerv, glGetDoublev, GL_PROJECTION_MATRIX, GL_VIEWPORT, GL_MODELVIEW_MATRIX
 
 import OpenGL.GLU as GLU
 
 #personal imports
-from ..ploting.plot_items.shaders import ShaderConstructor
-from ..model.parameter_class import ParameterHandler 
+from ..ploting.plot_geometries.shaders      import ShaderConstructor
+from ..model.parameter_class                import ParameterHandler 
 
 class MyGLViewWidget(gl.GLViewWidget):
     ''' 
@@ -49,10 +49,7 @@ class MyGLViewWidget(gl.GLViewWidget):
         gl.GLViewWidget.__init__(self)
         self._initialize(parent)
         self.setMouseTracking(True)
-        self.pointer = gl.GLLinePlotItem(mode = 'line_strip')
-        self.addItem(self.pointer)
         self.mouse_ray = np.array([[0,0,0],[0,0,0]])
-
 
     def _initialize(self, parent):
         '''
@@ -121,7 +118,7 @@ class MyGLViewWidget(gl.GLViewWidget):
         Store the position of the mouse press for later use.
         '''
         super(MyGLViewWidget, self).mousePressEvent(ev)
-        self._downpos = self.mousePos
+        self._downpos = ev.pos()
 
         if self.handler['Show center']:
             self.addItem(self.sphere)
@@ -238,8 +235,10 @@ class MyGLViewWidget(gl.GLViewWidget):
                 self.opts['center'][1],
                 self.opts['center'][2])
         else:
-            ray = self._getPickingRay(ev.x(), ev.y())
-            self.pointer.setData(pos =np.array([self.cameraPosition(), ray[:3]]))
+            screens = QtWidgets.QApplication.instance().screens()
+            num     = QtWidgets.QApplication.instance().desktop().screenNumber(self)
+            ratio   = QtGui.QScreen.devicePixelRatio(screens[num])
+            ray     = self._getPickingRay(ev.x()*ratio, ev.y()*ratio)
             self.mouse_ray = np.array([self.cameraPosition(), ray[:3]])
             self.rayUpdate.emit()
             
@@ -252,8 +251,8 @@ class MyGLViewWidget(gl.GLViewWidget):
         model_mat   = np.array(glGetDoublev(GL_MODELVIEW_MATRIX))
         proj_mat    = np.array(glGetDoublev(GL_PROJECTION_MATRIX))
         
+        # win_coord   = (x*2, viewport[3] - y*2)
         win_coord   = (x, viewport[3] - y)
-        
         near_point  = np.array(GLU.gluUnProject(
             win_coord[0], win_coord[1], 0.0, 
             model_mat, proj_mat, viewport))

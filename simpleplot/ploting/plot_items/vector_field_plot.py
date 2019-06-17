@@ -21,25 +21,26 @@
 #
 # *****************************************************************************
 
-from ..pyqtgraph import pyqtgraph as pg
-from ..pyqtgraph.pyqtgraph import opengl as gl
 
-from copy import deepcopy
-import numpy as np
-from PyQt5 import QtGui
-from OpenGL.GL import *
+from PyQt5      import QtGui
+from copy       import deepcopy
+import numpy    as np
+from OpenGL.GL  import *
 
-from .plot_items.surfaces   import QuadSurface
-from .plot_items.points     import Point
-from .plot_items.shaders    import ShaderConstructor
+from ...pyqtgraph           import pyqtgraph    as pg
+from ...pyqtgraph.pyqtgraph import opengl       as gl
 
-from ..model.node   import SessionNode
+from ..plot_geometries.surfaces   import QuadSurface
+from ..plot_geometries.points     import Point
+from ..plot_geometries.shaders    import ShaderConstructor
 
-class VolumePlot(SessionNode): 
+from ...model.node   import SessionNode
+
+class VectorFieldPlot(SessionNode): 
     '''
     This class will be the scatter plots. 
     '''
-    def __init__(self, x = None, y = None, z = None, vol = None, **kwargs):
+    def __init__(self, x = None, y = None, z = None, vec = None, **kwargs):
         '''
         This class serves as envelope for the 
         PlotDataItem. Note that the axis of y will be
@@ -63,11 +64,11 @@ class VolumePlot(SessionNode):
         self.x_data = deepcopy(x)
         self.y_data = deepcopy(y)
         self.z_data = deepcopy(z)
-        self._vol   = deepcopy(vol)
+        self._vec   = deepcopy(vec)
 
         self.initialize(**kwargs)
         self._mode = '3D'
-        self.type  = 'Volume'
+        self.type  = 'Vector field'
 
         self._position      = np.array([0,0,0])
         self._scale         = np.array([1,1,1])
@@ -82,7 +83,7 @@ class VolumePlot(SessionNode):
         self.parameters = {}
 
         #Volume part
-        self.parameters['Volume']       = [[False]]
+        self.parameters['Volume']       = [[True]]
         self.parameters['Colors']       = [[
                 [0.,1.,1., 0.00],
                 [0.,0.,1., 0.45],
@@ -112,11 +113,9 @@ class VolumePlot(SessionNode):
         Generate the colormaps on the fly 
         depending on the input
         '''
-        self.color_map = pg.ColorMap(
-            np.array(self.getParameter('Positions')),
-            np.array(np.array(self.getParameter('Colors'))*255, dtype=np.ubyte),
-            )
+        self.shader_constructor = ShaderConstructor()
 
+        
 
     def setData(self, **kwargs):
         '''
@@ -363,8 +362,8 @@ class VolumePlot(SessionNode):
         if self.getParameter('Volume')[0]:
             self._drawGLVolume()
 
-        if self.getParameter('Iso surface')[0]:
-            self._drawGLIsoSurface()
+        # if self.getParameter('Iso surface')[0]:
+        #     self._drawGLIsoSurface()
 
     def _drawGLVolume(self):
         '''
@@ -374,87 +373,89 @@ class VolumePlot(SessionNode):
         kwargs['x']  = self.x_data
         kwargs['y']  = self.y_data
         kwargs['z']  = self.z_data
-        kwargs['sliceDensity']  = 1
-        kwargs['smooth']        = True
-        self.draw_items.append(CustomGLVolumeItem(self._getVolumeColor(),**kwargs))
+        self.draw_items.append(CustomGLVectorItem(
+            self._vec, 
+            self.shader_constructor.getShader('length'),
+            **kwargs))
+
         self.default_target.view.addItem(self.draw_items[-1])
 
-    def _getVolumeColor(self):
-        '''
-        Small function to ease the creation of the 
-        color data map for the volume generation
-        '''
-        self._vol -= np.amin(self._vol)
-        self._vol /= np.amax(self._vol)
-        colors = self.color_map.map(self._vol)
-        return colors
+    # def _getVolumeColor(self):
+    #     '''
+    #     Small function to ease the creation of the 
+    #     color data map for the volume generation
+    #     '''
+    #     self._vol -= np.amin(self._vol)
+    #     self._vol /= np.amax(self._vol)
+    #     colors = self.color_map.map(self._vol)
+    #     return colors
 
-    def updateVolumeColor(self):
-        '''
-        Reprocesses the isosurface
-        '''
-        self._generateColorMaps()
-        for draw_item in self.draw_items:
-            if isinstance(draw_item, gl.GLVolumeItem):
-                draw_item.setData(self._getVolumeColor())
+    # def updateVolumeColor(self):
+    #     '''
+    #     Reprocesses the isosurface
+    #     '''
+    #     self._generateColorMaps()
+    #     for draw_item in self.draw_items:
+    #         if isinstance(draw_item, gl.GLVolumeItem):
+    #             draw_item.setData(self._getVolumeColor())
 
-    def _drawGLIsoSurface(self):
-        '''
-        Draw the Isocurves in opengl.
-        '''
-        vertices, faces = self._getIsoSurface()
+    # def _drawGLIsoSurface(self):
+    #     '''
+    #     Draw the Isocurves in opengl.
+    #     '''
+    #     vertices, faces = self._getIsoSurface()
 
-        kwargs = {}
-        kwargs['vertexes']  = vertices
-        kwargs['faces']     = faces
-        kwargs['smooth']    = True
-        kwargs['drawEdges'] = False
-        kwargs['color']     = self.getParameter('Iso color')[0]
-        kwargs['shader']    = 'edgeHilight'#self.shader_constructor.getShader('height')
-        kwargs['glOptions'] = 'opaque'
+    #     kwargs = {}
+    #     kwargs['vertexes']  = vertices
+    #     kwargs['faces']     = faces
+    #     kwargs['smooth']    = True
+    #     kwargs['drawEdges'] = False
+    #     kwargs['color']     = self.getParameter('Iso color')[0]
+    #     kwargs['shader']    = 'edgeHilight'#self.shader_constructor.getShader('height')
+    #     kwargs['glOptions'] = 'opaque'
 
-        self.draw_items.append(gl.GLMeshItem(**kwargs))
-        self.default_target.view.addItem(self.draw_items[-1])
+    #     self.draw_items.append(gl.GLMeshItem(**kwargs))
+    #     self.default_target.view.addItem(self.draw_items[-1])
 
-    def _getIsoSurface(self):
-        '''
-        Get the vertices and faces to be set to the 
-        Meshitem
-        '''
-        self._vol -= np.amin(self._vol)
-        self._vol /= np.amax(self._vol)
-        vertices, faces = pg.isosurface(self._vol, self.getParameter('Iso value')[0])
+    # def _getIsoSurface(self):
+    #     '''
+    #     Get the vertices and faces to be set to the 
+    #     Meshitem
+    #     '''
+    #     self._vol -= np.amin(self._vol)
+    #     self._vol /= np.amax(self._vol)
+    #     vertices, faces = pg.isosurface(self._vol, self.getParameter('Iso value')[0])
 
-        offset = np.array([
-            np.amin(self.x_data), 
-            np.amin(self.y_data), 
-            np.amin(self.z_data)])
+    #     offset = np.array([
+    #         np.amin(self.x_data), 
+    #         np.amin(self.y_data), 
+    #         np.amin(self.z_data)])
 
-        mult   = np.array([
-            np.amax(self.x_data) - np.amin(self.x_data),
-            np.amax(self.y_data) - np.amin(self.y_data),
-            np.amax(self.z_data) - np.amin(self.z_data)])
+    #     mult   = np.array([
+    #         np.amax(self.x_data) - np.amin(self.x_data),
+    #         np.amax(self.y_data) - np.amin(self.y_data),
+    #         np.amax(self.z_data) - np.amin(self.z_data)])
 
-        vertices[:] = vertices[:] / mult + offset
-        return vertices,faces
+    #     vertices[:] = vertices[:] / mult + offset
+    #     return vertices,faces
 
-    def updateIsoSurface(self):
-        '''
-        Reprocesses the isosurface
-        '''
-        for draw_item in self.draw_items:
-            if isinstance(draw_item, gl.GLMeshItem):
-                vertices, faces = self._getIsoSurface()
-                kwargs = {'vertexes':vertices, 'faces':faces}
-                draw_item.setMeshData(**kwargs)
+    # def updateIsoSurface(self):
+    #     '''
+    #     Reprocesses the isosurface
+    #     '''
+    #     for draw_item in self.draw_items:
+    #         if isinstance(draw_item, gl.GLMeshItem):
+    #             vertices, faces = self._getIsoSurface()
+    #             kwargs = {'vertexes':vertices, 'faces':faces}
+    #             draw_item.setMeshData(**kwargs)
 
-    def updateIsoColor(self):
-        '''
-        Reprocesses the isosurface
-        '''
-        for draw_item in self.draw_items:
-            if isinstance(draw_item, gl.GLMeshItem):
-                draw_item.setColor(self.getParameter('Iso color')[0])
+    # def updateIsoColor(self):
+    #     '''
+    #     Reprocesses the isosurface
+    #     '''
+    #     for draw_item in self.draw_items:
+    #         if isinstance(draw_item, gl.GLMeshItem):
+    #             draw_item.setColor(self.getParameter('Iso color')[0])
 
     def removeItems(self):
         '''
@@ -468,14 +469,14 @@ class VolumePlot(SessionNode):
         '''
         pass
         
-class CustomGLVolumeItem(gl.GLVolumeItem):
+class CustomGLVectorItem(gl.GLVolumeItem):
     """
     **Bases:** :class:`GLGraphicsItem <pyqtgraph.opengl.GLGraphicsItem>`
     
     Displays volumetric data. 
     """
     
-    def __init__(self, data, x = None, y = None, z = None , sliceDensity=1, smooth=True, glOptions='translucent'):
+    def __init__(self, data, shader, x = None, y = None, z = None , sliceDensity=1, smooth=True, glOptions='translucent'):
         """
         ==============  =======================================================================================
         **Arguments:**
@@ -485,102 +486,114 @@ class CustomGLVolumeItem(gl.GLVolumeItem):
         ==============  =======================================================================================
         """
         gl.GLVolumeItem.__init__(self, data, sliceDensity=1, smooth=True, glOptions='translucent')
+        self.shader = shader
         self.x = x
         self.y = y
         self.z = z
+        
 
-    def drawVolume(self, ax, d):
+
+    def drawVolume(self):
         '''
         Draw the volume in the referential
         '''
-        N = 5
-        
-        imax = [0,1,2]
-        dim  = [self.x, self.y, self.z]
-        imax.remove(ax)
-        
-        tp = [[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
-        vp = [[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
 
-        nudge = [0.5/x for x in self.data.shape]
+        # N = 5
         
-        tp[0][imax[0]] = 0+nudge[imax[0]]
-        tp[0][imax[1]] = 0+nudge[imax[1]]
-        tp[1][imax[0]] = 1-nudge[imax[0]]
-        tp[1][imax[1]] = 0+nudge[imax[1]]
-        tp[2][imax[0]] = 1-nudge[imax[0]]
-        tp[2][imax[1]] = 1-nudge[imax[1]]
-        tp[3][imax[0]] = 0+nudge[imax[0]]
-        tp[3][imax[1]] = 1-nudge[imax[1]]
+        # imax = [0,1,2]
+        # dim  = [self.x, self.y, self.z]
+        # imax.remove(ax)
         
-        vp[0][imax[0]] = np.amin(dim[imax[0]])
-        vp[0][imax[1]] = np.amin(dim[imax[1]])
-        vp[1][imax[0]] = (np.amax(dim[imax[0]]) - np.amin(dim[imax[0]])) + np.amin(dim[imax[0]])
-        vp[1][imax[1]] = np.amin(dim[imax[1]])
-        vp[2][imax[0]] = (np.amax(dim[imax[0]]) - np.amin(dim[imax[0]])) + np.amin(dim[imax[0]])
-        vp[2][imax[1]] = (np.amax(dim[imax[1]]) - np.amin(dim[imax[1]])) + np.amin(dim[imax[1]])
-        vp[3][imax[0]] = np.amin(dim[imax[0]])
-        vp[3][imax[1]] = (np.amax(dim[imax[1]]) - np.amin(dim[imax[1]])) + np.amin(dim[imax[1]])
+        # tp = [[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
+        # vp = [[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
 
-        slices = self.data.shape[ax] * self.sliceDensity
-        r = list(range(slices))
-        if d == -1:
-            r = r[::-1]
+        # nudge = [0.5/x for x in self.data.shape]
+        
+        # tp[0][imax[0]] = 0+nudge[imax[0]]
+        # tp[0][imax[1]] = 0+nudge[imax[1]]
+        # tp[1][imax[0]] = 1-nudge[imax[0]]
+        # tp[1][imax[1]] = 0+nudge[imax[1]]
+        # tp[2][imax[0]] = 1-nudge[imax[0]]
+        # tp[2][imax[1]] = 1-nudge[imax[1]]
+        # tp[3][imax[0]] = 0+nudge[imax[0]]
+        # tp[3][imax[1]] = 1-nudge[imax[1]]
+        
+        # vp[0][imax[0]] = np.amin(dim[imax[0]])
+        # vp[0][imax[1]] = np.amin(dim[imax[1]])
+        # vp[1][imax[0]] = (np.amax(dim[imax[0]]) - np.amin(dim[imax[0]])) + np.amin(dim[imax[0]])
+        # vp[1][imax[1]] = np.amin(dim[imax[1]])
+        # vp[2][imax[0]] = (np.amax(dim[imax[0]]) - np.amin(dim[imax[0]])) + np.amin(dim[imax[0]])
+        # vp[2][imax[1]] = (np.amax(dim[imax[1]]) - np.amin(dim[imax[1]])) + np.amin(dim[imax[1]])
+        # vp[3][imax[0]] = np.amin(dim[imax[0]])
+        # vp[3][imax[1]] = (np.amax(dim[imax[1]]) - np.amin(dim[imax[1]])) + np.amin(dim[imax[1]])
+
+        # slices = self.data.shape[ax] * self.sliceDensity
+        # r = list(range(slices))
+        # if d == -1:
+        #     r = r[::-1]
             
-        glBegin(GL_QUADS)
-        tzVals = np.linspace(nudge[ax], 1.0-nudge[ax], slices)
-        vzVals = np.linspace(np.amin(dim[ax]), np.amax(dim[ax]), slices)
-        for i in r:
-            z = tzVals[i]
-            w = vzVals[i]
+        # glBegin(GL_QUADS)
+        # tzVals = np.linspace(nudge[ax], 1.0-nudge[ax], slices)
+        # vzVals = np.linspace(np.amin(dim[ax]), np.amax(dim[ax]), slices)
+        # for i in r:
+        #     z = tzVals[i]
+        #     w = vzVals[i]
             
-            tp[0][ax] = z
-            tp[1][ax] = z
-            tp[2][ax] = z
-            tp[3][ax] = z
+        #     tp[0][ax] = z
+        #     tp[1][ax] = z
+        #     tp[2][ax] = z
+        #     tp[3][ax] = z
             
-            vp[0][ax] = w
-            vp[1][ax] = w
-            vp[2][ax] = w
-            vp[3][ax] = w
+        #     vp[0][ax] = w
+        #     vp[1][ax] = w
+        #     vp[2][ax] = w
+        #     vp[3][ax] = w
             
-            glTexCoord3f(*tp[0])
-            glVertex3f(*vp[0])
-            glTexCoord3f(*tp[1])
-            glVertex3f(*vp[1])
-            glTexCoord3f(*tp[2])
-            glVertex3f(*vp[2])
-            glTexCoord3f(*tp[3])
-            glVertex3f(*vp[3])
-        glEnd()
+        #     glTexCoord3f(*tp[0])
+        #     glVertex3f(*vp[0])
+        #     glTexCoord3f(*tp[1])
+        #     glVertex3f(*vp[1])
+        #     glTexCoord3f(*tp[2])
+        #     glVertex3f(*vp[2])
+        #     glTexCoord3f(*tp[3])
+        #     glVertex3f(*vp[3])
+        # glEnd()
 
     def paint(self):
         '''
         Paint the elements necessary depending
         on the camera position
         '''
-        if self.data is None:
-            return
+        # if self.data is None:
+        #     return
         
-        if self._needUpload:
-            self._uploadData()
+        # if self._needUpload:
+        #     self._uploadData()
         
-        self.setupGLState()
         
-        glEnable(GL_TEXTURE_3D)
-        glBindTexture(GL_TEXTURE_3D, self.texture)
+        # glEnable(GL_TEXTURE_3D)
+        # glBindTexture(GL_TEXTURE_3D, self.texture)
         
-        glColor4f(1,1,1,1)
+        # glColor4f(1,1,1,1)
 
-        view = self.view()
-        dim  = [self.x, self.y, self.z]
-        center = QtGui.QVector3D(*[(np.amax(x)-np.amin(x)) /2. + np.amin(x) for x in dim])
-        cam = self.mapFromParent(view.cameraPosition()) - center
+        # view = self.view()
+        # dim  = [self.x, self.y, self.z]
+        # center = QtGui.QVector3D(*[(np.amax(x)-np.amin(x)) /2. + np.amin(x) for x in dim])
+        # cam = self.mapFromParent(view.cameraPosition()) - center
         
-        cam = np.array([cam.x(), cam.y(), cam.z()])
-        ax = np.argmax(abs(cam))
-        d = 1 if cam[ax] > 0 else -1
-        glCallList(self.lists[(ax,d)])  ## draw axes
-        glDisable(GL_TEXTURE_3D)
+        # cam = np.array([cam.x(), cam.y(), cam.z()])
+        # ax = np.argmax(abs(cam))
+        # d = 1 if cam[ax] > 0 else -1
+        self.drawVolume()  ## draw axes
+        # glDisable(GL_TEXTURE_3D)
 
         
+        
+
+
+
+        # offset = ctypes.c_void_p(self.data.dtype["position_vec"].itemsize)
+        # loc = glGetAttribLocation(self.shader.program(), "color_vec".encode('utf_8'))
+        # glEnableVertexAttribArray(loc)
+        # glBindBuffer(GL_ARRAY_BUFFER, self.buffer)
+        # glVertexAttribPointer(loc, 4, GL_FLOAT, False, stride, offset)

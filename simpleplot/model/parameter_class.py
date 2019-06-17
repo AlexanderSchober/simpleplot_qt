@@ -24,6 +24,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 import collections.abc
+import numpy as np
 
 from .parameter_node import ParameterNode
 from .parameter_node import ParameterItem
@@ -35,6 +36,9 @@ from .widget_constructors import comboBoxConstructor
 from .widget_constructors import colorWidgetConstructor
 from .widget_constructors import fontWidgetConstructor
 from .widget_constructors import checkBoxConstructor
+from .widget_constructors import gradientConstructor
+
+from ..pyqtgraph.pyqtgraph.graphicsItems.GradientEditorItem import GradientEditorItem
 
 class ParameterHandler(ParameterNode):
     '''
@@ -99,7 +103,6 @@ class ParameterHandler(ParameterNode):
         for key in self.items.keys():
             if 'method' in self.items[key].kwargs.keys():
                 self.items[key].kwargs['method']()
-
 
 class ParameterMaster:
     '''
@@ -196,11 +199,13 @@ class ParameterValue(ParameterMaster, ParameterItem):
         ParameterMaster.__init__(self, name, parent)
         ParameterItem.__init__(self, name, parent, value, None)
         self.kwargs = kwargs
-
-        if type(value) == int:
+        
+        if type(value) == int or isinstance(value, np.integer):
             self._constructor = spinBoxConstructor(self)
-        elif type(value) == float:
+            self._value = int(self._value)
+        elif type(value) == float or isinstance(value, np.floating):
             self._constructor = doubleSpinBoxConstructor(self)
+            self._value = float(self._value)
         elif type(value) == str:
             if not 'choices' in kwargs.keys():
                 self._constructor = lineEditConstructor(self)
@@ -212,6 +217,8 @@ class ParameterValue(ParameterMaster, ParameterItem):
             self._constructor = fontWidgetConstructor(self)
         elif type(value) == bool:
             self._constructor = checkBoxConstructor(self)
+        elif type(value) == GradientEditorItem:
+            self._constructor = gradientConstructor(self)
 
     def createWidget(self, parent, index):
         '''

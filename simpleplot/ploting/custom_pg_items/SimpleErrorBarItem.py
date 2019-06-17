@@ -21,8 +21,9 @@
 #
 # *****************************************************************************
 from PyQt5 import QtGui
-from ..pyqtgraph import pyqtgraph as pg
 import numpy as np
+
+from ...pyqtgraph import pyqtgraph as pg
 
 class SimpleErrorBarItem(pg.ErrorBarItem): 
     '''
@@ -97,8 +98,8 @@ class SimpleErrorBarItem(pg.ErrorBarItem):
                 p.lineTo(x[i], y2[i])
                 
             if beam is not None and beam > 0:
-                x1 = x - beam/2.
-                x2 = x + beam/2.
+                x1 = x - beam/2. if not self.opts['logMode'][0] else np.log10(self.opts['x']-beam/2.)
+                x2 = x + beam/2. if not self.opts['logMode'][0] else np.log10(self.opts['x']+beam/2.)
                 if height is not None or top is not None:
                     for i in range(len(x)):
                         p.moveTo(x1[i], y2[i])
@@ -129,8 +130,8 @@ class SimpleErrorBarItem(pg.ErrorBarItem):
                 p.lineTo(x2[i], y[i])
                 
             if beam is not None and beam > 0:
-                y1 = y - beam/2.
-                y2 = y + beam/2.
+                y1 = y - beam/2. if not self.opts['logMode'][1] else np.log10(self.opts['y']-beam/2.)
+                y2 = y + beam/2. if not self.opts['logMode'][1] else np.log10(self.opts['y']+beam/2.)
                 if width is not None or right is not None:
                     for i in range(len(x)):
                         p.moveTo(x2[i], y1[i])

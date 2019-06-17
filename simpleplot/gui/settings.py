@@ -29,10 +29,10 @@ from PyQt5 import QtWidgets
 from .setting_window_ui import Ui_preference_window
 from ..model.delegates  import ParameterDelegate
 
-from .scatter_widget    import ScatterWidget
-from .surface_widget    import SurfaceWidget
-from .bar_widget        import BarWidget
-from .volume_widget     import VolumeWidget
+# from .scatter_widget    import ScatterWidget
+# from .surface_widget    import SurfaceWidget
+# from .bar_widget        import BarWidget
+# from .volume_widget     import VolumeWidget
 from .export_dialog     import ExportDialog
 
 import sys
@@ -50,13 +50,12 @@ class PreferenceWindow(QtGui.QMainWindow, Ui_preference_window):
         self.canvas_tree_view.collapsed.connect(self._resizeTree)
         self.canvas_tree_view.expanded.connect(self._resizeTree)
         self.delegate = ParameterDelegate()
+        
         self.canvas_tree_view.setItemDelegate(self.delegate)
+        self.plot_tree_view.setItemDelegate(self.delegate)
         
         self.canvas_select.setModel(multi_canvas._model)
         self.canvas_select.currentIndexChanged.connect(self._selectCanvas)
-
-        self.plot_tree_view.clicked.connect(self._updateTable)
-        self.plot_tree_view.clicked.connect(self._setWidget)
 
         self._selectCanvas(0)
 
@@ -77,28 +76,7 @@ class PreferenceWindow(QtGui.QMainWindow, Ui_preference_window):
         '''
         Load the widgets
         '''
-        self._scatter_class     = ScatterWidget()
-        self._surface_class     = SurfaceWidget()
-        self._bar_class         = BarWidget()
-        self._volume_class      = VolumeWidget()
 
-        self._scatter_widget    = self._scatter_class.local_widget
-        self._surface_widget    = self._surface_class.local_widget
-        self._bar_widget        = self._bar_class.local_widget
-        self._volume_widget     = self._volume_class.local_widget
-
-        self.editor_layout.addWidget(self._scatter_widget)
-        self.editor_layout.addWidget(self._surface_widget)
-        self.editor_layout.addWidget(self._bar_widget)
-        self.editor_layout.addWidget(self._volume_widget)
-
-        self._scatter_widget.hide()
-        self._surface_widget.hide()
-        self._bar_widget.hide()
-        self._volume_widget.hide()
-
-        self._current_widget = None
-        self._current_class  = None
 
     def _resizeTree(self):
         '''
@@ -121,46 +99,6 @@ class PreferenceWindow(QtGui.QMainWindow, Ui_preference_window):
         '''
         self.plot_tree_view.setModel(self.multi_canvas._rootNode._children[index]._plot_model)
 
-    def _setWidget(self):
-        '''
-        Set the right widget into the view to allow the edition 
-        of the elements.
-        '''
-        if not self._current_widget == None:
-            self._current_widget.hide()
-            self._current_class.unlink()
-            self._current_widget =  None
-
-        index = self.plot_tree_view.selectedIndexes()[0]
-        item  = index.model().getNode(index)
-
-        if item.type == 'Scatter':
-            self._current_widget = self._scatter_widget
-            self._current_class = self._scatter_class
-            self._current_class.link(item)
-            self._current_widget.show()
-
-        elif item.type == 'Surface':
-            self._current_widget = self._surface_widget
-            self._current_class = self._surface_class
-            self._current_class.link(item)
-            self._current_widget.show()
-
-        elif item.type == 'Bar':
-            self._current_widget = self._bar_widget
-            self._current_class = self._bar_class
-            self._current_class.link(item)
-            self._current_widget.show()
-
-        elif item.type == 'Volume':
-            self._current_widget = self._volume_widget
-            self._current_class = self._volume_class
-            self._current_class.link(item)
-            self._current_widget.show()
-
-        else:
-            pass
-            
     def _updateTable(self):
         '''
         Put the elements into the table widget

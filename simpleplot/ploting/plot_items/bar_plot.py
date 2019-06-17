@@ -21,18 +21,18 @@
 #
 # *****************************************************************************
 
-from ..pyqtgraph import pyqtgraph as pg
-from ..pyqtgraph.pyqtgraph import opengl as gl
-
+from PyQt5 import QtGui
 from copy import deepcopy
 import numpy as np
-from PyQt5 import QtGui
 
-from .plot_items.surfaces   import QuadSurface
-from .plot_items.points     import Point
-from .plot_items.shaders    import ShaderConstructor
+from ...pyqtgraph import pyqtgraph as pg
+from ...pyqtgraph.pyqtgraph import opengl as gl
 
-from ..model.node   import SessionNode
+from ..plot_geometries.surfaces   import QuadSurface
+from ..plot_geometries.points     import Point
+from ..plot_geometries.shaders    import ShaderConstructor
+
+from ...model.node   import SessionNode
 
 class BarPlot(SessionNode): 
     '''
@@ -217,17 +217,17 @@ class BarPlot(SessionNode):
                 kwargs['faces']     = self.vertices
                 surface.setMeshData(**kwargs)
 
-                if self.shader_parameters['Bounds z'][0][0] == True:
-                    self.shader_constructor.setRange(
-                        np.amin([np.amin(self.z_data), self.getParameter('Lower')[0]])-1.0e-6 if self.z_lower_data is None else np.amin([np.amin(self.z_data), np.amin(self.z_lower_data)]), np.amax(self.z_data)+1.0e-6 if self.z_lower_data is None else np.amax([np.amax(self.z_data), np.amax(self.z_lower_data)])+1.0e-6)
-                else:
-                    self.shader_constructor.setRange(
-                        0, 
-                        self.shader_parameters['Bounds z'][0][2]+1.0e-6)
+                # if self.shader_parameters['Bounds z'][0][0] == True:
+                #     self.shader_constructor.setRange(
+                #         np.amin([np.amin(self.z_data), self.getParameter('Lower')[0]])-1.0e-6 if self.z_lower_data is None else np.amin([np.amin(self.z_data), np.amin(self.z_lower_data)]), np.amax(self.z_data)+1.0e-6 if self.z_lower_data is None else np.amax([np.amax(self.z_data), np.amax(self.z_lower_data)])+1.0e-6)
+                # else:
+                #     self.shader_constructor.setRange(
+                #         0, 
+                #         self.shader_parameters['Bounds z'][0][2]+1.0e-6)
 
-                self.shader_constructor.setColors(
-                    self.parameters['Colors'][0],
-                    self.parameters['Positions'][0])
+                # self.shader_constructor.setColors(
+                #     self.parameters['Colors'][0],
+                #     self.parameters['Positions'][0])
 
 
                 surface.setShader(self.shader_constructor.getShader('height'))
@@ -477,16 +477,18 @@ class BarPlot(SessionNode):
         '''
         self.shader_constructor = ShaderConstructor()
         if self.shader_parameters['Bounds z'][0][0] == True:
-            self.shader_constructor.setRange(
-                np.amin([np.amin(self.z_data), self.getParameter('Lower')[0]])-1.0e-6 if self.z_lower_data is None else np.amin([np.amin(self.z_data), np.amin(self.z_lower_data)]), np.amax(self.z_data)+1.0e-6 if self.z_lower_data is None else np.amax([np.amax(self.z_data), np.amax(self.z_lower_data)])+1.0e-6)
+            pass
+            # self.shader_constructor.setRange(
+            #     np.amin([np.amin(self.z_data), self.getParameter('Lower')[0]])-1.0e-6 if self.z_lower_data is None else np.amin([np.amin(self.z_data), np.amin(self.z_lower_data)]), np.amax(self.z_data)+1.0e-6 if self.z_lower_data is None else np.amax([np.amax(self.z_data), np.amax(self.z_lower_data)])+1.0e-6)
         else:
-            self.shader_constructor.setRange(
-                0, 
-                self.shader_parameters['Bounds z'][0][2]+1.0e-6)
+            pass
+            # self.shader_constructor.setRange(
+            #     0, 
+            #     self.shader_parameters['Bounds z'][0][2]+1.0e-6)
 
-        self.shader_constructor.setColors(
-            self.parameters['Colors'][0],
-            self.parameters['Positions'][0])
+        # self.shader_constructor.setColors(
+        #     self.parameters['Colors'][0],
+        #     self.parameters['Positions'][0])
 
         self.buildVerticeMap()
 
