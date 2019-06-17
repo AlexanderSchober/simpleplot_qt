@@ -121,9 +121,9 @@ class SurfacePlot(ParameterHandler):
                             self.default_target.view.removeItem(self.draw_items[i])
                 del self.draw_items
         else:
-            if self._mode == '2D':
+            if self['Visible'] and self._mode == '2D':
                 self.draw()
-            elif self._mode == '3D':
+            elif self['Visible'] and self._mode == '3D':
                 self.drawGL()
 
         self.childFromName('Transform').reTransform()
