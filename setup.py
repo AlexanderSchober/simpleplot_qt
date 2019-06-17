@@ -22,10 +22,10 @@
 # *****************************************************************************
 
 from setuptools import setup, find_packages
-
+import simpleplot
 setup(
     name = 'SimplePlot',
-    version = 0.1,
+    version =simpleplot.__version__,
     license = 'GPL',
     author = 'Alexander Schober',
     author_email = 'alex.schober@mac.com',
