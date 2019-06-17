@@ -137,7 +137,7 @@ class LinePlot(ParameterHandler):
 
         return kwargs
 
-    def refresh(self, **kwargs):
+    def refresh(self):
         '''
         Set the data of the plot manually after the plot item 
         has been actualized
@@ -209,11 +209,6 @@ class LinePlot(ParameterHandler):
         '''
         Remove the objects.
         '''
-        for curve in self.draw_items:
-            self.default_target.draw_surface.removeItem(curve)
-
-    def processRay(self, ray):
-        '''
-        try to process the ray intersection
-        '''
-        pass
+        if hasattr(self, 'draw_items'):
+            for curve in self.draw_items:
+                self.default_target.draw_surface.removeItem(curve)

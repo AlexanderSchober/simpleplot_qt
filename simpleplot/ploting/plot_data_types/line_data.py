@@ -47,8 +47,9 @@ class LineData(PlotData, SessionNode):
         elements = [None for i in self._axes]
 
         for i,value in enumerate(self._axes):
-            if value in kwargs.keys() and not kwargs[value] is None :
-                elements[i] = np.array(kwargs[value])
+            if value in kwargs.keys():
+                if isinstance(kwargs[value],np.ndarray) or isinstance(kwargs[value],list):
+                    elements[i] = np.array(kwargs[value])
 
         shape = np.amax(
             np.array(
@@ -86,6 +87,7 @@ class LineData(PlotData, SessionNode):
         wanted orientation
         '''
         if hasattr(self, '_error'):
+            print('i return error', self._error)
             return self._error
         else:
             return None

@@ -55,8 +55,9 @@ class SurfaceData(PlotData, SessionNode):
 
         for i,value in enumerate(self._axes):
             if value in kwargs.keys():
-                elements[i] = kwargs[value]
-                changed[self._axes.index(value)] = True
+                if isinstance(kwargs[value],np.ndarray) or isinstance(kwargs[value],list):
+                    elements[i] = np.array(kwargs[value])
+                    changed[self._axes.index(value)] = True
 
         if elements[self._axes.index('z')] is None:
             if not self._data[self._axes.index('z')] is None:

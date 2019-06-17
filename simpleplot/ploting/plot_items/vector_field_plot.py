@@ -459,15 +459,11 @@ class VectorFieldPlot(SessionNode):
 
     def removeItems(self):
         '''
+        Remove the objects.
         '''
-        for curve in self.draw_items:
-            self.default_target.draw_surface.removeItem(curve)
-
-    def processRay(self, ray):
-        '''
-        try to process the ray intersection
-        '''
-        pass
+        if hasattr(self, 'draw_items'):
+            for curve in self.draw_items:
+                self.default_target.draw_surface.removeItem(curve)
         
 class CustomGLVectorItem(gl.GLVolumeItem):
     """

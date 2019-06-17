@@ -183,7 +183,8 @@ class SurfacePlot(ParameterHandler):
 
     def removeItems(self):
         '''
+        Remove the objects.
         '''
-        for curve in self.draw_items:
-            self.default_target.draw_surface.removeItem(curve)
-
+        if hasattr(self, 'draw_items'):
+            for curve in self.draw_items:
+                self.default_target.draw_surface.removeItem(curve)

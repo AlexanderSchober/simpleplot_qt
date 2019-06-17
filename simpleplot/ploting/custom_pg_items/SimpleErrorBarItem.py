@@ -77,10 +77,11 @@ class SimpleErrorBarItem(pg.ErrorBarItem):
         beam = self.opts['beam']
         
         height, top, bottom = self.opts['height'], self.opts['top'], self.opts['bottom']
+        print('heigh, top, bot', height, top, bottom )
 
         if height is not None or top is not None or bottom is not None:
             ## draw vertical error bars
-            if height is not None:
+            if height is not None or height == 0:
                 y1 = y-height/2. if not self.opts['logMode'][1] else np.log10(self.opts['y']-height/2.)
                 y2 = y+height/2. if not self.opts['logMode'][1] else np.log10(self.opts['y']+height/2.)
             else:
