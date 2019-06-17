@@ -83,14 +83,13 @@ class Type_0_Position(PointerPosition):
         points  = []
         node    = np.array([cursor_x, cursor_y])
         for element in self.mapping:
-            nodes       = np.zeros((len(element[1][0]),2)) 
-            nodes[:,0] = element[1][0]
-            nodes[:,1] = element[1][1]
-            points.append(nodes[distance.cdist([node], nodes).argmin()])
-
-        nodes   = points
-        select  = distance.cdist([node], nodes).argmin()
-        point   = nodes[select]
+            nodes   = np.array([element[1][0],element[1][1]]).transpose()
+            deltas  = nodes - node
+            points.append(nodes[np.einsum('ij,ij->i', deltas, deltas).argmin()])
+            
+        deltas  = points - node
+        select  = np.einsum('ij,ij->i', deltas, deltas).argmin()
+        point   = points[select]
 
         self.parent.cursor_x = np.log10(point[0]) if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else point[0]
         self.parent.cursor_y = np.log10(point[1]) if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else point[1]

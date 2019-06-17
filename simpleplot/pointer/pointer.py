@@ -224,6 +224,7 @@ class Pointer(SessionNode):
             self.cursor_x = x
             self.cursor_y = y
             self.cursor_z = 0
+
             try:
                 self.pointer_position.evaluate()
                 self.canvas.multi_canvas.bottom_selector.label.setText(
