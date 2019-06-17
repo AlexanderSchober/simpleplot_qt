@@ -89,7 +89,7 @@ class LinePlot(ParameterHandler):
             'Line color', QtGui.QColor('blue') ,
             method  = self.refresh)
         self.addParameter(
-            'Line width', kwargs['Thickness'] if 'Thickness' in kwargs.keys() else 1 ,
+            'Line width', float(kwargs['Thickness']) if 'Thickness' in kwargs.keys() else 2. ,
             method  = self.refresh)
         self.addParameter(
             'Shadow color', QtGui.QColor('black') ,
@@ -133,7 +133,7 @@ class LinePlot(ParameterHandler):
             
             kwargs['pos']   = np.vstack(data).transpose()
             kwargs['color'] = self['Line color'].getRgbF()
-            kwargs['width'] = self['Line width']/100
+            kwargs['width'] = self['Line width']/100.
 
         return kwargs
 

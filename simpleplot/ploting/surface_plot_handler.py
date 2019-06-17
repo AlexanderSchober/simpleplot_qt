@@ -29,6 +29,7 @@ from ..model.node                  import SessionNode
 from .plot_items.surface_plot      import SurfacePlot
 from .plot_items.iso_curve_plot    import IsoCurvePlot
 from .plot_ray_handlers.surface    import SurfaceRayHandler
+from .plot_items.SimpleItemSample  import SimpleItemSample
 
 class SurfacePlotHandler(SessionNode): 
     '''
@@ -119,4 +120,5 @@ class SurfacePlotHandler(SessionNode):
         '''
         return to the legend the items to be used
         '''
-        return [self.childFromName('Surface')]
+        return SimpleItemSample([self.childFromName('Line'), self.childFromName('Scatter'), self.childFromName('Error')])
+

@@ -99,7 +99,7 @@ class ScatterPlot(ParameterHandler):
             names   = options,
             method  = self.refresh)
         self.addParameter(
-            'Size', size ,
+            'Size', float(size) ,
             method  = self.refresh)
         self.addParameter(
             'Fill color', color ,
@@ -194,6 +194,7 @@ class ScatterPlot(ParameterHandler):
         kwargs          = self._getDictionary()
         self.draw_items = [SimplePlotDataItem(**kwargs)]
         self.draw_items[-1].setZValue(-25)
+        self.draw_items[-1].scatter.opts['useCache'] = False
 
         for curve in self.draw_items:
             self.default_target.draw_surface.addItem(curve)

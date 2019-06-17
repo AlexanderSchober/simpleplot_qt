@@ -30,7 +30,7 @@ from .plot_data_types.line_data    import LineData
 from .plot_items.scatter_plot      import ScatterPlot
 from .plot_items.line_plot         import LinePlot
 from .plot_items.error_plot        import ErrorPlot
-# from .plot_ray_handlers.surface    import SurfaceRayHandler
+from .plot_items.SimpleItemSample  import SimpleItemSample
 
 class ScatterPlotHandler(SessionNode): 
     '''
@@ -121,4 +121,4 @@ class ScatterPlotHandler(SessionNode):
         '''
         return to the legend the items to be used
         '''
-        return [self.childFromName('Line'), self.childFromName('Scatter'), self.childFromName('Error')]
+        return SimpleItemSample([self.childFromName('Line'), self.childFromName('Scatter'), self.childFromName('Error')])

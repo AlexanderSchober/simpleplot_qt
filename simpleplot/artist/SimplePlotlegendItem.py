@@ -144,7 +144,7 @@ class SimplePlotLegendItem(LegendItem):
         if isinstance(item, ItemSample):
             sample = item
         else:
-            sample = ItemSample(item)        
+            sample = ItemSample(item)
         row = self.layout.rowCount()
         self.items.append((sample, label))
         self.layout.addItem(sample, row, 0)
