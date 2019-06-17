@@ -20,7 +20,7 @@
 #   Alexander Schober <alexander.schober@mac.com>
 #
 # *****************************************************************************
-
+from PyQt5 import QtGui, QtCore
 import numpy as np
 
 from .scatter_plot_handler          import ScatterPlotHandler
@@ -36,24 +36,25 @@ def get_plot_handler(select):
     on the initial input
     '''
     if select == 'Scatter':
-        return Plot_Handler(select, ScatterPlotHandler)
+        return PlotHandler(select, ScatterPlotHandler)
     elif select == 'Surface':
-        return Plot_Handler(select, SurfacePlotHandler)
+        return PlotHandler(select, SurfacePlotHandler)
     elif select == 'Bar':
-        return Plot_Handler(select, BarPlot)
+        return PlotHandler(select, BarPlot)
     elif select == 'Volume':
-        return Plot_Handler(select, VolumePlot)
+        return PlotHandler(select, VolumePlot)
     elif select == 'Vector field':
-        return Plot_Handler(select, VectorFieldPlot)
+        return PlotHandler(select, VectorFieldPlot)
     else:
         print('Could not find the fit class you are looking for. Error...')        
         return None
 
-class Plot_Handler(SessionNode):
+class PlotHandler(SessionNode):
     '''
     This class will be the manager of all the 
     scatter plots. 
     '''
+
     def __init__(self, name, target_class):
         SessionNode.__init__(self,name)
         self.identifier     = 0
@@ -68,7 +69,6 @@ class Plot_Handler(SessionNode):
         '''
         self._children.append(self.target_class(*args,**kwargs))
         self._children[-1]._parent = self
-
         return self._children[-1]
 
     def removeItem(self, name = '', idx = None, target = None):

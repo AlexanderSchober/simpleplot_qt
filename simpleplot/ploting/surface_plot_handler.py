@@ -21,14 +21,8 @@
 #
 # *****************************************************************************
 
-from PyQt5 import QtGui
-from copy import deepcopy
-import numpy as np
-from scipy.spatial.distance import pdist
+from PyQt5 import QtGui, QtCore
 
-from ..pyqtgraph                   import pyqtgraph as pg
-from ..pyqtgraph.pyqtgraph         import opengl as gl
-from .plot_geometries.shaders      import ShaderConstructor
 from .plot_data_types.surface_data import SurfaceData
 from ..model.node                  import SessionNode
 
@@ -60,7 +54,7 @@ class SurfacePlotHandler(SessionNode):
             The error of each point
         '''
         SessionNode.__init__(self, 'No_name')
-        self.add_options    = ['Isocurve', 'Projection']
+        self.add_options    = []
 
         self._plot_data     = SurfaceData()
         self.addChild(self._plot_data)
@@ -70,7 +64,6 @@ class SurfacePlotHandler(SessionNode):
         self.addChild(self._ray_handler)
 
         self._plot_data.setData(x = x, y = y, z = z)
-
 
     def __getitem__(self, value):
         '''
@@ -90,6 +83,8 @@ class SurfacePlotHandler(SessionNode):
         for child in self._children:
             if hasattr(child, 'refresh'):
                 child.refresh()
+        
+        self._model.dataChanged.emit(self.index(),self.index())
 
     def draw(self, target_surface = None):
         '''

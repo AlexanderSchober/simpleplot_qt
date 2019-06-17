@@ -191,9 +191,16 @@ class Pointer(SessionNode):
         mouse 
         '''
         self.setup()
-        self.pointer_position.fetch_position_data()
+        self.refreshPlotData()
         self.canvas.artist.mouse.bind('move', self.refreshPosition, 'pointer_move')
         self.draw()
+
+    def refreshPlotData(self):
+        '''
+        Binds the cursor to the system signals of th
+        mouse 
+        '''
+        self.pointer_position.fetch_position_data()
 
     def unbindPointer(self):
         '''
@@ -216,9 +223,7 @@ class Pointer(SessionNode):
         if not self.pointer_handler['Locked']:
             self.cursor_x = x
             self.cursor_y = y
-
             self.cursor_z = 0
-            self.pointer_position.evaluate()
             try:
                 self.pointer_position.evaluate()
                 self.canvas.multi_canvas.bottom_selector.label.setText(

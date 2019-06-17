@@ -21,7 +21,9 @@
 #
 # *****************************************************************************
 
-from PyQt5 import QtGui
+from PyQt5 import QtGui, QtCore
+
+from .plot_data_types.surface_data import SurfaceData
 from ..model.node                  import SessionNode
 
 from .plot_data_types.line_data    import LineData
@@ -34,6 +36,8 @@ class ScatterPlotHandler(SessionNode):
     '''
     This class will be the scatter plots. 
     '''
+    plotDataChanged = QtCore.pyqtSignal()
+
     def __init__(self, x = None, y = None, z = None, **kwargs):
         '''
         This class serves as envelope for the 
@@ -84,6 +88,8 @@ class ScatterPlotHandler(SessionNode):
         for child in self._children:
             if hasattr(child, 'refresh'):
                 child.refresh()
+
+        self._model.dataChanged.emit(self['Data'].index(),self['Data'].index())
 
     def draw(self, target_surface = None):
         '''

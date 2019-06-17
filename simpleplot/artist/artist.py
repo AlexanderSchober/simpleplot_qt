@@ -21,6 +21,8 @@
 #
 # *****************************************************************************
 
+from PyQt5 import QtGui, QtCore
+
 from ..pointer.pointer  import Pointer
 from ..pointer.zoomer   import Zoomer
 from ..pointer.measurer import Measurer
@@ -45,6 +47,7 @@ class Artist():
         self.canvas         = canvas
         self.artist_type    = '2D'
         self.child_widgets  = []
+        
 
     def addPlot(self, name_type, *args, **kwargs):
         '''
@@ -56,7 +59,8 @@ class Artist():
         active_handlers = [child._name for child in self.canvas._plot_root._children]
 
         if not name_type in active_handlers:
-            self.canvas._plot_root.addChild(get_plot_handler(name_type))
+            new_child = get_plot_handler(name_type)
+            self.canvas._plot_root.addChild(new_child)
 
         active_handlers = [child._name for child in self.canvas._plot_root._children]
         output = self.canvas._plot_root._children[active_handlers.index(name_type)].addChild(*args, **kwargs)
@@ -79,6 +83,11 @@ class Artist():
         #         idx     = idx,
         #         target  = self.canvas )
             
+    def dispatchPlotDataChange(self, index):
+        '''
+
+        '''
+
     def draw(self):
         '''
         This method will go through the plot handlers
@@ -108,7 +117,6 @@ class Artist():
         for plot_handler in self.canvas._plot_root._children:
             plot_handler.clear(self.canvas)
 
-
 class Artist2DNode(SessionNode, Artist):
     '''
     This is the 2D artist manager, which can be seen as
@@ -135,6 +143,16 @@ class Artist2DNode(SessionNode, Artist):
         self.legend     = Legend(self.canvas)
         # self.Modifier   = ModificationClass.Modify(self.Canvas)
         # self.Title      = None #TitleClass.TitleClass(self.Canvas)
+        self.canvas._plot_model.dataChanged.connect(self.dispatchPlotDataChange)
+
+    def dispatchPlotDataChange(self, index):
+        '''
+        Send to the adequate elements that the plot data has changed
+        and thus the some things have to be done
+        '''
+        if self.canvas._plot_model.itemAt(index)._name == 'Data':
+            self.pointer.refreshPlotData()
+            self.zoomer.zoom()
 
     def draw(self):
         '''
