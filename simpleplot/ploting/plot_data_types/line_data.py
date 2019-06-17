@@ -87,7 +87,6 @@ class LineData(PlotData, SessionNode):
         wanted orientation
         '''
         if hasattr(self, '_error'):
-            print('i return error', self._error)
             return self._error
         else:
             return None

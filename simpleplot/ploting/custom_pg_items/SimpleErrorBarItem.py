@@ -77,7 +77,6 @@ class SimpleErrorBarItem(pg.ErrorBarItem):
         beam = self.opts['beam']
         
         height, top, bottom = self.opts['height'], self.opts['top'], self.opts['bottom']
-        print('heigh, top, bot', height, top, bottom )
 
         if height is not None or top is not None or bottom is not None:
             ## draw vertical error bars
