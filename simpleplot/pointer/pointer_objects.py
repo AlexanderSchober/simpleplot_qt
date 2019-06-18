@@ -42,11 +42,9 @@ class PointerObject:
         Try to disconnect all methods
         '''
         for component in self.pointer_comp:
-    
             self.parent.canvas.draw_surface.removeItem(component)
 
         for component in self.label_comp:
-        
             self.parent.canvas.draw_surface.removeItem(component)
 
     def get_ranges(self):
@@ -188,11 +186,15 @@ class Type_0_Labels(PointerObject):
         '''
         Move with the cursor
         '''
+        values = [
+            10**self.parent.cursor_x if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else self.parent.cursor_x,
+            10**self.parent.cursor_y if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else self.parent.cursor_y]
+
         text    = 'x = %0.'+str(self.parent.label_handler['Precision'][0])+'f'
         text   += ' y = %0.'+str(self.parent.label_handler['Precision'][2])+'f'
 
         #set the text to set the width
-        self.label_comp[0].setText(str(text)%(self.parent.cursor_x,self.parent.cursor_y))
+        self.label_comp[0].setText(str(text)%(values[0],values[1]))
 
         #get the current view rnage
         self.get_ranges()
@@ -238,12 +240,15 @@ class Type_1_Labels(PointerObject):
         '''
         Move with the cursor
         '''
-
+        values = [
+            10**self.parent.cursor_x if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else self.parent.cursor_x,
+            10**self.parent.cursor_y if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else self.parent.cursor_y]
+            
         #set the text to set the width
-        self.label_comp[0].setText(str('%0.'+str(self.parent.label_handler['Precision'][0])+'f ')%(self.parent.cursor_x))
-        self.label_comp[1].setText(str('%0.'+str(self.parent.label_handler['Precision'][1])+'f ')%(self.parent.cursor_x))
-        self.label_comp[2].setText(str('%0.'+str(self.parent.label_handler['Precision'][2])+'f ')%(self.parent.cursor_y))
-        self.label_comp[3].setText(str('%0.'+str(self.parent.label_handler['Precision'][3])+'f ')%(self.parent.cursor_y))
+        self.label_comp[0].setText(str('%0.'+str(self.parent.label_handler['Precision'][0])+'f ')%(values[0]))
+        self.label_comp[1].setText(str('%0.'+str(self.parent.label_handler['Precision'][1])+'f ')%(values[0]))
+        self.label_comp[2].setText(str('%0.'+str(self.parent.label_handler['Precision'][2])+'f ')%(values[1]))
+        self.label_comp[3].setText(str('%0.'+str(self.parent.label_handler['Precision'][3])+'f ')%(values[1]))
 
         #get the current view rnage
         self.get_ranges()
@@ -302,12 +307,15 @@ class Type_2_Labels(PointerObject):
         '''
         Move with the cursor
         '''
+        values = [
+            10**self.parent.cursor_x if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else self.parent.cursor_x,
+            10**self.parent.cursor_y if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else self.parent.cursor_y]
 
         #set the text to set the width
-        self.label_comp[0].setText(str('%0.'+str(self.parent.label_handler['Precision'][0])+'f ')%(self.parent.cursor_x))
-        self.label_comp[1].setText(str('%0.'+str(self.parent.label_handler['Precision'][1])+'f ')%(self.parent.cursor_x))
-        self.label_comp[2].setText(str('%0.'+str(self.parent.label_handler['Precision'][2])+'f ')%(self.parent.cursor_y))
-        self.label_comp[3].setText(str('%0.'+str(self.parent.label_handler['Precision'][3])+'f ')%(self.parent.cursor_y))
+        self.label_comp[0].setText(str('%0.'+str(self.parent.label_handler['Precision'][0])+'f ')%(values[0]))
+        self.label_comp[1].setText(str('%0.'+str(self.parent.label_handler['Precision'][1])+'f ')%(values[0]))
+        self.label_comp[2].setText(str('%0.'+str(self.parent.label_handler['Precision'][2])+'f ')%(values[1]))
+        self.label_comp[3].setText(str('%0.'+str(self.parent.label_handler['Precision'][3])+'f ')%(values[1]))
 
         #get the current view rnage
         self.get_ranges()

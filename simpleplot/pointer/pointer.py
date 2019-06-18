@@ -233,8 +233,8 @@ class Pointer(SessionNode):
                         ", y = %"+str(self.pointer_handler['Precision'])+"f"
                         ", z = %"+str(self.pointer_handler['Precision'])+"f"
                         )%(
-                            self.cursor_x,
-                            self.cursor_y,
+                            10**self.cursor_x if self.canvas.draw_surface.ctrl.logXCheck.isChecked() else self.cursor_x,
+                            10**self.cursor_y if self.canvas.draw_surface.ctrl.logYCheck.isChecked() else self.cursor_y,
                             self.cursor_z))
             except:
                 pass
