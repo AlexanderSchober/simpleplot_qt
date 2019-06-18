@@ -32,12 +32,12 @@ class LineData(PlotData, SessionNode):
     to be inherited by variations with different
     variations.
     '''
-    def __init__(self,x = None, y = None, z = None, error = None, **kwargs):
+    def __init__(self,**kwargs):
         PlotData.__init__(self, **kwargs) 
         SessionNode.__init__(self, 'Data')
 
         self._axes = ['x','y','z']
-        self.setData(x = x, y = y, z = z)
+        self.setData(**kwargs)
         
     def setData(self, **kwargs):
         '''

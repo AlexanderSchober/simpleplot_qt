@@ -44,7 +44,6 @@ class SurfaceData(PlotData, SessionNode):
         self._axes = ['x','y','z']
         self._data = [None, None, None]
 
-        
     def setData(self, **kwargs):
         '''
         set the local data manually even after

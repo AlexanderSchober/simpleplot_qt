@@ -123,7 +123,7 @@ class ErrorPlot(ParameterHandler):
                 kwargs['pen']       = self.line_pen
                 kwargs['beam']      = self['Beam']
                 kwargs = {**kwargs, **error}
-
+                
         return kwargs
 
     def refresh(self):

@@ -35,7 +35,7 @@ class SurfacePlotHandler(SessionNode):
     '''
     This class will be the scatter plots. 
     '''
-    def __init__(self, x = None, y = None, z = None, **kwargs):
+    def __init__(self, **kwargs):
         '''
         This class serves as envelope for the 
         PlotDataItem. Note that the axis of y will be
@@ -68,7 +68,7 @@ class SurfacePlotHandler(SessionNode):
         self._ray_handler   = SurfaceRayHandler()
         self.addChild(self._ray_handler)
 
-        self._plot_data.setData(x = x, y = y, z = z)
+        self._plot_data.setData(**kwargs)
 
     def __getitem__(self, value):
         '''

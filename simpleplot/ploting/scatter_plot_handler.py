@@ -38,7 +38,7 @@ class ScatterPlotHandler(SessionNode):
     '''
     plotDataChanged = QtCore.pyqtSignal()
 
-    def __init__(self, x = None, y = None, z = None, **kwargs):
+    def __init__(self, **kwargs):
         '''
         This class serves as envelope for the 
         PlotDataItem. Note that the axis of y will be
@@ -63,7 +63,7 @@ class ScatterPlotHandler(SessionNode):
             SessionNode.__init__(self, 'No_name')
         self.add_options    = []
 
-        self._plot_data     = LineData(x = x, y = y, z = z)
+        self._plot_data     = LineData(**kwargs)
         self.addChild(self._plot_data)
 
         # self._ray_handler   = SurfaceRayHandler()
