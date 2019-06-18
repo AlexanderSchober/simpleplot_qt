@@ -86,7 +86,7 @@ class LinePlot(ParameterHandler):
             'Antialiassing', True ,
             method  = self.refresh)
         self.addParameter(
-            'Line color', QtGui.QColor('blue') ,
+            'Line color', color ,
             method  = self.refresh)
         self.addParameter(
             'Line width', float(kwargs['Thickness']) if 'Thickness' in kwargs.keys() else 2. ,
