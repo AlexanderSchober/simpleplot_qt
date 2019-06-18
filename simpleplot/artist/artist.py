@@ -38,6 +38,7 @@ from ..pyqtgraph import pyqtgraph as pg
 
 from copy import deepcopy
 import numpy as np
+import os
 
 class Artist():
     '''
@@ -47,6 +48,7 @@ class Artist():
         self.canvas         = canvas
         self.artist_type    = '2D'
         self.child_widgets  = []
+        self.draw_surface   = None
         
 
     def addPlot(self, name_type, *args, **kwargs):
@@ -67,6 +69,42 @@ class Artist():
         self.canvas._plot_model.referenceModel()
 
         return output
+
+    def addFromDrop(self, file_paths):
+        '''
+        '''
+        for file_path in file_paths:
+            if file_path.split('.')[-1] == 'txt':
+                data = np.loadtxt(file_path).transpose()
+            elif file_path.split('.')[-1] == "npy":
+                data = np.fromfile(file_path).transpose()
+
+            shape = data.shape
+            if len(shape) == 1:
+                item = self.addPlot(
+                    'Scatter',
+                    Name = file_path.split('.')[-2].split(os.path.sep)[-1], 
+                    y = data[0],
+                    Style = ['-','o',10])
+
+            elif len(shape) == 2:
+                item = self.addPlot(
+                    'Scatter',
+                    Name = file_path.split('.')[-2].split(os.path.sep)[-1], 
+                    x = data[0], y = data[1],
+                    Style = ['-','o',10])
+
+            elif len(shape) == 1:
+                item = self.addPlot('Scatter',
+                Name = file_path.split('.')[-2].split(os.path.sep)[-1], 
+                x = data[0], y = data[1], error = data[2],
+                    Style = ['-','o',10])
+
+        
+            if self.artist_type == '2D':
+                item.draw(self.canvas)
+            elif self.artist_type == '3D':
+                item.drawGL(self.canvas)
 
     def removePlot(self,name_type, name = '', idx = None):
         '''
