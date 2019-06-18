@@ -63,6 +63,8 @@ class LabelItem(GraphicsWidget, GraphicsWidgetAnchor):
             optlist.append('font-weight: ' + {True:'bold', False:'normal'}[opts['bold']])
         if 'italic' in opts and opts['italic'] in [True, False]:
             optlist.append('font-style: ' + {True:'italic', False:'normal'}[opts['italic']])
+        if 'align' in opts and opts['align'] in ['left', 'right', 'center']:
+            optlist.append('text-align: ' + opts['align'] )
         full = "<span style='%s'>%s</span>" % ('; '.join(optlist), text)
         #print full
         self.item.setHtml(full)

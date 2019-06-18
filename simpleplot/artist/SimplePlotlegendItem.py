@@ -40,6 +40,8 @@ class SimplePlotLegendItem(LegendItem):
         self.text_color     = (0,0,0,255)
         self.text_width     = 100
         self.text_size      = '8pt'
+        self.box_width          = 0
+        self.box_height         = 0
 
     def paint(self, p, *args):
         '''
@@ -119,13 +121,14 @@ class SimplePlotLegendItem(LegendItem):
             
         height = 0
         width = 0
-        #print("-------")
         for sample, label in self.items:
             height += max(sample.height(), label.height()) + 3
             width = max(width, sample.width()+label.width())
-            #print(width, height)
-        #print width, height
-        self.setGeometry(0, 0,self.text_width, height)
+            
+        self.box_width = max(width, self.text_width) + 20
+        self.box_height = height
+
+        self.setGeometry(0, 0,self.box_width, self.box_height)
 
     def addItem(self, item, name):
         """
@@ -140,7 +143,8 @@ class SimplePlotLegendItem(LegendItem):
         title           The title to display for this item. Simple HTML allowed.
         ==============  ========================================================
         """
-        label = LabelItem(name,color = self.text_color,size = self.text_size)
+        label = LabelItem(name,color = self.text_color,size = self.text_size, align = 'left')
+
         if isinstance(item, ItemSample):
             sample = item
         else:

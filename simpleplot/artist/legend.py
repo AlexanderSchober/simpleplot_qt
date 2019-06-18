@@ -58,7 +58,11 @@ class Legend(ParameterHandler):
             'Active', True,
             method = self._manageLegend)
         self.addParameter(
-            'Position', [10, 10],
+            'Position', 'Top-right',
+            choices  = [ 'Top-left', 'Top-right', 'Bot-left', 'Bot-right', 'Custom'],
+            method = self._setOffset)
+        self.addParameter(
+            'Custom position', [10, 10],
             names  = ['x', 'y'],
             method = self._setOffset)
         self.addParameter(
@@ -110,7 +114,21 @@ class Legend(ParameterHandler):
         '''
         Set the legend offset
         '''
-        self.legend_item.setOffset(self['Position'])
+        self.canvas.plot_widget.sceneObj.update()
+        if self['Position'] == 'Top-left':
+            position = [10,10]
+        elif self['Position'] == 'Top-right':
+            position = [self.canvas.widget.width()-self.legend_item.box_width-10,10]
+        if self['Position'] == 'Bot-left':
+            position = [10,self.canvas.widget.height()-self.legend_item.box_height-10]
+        elif self['Position'] == 'Bot-right':
+            position = [
+                self.canvas.widget.width()-self.legend_item.box_width-10,
+                self.canvas.widget.height()-self.legend_item.box_height-10]
+        elif self['Position'] == 'Custom':
+            position = self['Position']
+        
+        self.legend_item.setOffset(position)
         self.canvas.plot_widget.sceneObj.update()
 
     def _setPen(self):
