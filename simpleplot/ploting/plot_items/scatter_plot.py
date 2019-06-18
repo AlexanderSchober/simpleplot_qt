@@ -76,7 +76,8 @@ class ScatterPlot(ParameterHandler):
         '''
         style           = kwargs['Style'] if 'Style' in kwargs.keys() else []
         options         = ['o', 'd', 's', 't']
-        scatter_bool    = [element in options for element in style]
+        scatter_bool    = [option in style for option in options]
+
         symbol = options[scatter_bool.index(True)] if any(scatter_bool) else 'o'
         color  = QtGui.QColor(kwargs['Color']) if 'Color' in kwargs.keys() else QtGui.QColor('blue')
         if any(scatter_bool):
@@ -190,14 +191,15 @@ class ScatterPlot(ParameterHandler):
         if not target_surface == None:
             self.default_target = target_surface
 
-        self.draw_items = []
-        kwargs          = self._getDictionary()
-        self.draw_items = [SimplePlotDataItem(**kwargs)]
-        self.draw_items[-1].setZValue(-25)
-        self.draw_items[-1].scatter.opts['useCache'] = False
+        if self['Visible']:
+            self.draw_items = []
+            kwargs          = self._getDictionary()
+            self.draw_items = [SimplePlotDataItem(**kwargs)]
+            self.draw_items[-1].setZValue(-25)
+            self.draw_items[-1].scatter.opts['useCache'] = False
 
-        for curve in self.draw_items:
-            self.default_target.draw_surface.addItem(curve)
+            for curve in self.draw_items:
+                self.default_target.draw_surface.addItem(curve)
 
     def drawGL(self, target_view = None):
         '''
@@ -207,13 +209,14 @@ class ScatterPlot(ParameterHandler):
         if not target_view == None:
             self.default_target = target_view
 
-        self.draw_items = []
-        kwargs = self._getDictionary()
-        self.draw_items.append(gl.GLScatterPlotItem(**kwargs))
-        self.draw_items[-1].setGLOptions('translucent')
-            
-        for curve in self.draw_items:
-            self.default_target.view.addItem(curve)
+        if self['Visible']:
+            self.draw_items = []
+            kwargs = self._getDictionary()
+            self.draw_items.append(gl.GLScatterPlotItem(**kwargs))
+            self.draw_items[-1].setGLOptions('translucent')
+                
+            for curve in self.draw_items:
+                self.default_target.view.addItem(curve)
 
     def removeItems(self):
         '''
