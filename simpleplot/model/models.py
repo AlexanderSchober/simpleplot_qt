@@ -159,7 +159,7 @@ class SessionModel(QtCore.QAbstractItemModel):
 
     # """INPUTS: int, int, QModelIndex"""
     def removeRows(self, position, rows, parentNode):
-        
+        success = False
         self.beginResetModel()
         self.beginRemoveRows(
             parentNode.index(), position, 
