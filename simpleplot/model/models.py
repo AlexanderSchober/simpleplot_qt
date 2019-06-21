@@ -80,9 +80,7 @@ class SessionModel(QtCore.QAbstractItemModel):
     def setData(self, index, value, role=QtCore.Qt.EditRole):
 
         if index.isValid():
-            
             node = index.internalPointer()
-            
             if role == QtCore.Qt.EditRole:
                 node.setData(index.column(), value)
                 self.dataChanged.emit(index, index)

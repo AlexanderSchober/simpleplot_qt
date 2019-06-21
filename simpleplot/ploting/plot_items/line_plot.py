@@ -174,10 +174,11 @@ class LinePlot(ParameterHandler):
         if not target_surface == None:
             self.default_target = target_surface
 
-        self.draw_items = []
-        kwargs          = self._getDictionary()
-        self.draw_items = [SimplePlotDataItem(**kwargs)]
-        self.draw_items[-1].setZValue(-50)
+        if self['Visible']:
+            self.draw_items = []
+            kwargs          = self._getDictionary()
+            self.draw_items = [SimplePlotDataItem(**kwargs)]
+            self.draw_items[-1].setZValue(-50)
 
         for curve in self.draw_items:
             self.default_target.draw_surface.addItem(curve)
@@ -190,10 +191,11 @@ class LinePlot(ParameterHandler):
         if not target_view == None:
             self.default_target = target_view
 
-        self.draw_items = []
-        kwargs = self._getDictionary()
-        self.draw_items.append(GLLinePlotItem(**kwargs))
-        self.draw_items[-1].setGLOptions('translucent')
+        if self['Visible']:
+            self.draw_items = []
+            kwargs = self._getDictionary()
+            self.draw_items.append(GLLinePlotItem(**kwargs))
+            self.draw_items[-1].setGLOptions('translucent')
 
         for curve in self.draw_items:
             self.default_target.view.addItem(curve)

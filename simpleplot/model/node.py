@@ -93,12 +93,12 @@ class SessionNode(QtGui.QStandardItem):
 
     def data(self, column):
         
-        if   column is 0: return self._name
+        if column is 0: return self._name
         # elif column is 1: return self.typeInfo()
     
     def setData(self, column, value):
         if   column is 0: self._name = value.toPyObject()
-        # elif column is 1: pass
+        elif column is 1: self._value = value
     
     def resource(self):
         return None
