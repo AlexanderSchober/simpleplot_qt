@@ -50,7 +50,7 @@ class LinePlot(ParameterHandler):
         natural.
 
         Parameters
-        -----------
+        - - - - - - - - - - -
         x : 1D numpy array
             the x data
         y : 1D numpy array
@@ -61,7 +61,7 @@ class LinePlot(ParameterHandler):
             The error of each point
         '''
         ParameterHandler.__init__(self, 'Line')
-        self.addChild(Transformer())
+        # self.addChild(Transformer())
         
         self._initialize(**kwargs)
         self._mode = '2D'
@@ -71,7 +71,7 @@ class LinePlot(ParameterHandler):
         This class will be the scatter plots. 
 
         Parameters
-        -----------
+        - - - - - - - - - - -
         kwargs : dict
             The parameters passed on by the user that 
             will override the predefined values
@@ -81,21 +81,27 @@ class LinePlot(ParameterHandler):
 
         self.addParameter(
             'Visible', True if '-' in style else False, 
+            tags    = ['2D', '3D'],
             method = self.refresh)
         self.addParameter(
             'Antialiassing', True ,
+            tags     = ['2D', '3D'],
             method  = self.refresh)
         self.addParameter(
             'Line color', color ,
+            tags     = ['2D', '3D'],
             method  = self.refresh)
         self.addParameter(
             'Line width', float(kwargs['Thickness']) if 'Thickness' in kwargs.keys() else 2. ,
+            tags     = ['2D', '3D'],
             method  = self.refresh)
         self.addParameter(
             'Shadow color', QtGui.QColor('black') ,
+            tags     = ['2D'],
             method  = self.refresh)
         self.addParameter(
             'Shadow width', 0 ,
+            tags     = ['2D'],
             method  = self.refresh)
 
     def _setVisual(self):
@@ -142,7 +148,7 @@ class LinePlot(ParameterHandler):
         Set the data of the plot manually after the plot item 
         has been actualized
         '''
-        self.childFromName('Transform').unTransform()
+        # self.childFromName('Transform').unTransform()
         if hasattr(self, 'draw_items'):
 
             if self['Visible'] and self._mode == '2D':
@@ -164,13 +170,14 @@ class LinePlot(ParameterHandler):
             elif self['Visible'] and self._mode == '3D':
                 self.drawGL()
 
-        self.childFromName('Transform').reTransform()
+        # self.childFromName('Transform').reTransform()
 
     def draw(self, target_surface = None):
         '''
         Draw the objects.
         '''
         self._mode = '2D'
+        self.setCurrentTags(['2D'])
         if not target_surface == None:
             self.default_target = target_surface
 
@@ -188,6 +195,7 @@ class LinePlot(ParameterHandler):
         Draw the objects.
         '''
         self._mode = '3D'
+        self.setCurrentTags(['3D'])
         if not target_view == None:
             self.default_target = target_view
 

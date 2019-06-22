@@ -51,12 +51,18 @@ class ParameterHandler(ParameterNode):
     def __init__(self, name = 'No Name',  parent = None): 
         super().__init__(name = name, parent = parent)
         self.items = {}
+        self._tags = None
 
     def __getitem__(self, key):
         '''
         the classical getitem classmethod
         overloaded to provide simple setting 
         methodology
+
+        Parameters:
+        - - - - - - - - - - - 
+        key : string
+            The name of the node we are trying to set
         '''
         if key in self.items.keys():
             return self.items[key].getValue()
@@ -64,8 +70,17 @@ class ParameterHandler(ParameterNode):
     def __setitem__(self, key, value):
         '''
         the classical getitem classmethod
-        overloaded to provide simple geting 
+        overloaded to provide simple setting 
         methodology
+
+        Parameters:
+        - - - - - - - - - - - 
+        key : string
+            The name of the node we are trying to set
+
+        value : Either value or list of different types
+            This will be set a the value of the item through setData
+
         '''
         if key in self.items.keys():
             self.items[key].updateValue(value)
@@ -75,18 +90,51 @@ class ParameterHandler(ParameterNode):
 
     def addParameter(self, key, value, **kwargs):
         '''
+        This method is what initialises an item and then 
+        puts it into the item list for secondary safekeeping
 
+        Parameters:
+        - - - - - - - - - - - 
+        name : string
+            The name of the node
+
+        value : Either value or list of different types
+            This will be set a the value of the item through setData
+
+        kwargs : dictionary of parameters
+            This will tell the item how to proceed
+
+        Returns:
+        - - - - - - - - - - - 
+        ParameterVector or ParameterValue : python item node
         '''
         if not key in self.items.keys():
             self.items[key] = self.creator(key, value, **kwargs)
         else:
             print('parameter '+key+' already exists')
 
-    def creator(self, name, value,**kwargs):
+        self.freezOrder()
+
+    def creator(self, name, value, **kwargs):
         '''
         This method will go through the type of the
         object and then decide the nested objects
         to create
+
+        Parameters:
+        - - - - - - - - - - - 
+        name : string
+            The name of the node
+
+        value : Either value or list of different types
+            This will be set a the value of the item through setData
+
+        kwargs : dictionary of parameters
+            This will tell the item how to proceed
+
+        Returns:
+        - - - - - - - - - - - 
+        ParameterVector or ParameterValue : python item node
         '''
         if isinstance(value, collections.abc.Sequence) and not isinstance(value, str):
             return ParameterVector(name, value, self,**kwargs)
@@ -96,6 +144,32 @@ class ParameterHandler(ParameterNode):
     def setString(self):
         pass
 
+    def freezOrder(self):
+        '''
+        Thhis allows the user to save the current order of the
+        items to allow the management of the tags. Items will be 
+        built and inserted by order.
+        '''
+        self._order = [child._name for child in self._children]
+
+    def setCurrentTags(self, tags):
+        '''
+        This will allow the user to manage what is currently displayed. 
+        If the tasg is None all items will be displayed.
+
+        Parameters:
+        - - - - - - - - - - - 
+        tags : list of strings or None
+            The tags that will then be applied
+        '''
+        self._tags = tags
+        self._model.removeRows(0, len(self._children), self)
+        for name in self._order:
+            if any([tag in self._tags for tag in self.items[name].getTags()]) or self._tags is None:
+                self._model.insertRows(len(self._children),1,[self.items[name]], self)
+
+        self._model.dataChanged.emit(QtCore.QModelIndex(), QtCore.QModelIndex())
+
     def runAll(self):
         '''
         Run all methods in the class
@@ -104,17 +178,34 @@ class ParameterHandler(ParameterNode):
             if 'method' in self.items[key].kwargs.keys():
                 self.items[key].kwargs['method']()
 
+
+
 class ParameterMaster:
     '''
     This class is meant to be inherited and 
     will simply own the common sorting and
     managing options.
     '''
-    def __init__(self, name, parent):
+    def __init__(self, name, parent, **kwargs):
         self._base_name  = name
         self._parent     = parent
         self._active     = True
         self._value      = None
+        self._active     = True
+        self._tags       = []
+        if 'tags' in kwargs.keys():
+            self._tags = kwargs['tags']
+    
+    def getTags(self):
+        '''
+        getter for the tags
+
+        Returns:
+        - - - - - - - - - - - 
+        tags : list of strings
+            the current item tags
+        '''
+        return self._tags
 
     def getValue(self):
         '''
@@ -123,13 +214,27 @@ class ParameterMaster:
         return self._value
     
 class ParameterVector(ParameterMaster, ParameterNode):
-    '''
-    This is the parameter class for 
-    a vector of values and should spawn
-    into a node
-    '''
     def __init__(self, name, values, parent, **kwargs):
-        ParameterMaster.__init__(self, name, parent)
+        '''
+        This is the parameter class for 
+        a vector of values and should spawn
+        into a node
+
+        Parameters:
+        - - - - - - - - - - - 
+        name : string
+            The name of the node
+
+        value : Either value or list of different types
+            This will be set a the value of the item through setData
+
+        parent : parent SessionNode class
+            This will be initialised as the parent in the model
+
+        kwargs : dictionary of parameters
+            This will tell the item how to proceed
+        '''
+        ParameterMaster.__init__(self, name, parent, **kwargs)
         ParameterNode.__init__(self, name, parent)
         self.kwargs = kwargs
         self.initialise(values)
@@ -190,13 +295,27 @@ class ParameterVector(ParameterMaster, ParameterNode):
             self.kwargs['method']()
 
 class ParameterValue(ParameterMaster, ParameterItem):
-    '''
-    This is the parameter class for 
-    a single value that should obviously 
-    not spawn into a node
-    '''
     def __init__(self, name, value, parent, **kwargs): 
-        ParameterMaster.__init__(self, name, parent)
+        '''
+        This is the parameter class for 
+        a vector of values and should spawn
+        into a node
+
+        Parameters:
+        - - - - - - - - - - - 
+        name : string
+            The name of the node
+
+        value : Either value or list of different types
+            This will be set a the value of the item through setData
+
+        parent : parent SessionNode class
+            This will be initialised as the parent in the model
+
+        kwargs : dictionary of parameters
+            This will tell the item how to proceed
+        '''
+        ParameterMaster.__init__(self, name, parent, **kwargs)
         ParameterItem.__init__(self, name, parent, value, None)
         self.kwargs = kwargs
         
@@ -222,19 +341,43 @@ class ParameterValue(ParameterMaster, ParameterItem):
 
     def createWidget(self, parent, index):
         '''
-        create the widget for the delegate
+        The create widget call will create the widget
+        for the delegate system of the view
+
+        Parameters:
+        - - - - - - - - - - - 
+        parent : QWidget
+            The widget parent
+
+        index : QModelIndex
+            The index of the call
+        
         '''
         return self._constructor.create(parent,index =  index)
 
     def setEditorData(self, editor):
         '''
-        set the data of the editor
+        Set the data of the editor. This method is
+        propagated to our _contructor loaded with the
+        approriate widget
+
+        Parameters:
+        - - - - - - - - - - - 
+        editor : QWidget
+            The editor widget
         '''
         self._constructor.setEditorData(editor)
 
     def retrieveData(self, editor):
         '''
-        set the data of the editor
+        Get the data of the editor. This method is
+        propagated to our _contructor loaded with the
+        approriate widget
+
+        Parameters:
+        - - - - - - - - - - - 
+        editor : QWidget
+            The editor widget
         '''
         if 'method' in self.kwargs.keys():
             self.kwargs['method']()
@@ -242,7 +385,17 @@ class ParameterValue(ParameterMaster, ParameterItem):
 
     def updateValue(self, value, method = True):
         '''
-        The values here will be set manually
+        Update the value of the item manually and 
+        decide wether to call or not the method 
+        associated to it
+
+        Parameters:
+        - - - - - - - - - - - 
+        value : Either value or list of different types
+            This will be set a the value of the item through setData
+
+        method : bool
+            Do th emethod linke dto this object
         '''
         self._value = value
         self.parent().setString()

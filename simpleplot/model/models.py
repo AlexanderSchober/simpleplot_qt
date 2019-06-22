@@ -144,6 +144,7 @@ class SessionModel(QtCore.QAbstractItemModel):
     """INPUTS: int, int, QModelIndex"""
     def insertRows(self, position, rows, items, parentNode):
 
+        success = False
         self.beginInsertRows(
             parentNode.index(), position, 
             position + rows - 1)
