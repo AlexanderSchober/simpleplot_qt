@@ -87,7 +87,7 @@ class doubleSpinBoxConstructor:
         if 'step' in self.manager.kwargs.keys():
             item.setSingleStep(self.manager.kwargs['step'])
         else:
-            item.setSingleStep(0.1)
+            item.setSingleStep(1.)
 
         item.valueChanged.connect(self.updateInternals)
         return item
