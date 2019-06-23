@@ -27,7 +27,7 @@ from .plot_data_types.volume_data  import VolumeData
 from .plot_handler                 import PlotHandler
 
 from .plot_items.volume_plot       import VolumePlot
-from .plot_items.iso_curve_plot    import IsoCurvePlot
+from .plot_items.iso_surface_plot  import IsoSurfacePlot
 from .plot_ray_handlers.surface    import SurfaceRayHandler
 from .plot_items.SimpleItemSample  import SimpleItemSample
 
@@ -46,11 +46,7 @@ class VolumePlotHandler(PlotHandler):
         self._plot_data     = VolumeData()
         self.addChild(self._plot_data)
         self.addChild(VolumePlot(**kwargs))
-
-        # self.addChild(IsoCurvePlot(**kwargs))
-        # self._ray_handler   = SurfaceRayHandler()
-        # self.addChild(self._ray_handler)
-
+        self.addChild(IsoSurfacePlot(**kwargs))
         self._plot_data.setData(**kwargs)
 
     def setData(self, **kwargs):
@@ -59,16 +55,17 @@ class VolumePlotHandler(PlotHandler):
         program decide which procedure to target Note
         that this routine aims at updating the data only
         '''
-        self['Data'].setData(**kwargs)
+        self._plot_data.setData(**kwargs)
         
         for child in self._children:
             if hasattr(child, 'refresh'):
                 child.refresh()
         
-        self._model.dataChanged.emit(self.index(),self.index())
+        self._model.dataChanged.emit(self._plot_data.index(),self._plot_data.index())
 
     def legendItems(self):
         '''
         return to the legend the items to be used
         '''
-        return SimpleItemSample([self.childFromName('Line'), self.childFromName('Scatter'), self.childFromName('Error')])
+        # return SimpleItemSample([self.childFromName('Line'), self.childFromName('Scatter'), self.childFromName('Error')])
+        return []

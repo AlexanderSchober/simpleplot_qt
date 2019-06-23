@@ -52,8 +52,8 @@ class spinBoxConstructor:
         '''
         self.manager._value = value
         self.manager._model.dataChanged.emit(
-            self._index,
-            self._index)
+            self.manager.index(),
+            self.manager.index())
 
         if 'method' in self.manager.kwargs.keys():
             self.manager.kwargs['method']()
@@ -97,8 +97,8 @@ class doubleSpinBoxConstructor:
         '''
         self.manager._value = value
         self.manager._model.dataChanged.emit(
-            self._index,
-            self._index)
+            self.manager.index(),
+            self.manager.index())
 
         if 'method' in self.manager.kwargs.keys():
             self.manager.kwargs['method']()
@@ -127,8 +127,8 @@ class lineEditConstructor:
         '''
         self.manager._value = value
         self.manager._model.dataChanged.emit(
-            self._index,
-            self._index)
+            self.manager.index(),
+            self.manager.index())
 
         if 'method' in self.manager.kwargs.keys():
             self.manager.kwargs['method']()

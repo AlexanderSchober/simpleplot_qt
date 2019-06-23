@@ -44,13 +44,15 @@ class VolumeData(PlotData, SessionNode):
         self._axes = ['x','y','z','data']
         self._data = [None, None, None, None]
         self._bounds = [[0,1],[0,1],[0,1],[0,1]]
+        self._buffer = {}
 
     def setData(self, **kwargs):
         '''
         set the local data manually even after
         initialization of the class
         '''
-        elements = [None]*len(self._axes)
+        self._buffer = {}
+        elements = [None, None, None, None]
         changed  = [False, False, False, False]
 
         for i,value in enumerate(self._axes):
@@ -88,8 +90,10 @@ class VolumeData(PlotData, SessionNode):
                 changed[self._axes.index('z')] = True
 
         if self._sanity(elements):
+            self._level = None
             norm_data = np.array(elements[3]) - np.amin(elements[3])
-            norm_data /= np.amax(norm_data)
+            if not np.amax(norm_data) == 0:
+                norm_data /= np.amax(norm_data)
             self._data = elements + [norm_data]
             self._setBounds()
 
@@ -106,12 +110,23 @@ class VolumeData(PlotData, SessionNode):
         '''
         return self._bounds
 
-    def getIsosurface(self, value):
+    def getIsoSurface(self, value):
         '''
         Returns the x,y,z isocurve position fo the given
         level omn the present data
         '''
-        return functions.isocurve(self._data[2], value, connected = True)
+        if self._level is None or not value == self._level:
+            self._level = value
+            vertices, faces = functions.isosurface(self._data[3], value)
+            offset = np.array(self._bounds)[0:3,0]
+            mult   = (
+                np.array(self._bounds)[0:3,1] 
+                - np.array(self._bounds)[0:3,0])
+            div    = np.array(self._data[3].shape)
+            vertices[:] = vertices[:] * mult / div  + offset
+            self._vertices = vertices
+            self._faces    = faces
+        return self._vertices, self._faces
 
     def getBoundingBox(self):
         '''

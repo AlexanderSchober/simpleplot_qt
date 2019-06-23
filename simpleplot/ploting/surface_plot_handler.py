@@ -64,7 +64,7 @@ class SurfacePlotHandler(PlotHandler):
             if hasattr(child, 'refresh'):
                 child.refresh()
         
-        self._model.dataChanged.emit(self.index(),self.index())
+        self._model.dataChanged.emit(self._plot_data.index(),self._plot_data.index())
 
     def legendItems(self):
         '''

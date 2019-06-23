@@ -63,7 +63,7 @@ class ScatterPlotHandler(PlotHandler):
             if hasattr(child, 'refresh'):
                 child.refresh()
 
-        self._model.dataChanged.emit(self['Data'].index(),self['Data'].index())
+        self._model.dataChanged.emit(self._plot_data.index(),self._plot_data.index())
 
     def legendItems(self):
         '''

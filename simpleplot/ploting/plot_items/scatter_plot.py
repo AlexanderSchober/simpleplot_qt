@@ -195,8 +195,8 @@ class ScatterPlot(ParameterHandler):
         self._mode = '2D'
         if not target_surface == None:
             self.default_target = target_surface
+            self.setCurrentTags(['2D'])
 
-        self.setCurrentTags(['2D'])
         if self['Visible']:
             self.draw_items = []
             kwargs          = self._getDictionary()
@@ -214,8 +214,8 @@ class ScatterPlot(ParameterHandler):
         self._mode = '3D'
         if not target_view == None:
             self.default_target = target_view
-
-        self.setCurrentTags(['3D'])
+            self.setCurrentTags(['3D'])
+            
         if self['Visible']:
             self.draw_items = []
             kwargs = self._getDictionary()

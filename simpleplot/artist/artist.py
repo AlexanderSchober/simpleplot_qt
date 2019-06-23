@@ -188,7 +188,7 @@ class Artist2DNode(SessionNode, Artist):
         Send to the adequate elements that the plot data has changed
         and thus the some things have to be done
         '''
-        if self.canvas._plot_model.itemAt(index)._name == 'Data':
+        if not self.canvas._plot_model.itemAt(index) is None and self.canvas._plot_model.itemAt(index)._name == 'Data':
             self.pointer.refreshPlotData()
             self.zoomer.zoom()
 

@@ -43,19 +43,8 @@ class VolumePlot(ParameterHandler):
         changed to z in case of a 3D representation while the 
         y axis will be set to 0. This seems more
         natural.
-
-        Parameters
-        -----------
-        x : 1D numpy array
-            the x data
-        y : 1D numpy array
-            the y data
-        z : 1D numpy array
-            the z data
-        error: dict of float arrays
-            The error of each point
         '''
-        ParameterHandler.__init__(self, 'Surface')
+        ParameterHandler.__init__(self, 'Volume')
         self.addChild(ShaderConstructor())
         self.initialize(**kwargs)
         self._mode = '3D'
@@ -139,12 +128,9 @@ class VolumePlot(ParameterHandler):
         refresh the bounds of the parameter handler 
         as the data is being refreshed
         '''
-        data = self.parent()._plot_data.getData()
         bounds = self.parent()._plot_data.getBounds()
 
-        data_range = self['X range']
         targets     = ['X range', 'Y range', 'Z range']
-
         for j,target in enumerate(targets):
             data_range = self[target]
             if not data_range[0]:
@@ -182,7 +168,6 @@ class VolumePlot(ParameterHandler):
                 temp_colors[-1][3] = 0
                 temp_colors = temp_colors.tolist()
                 colors = np.array(temp_colors[0:2]+colors+temp_colors[2:],dtype=np.uint64)
-                print(positions, colors)
                 color_map = pg.ColorMap(positions,colors)
 
             data    = self.parent()._plot_data.getData()
@@ -200,11 +185,11 @@ class VolumePlot(ParameterHandler):
                         else None for i in range(data[j].shape[0])]
                     inside = list(filter((None).__ne__, inside))
                     if len(inside) == 0:
-                        data_limits[j] = [0, data[0].shape[0]]
+                        data_limits[j] = [0, data[j].shape[0]]
                     else:
                         data_limits[j] = [np.amin(inside), np.amax(inside)]
                 else:
-                    data_limits[j] = [0, data[0].shape[0]]
+                    data_limits[j] = [0, data[j].shape[0]]
 
             colors_temp = np.zeros(colors.shape)
             colors_temp[
@@ -235,32 +220,22 @@ class VolumePlot(ParameterHandler):
                         points[2*l+1] = data_range[1]
                     if points[2*l+1] > data_range[2]:
                         points[2*l+1] = data_range[2]
-
-                    print(data[j], points[2*l], points[2*l+1])
+                        
                     inside = [
                         i 
                         if data[j][i]>=points[2*l] and data[j][i]<=points[2*l+1] 
                         else None for i in range(data[j].shape[0])]
-
-                    print(inside)
+                        
                     inside = list(filter((None).__ne__, inside))
                     if len(inside) == 0:
                         continue
                     cut_out = [np.amin(inside), np.amax(inside)]
-                    print(cut_out)
                     if j == 0:
                         colors[cut_out[0]:cut_out[1],:,:,3] = 0
                     elif j == 1:
                         colors[:,cut_out[0]:cut_out[1],:,3] = 0                    
                     elif j == 2:
                         colors[:,:,cut_out[0]:cut_out[1],3] = 0
-
-            # data_range = self['Data range']
-            # if data_range[0]:
-            #     data_d_index = np.argwhere(
-            #         data[0] < data_range[1] and data[0] > data_range[2])
-            # else:
-            #     data_d_index = np.arange(data[0].shape[0])
 
             self.draw_items[0].setData(colors)
             
@@ -272,6 +247,7 @@ class VolumePlot(ParameterHandler):
         self._mode = '2D'
         if not target_surface == None:
             self.default_target = target_surface
+            self.setCurrentTags(['2D'])
 
     def drawGL(self, target_view = None):
         '''
@@ -280,20 +256,21 @@ class VolumePlot(ParameterHandler):
         self._mode = '3D'
         if not target_view == None:
             self.default_target = target_view
+            self.setCurrentTags(['3D'])
 
-        self.setCurrentTags(['3D'])
-        self.draw_items = []
-        data = self.parent()._plot_data.getData()
-        kwargs = {}
-        kwargs['x']  = data[0]
-        kwargs['y']  = data[1]
-        kwargs['z']  = data[2]
-        kwargs['sliceDensity']  = self['Slice density']
-        kwargs['smooth']        = self['Draw smooth']
-        self.draw_items.append(CustomGLVolumeItem(None,**kwargs))
-        self.default_target.view.addItem(self.draw_items[-1])
-        self._refreshBounds()
-        self.childFromName('Shader').runShader()
+        if self['Visible']:
+            self.draw_items = []
+            data = self.parent()._plot_data.getData()
+            kwargs = {}
+            kwargs['x']  = data[0]
+            kwargs['y']  = data[1]
+            kwargs['z']  = data[2]
+            kwargs['sliceDensity']  = self['Slice density']
+            kwargs['smooth']        = self['Draw smooth']
+            self.draw_items.append(CustomGLVolumeItem(None,**kwargs))
+            self.default_target.view.addItem(self.draw_items[-1])
+            self._refreshBounds()
+            self.childFromName('Shader').runShader()
 
     def removeItems(self):
         '''
