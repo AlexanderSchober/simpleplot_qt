@@ -104,7 +104,7 @@ class CanvasNode(SessionNode):
         '''
         build the support base of the code
         '''
-        self.widget         = QtGui.QWidget()
+        self.widget = CanvasWidget()
         self.widget.setSizePolicy(QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.grid_layout = QtWidgets.QGridLayout()
@@ -154,6 +154,8 @@ class CanvasNode(SessionNode):
         self.artist = Artist2DNode(name = '2D Artist', parent = self, canvas = self)
         self.artist.setup()
 
+        self.widget.drop_success.connect(self.artist.addFromDrop)
+
     def _populate3D(self):
         '''
         populate the ui elements on the grid
@@ -164,6 +166,8 @@ class CanvasNode(SessionNode):
 
         self.artist = Artist3DNode('3D Artist', parent = self, canvas = self)
         self.artist.setup()
+
+        self.widget.drop_success.connect(self.artist.addFromDrop)
 
     def _setBackground(self):
         self.plot_widget.setBackground(
@@ -179,3 +183,59 @@ class CanvasNode(SessionNode):
         self.grid_layout.setHorizontalSpacing(
             self.handler['Horizontal spacing'])
 
+from functools import partial
+class CanvasWidget(QtWidgets.QWidget): 
+    drop_success = QtCore.pyqtSignal(list)
+    '''
+    Thi method is a custom modification of the 
+    QListView widget that supports drag and 
+    drop.
+    '''        
+    def __init__(self, parent = None):
+        super(CanvasWidget, self).__init__(parent)
+        
+        self.setAcceptDrops(True)
+        self.dropEvent = partial(NumpyFileDrop, self)
+        self.check     = NumpyFileCheck
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            if self.check(event):
+                event.acceptProposedAction()
+            else:
+                super(CanvasWidget, self).dragEnterEvent(event)
+        else:
+            super(CanvasWidget, self).dragEnterEvent(event)
+
+    def dragMoveEvent(self, event):
+        super(CanvasWidget, self).dragMoveEvent(event)
+
+def NumpyFileDrop(generator_class, event):
+    '''
+    This is the drop method and will support the
+    drop of the files into the list. 
+    '''
+    if event.mimeData().hasUrls():
+        if NumpyFileCheck(event):
+            event.acceptProposedAction()
+            generator_class.drop_success.emit([url.path() for url in event.mimeData().urls()])
+
+def NumpyFileCheck(event):
+    '''
+    check if the file are numpy
+    '''
+    urls          = [url for url in event.mimeData().urls()]
+    bool_numpy    = [False for e in urls]
+
+    for i, url in enumerate(urls):
+        if url.path().split('.')[-1] == "txt":
+            bool_numpy[i] = True
+        elif url.path().split('.')[-1] == "npy":
+            bool_numpy[i] = True
+        elif url.path().split('.')[-1] == "npz":
+            bool_numpy[i] = True
+
+    if all(bool_numpy):
+        return True
+    else:
+        return False

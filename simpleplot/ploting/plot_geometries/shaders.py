@@ -26,7 +26,7 @@ from ...pyqtgraph.pyqtgraph.opengl import shaders
 from OpenGL.GL import glUseProgram, glGetUniformLocation, glCreateProgram, glAttachShader
 import numpy as np
 
-from ...pyqtgraph.pyqtgraph.graphicsItems.GradientEditorItem import GradientEditorItem
+from ...simpleplot_widgets.SimplePlotGradientEditorItem import GradientEditorItem
 
 from OpenGL import GL
 from ...model.parameter_class       import ParameterHandler 
@@ -220,6 +220,61 @@ class ShaderConstructor(ParameterHandler):
             return self.orientationShader()
         elif name == 'length':
             return self.vecLengthShader()
+        elif name == 'edgeShader':
+            return self.edgeShader()
+
+    def edgeShader(self):
+        '''
+        produce the height shader
+        '''
+        # out varying vec4 color;    
+        fragment_text = (
+            """
+            varying vec3 normal;
+            void main() {
+                vec4 color = gl_Color;
+                float s = pow(normal.x*normal.x + normal.y*normal.y, 2.0);
+                color.x = color.x + s * (1.0-color.x);
+                color.y = color.y + s * (1.0-color.y);
+                color.z = color.z + s * (1.0-color.z);
+
+            """)
+
+        if self._light_active:
+            fragment_text += ("""
+                float p = dot(normalize(vec3("""
+                +str(self._light_direction[0])+","
+                +str(self._light_direction[1])+","
+                +str(self._light_direction[2])+""")),normal);
+                p = p < 0. ? 0. : p * 0.8;
+                color.x = color.x * (0.2 + p);
+                color.y = color.y * (0.2 + p);
+                color.z = color.z * (0.2 + p);""")
+
+        fragment_text += ("""gl_FragColor = color;}""")
+
+        # make the vertex
+        vertex  = shaders.VertexShader(
+            """
+            varying vec3 normal;
+            void main() {
+                // compute here for use in fragment shader
+                normal = normalize(gl_NormalMatrix * gl_Normal);
+                gl_FrontColor = gl_Color;
+                gl_BackColor = gl_Color;
+                gl_Position = ftransform();
+            }
+            """)
+
+        #set shader up
+        fragment    = shaders.FragmentShader(fragment_text)
+
+        #set shader up
+        to_use = shaders.ShaderProgram(
+            'edgeShader', 
+            [vertex, fragment])
+            
+        return to_use
 
     def heightShader(self):
         '''

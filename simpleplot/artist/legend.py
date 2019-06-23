@@ -58,11 +58,15 @@ class Legend(ParameterHandler):
             'Active', True,
             method = self._manageLegend)
         self.addParameter(
-            'Position', [10, 10],
+            'Position', 'Top-right',
+            choices  = [ 'Top-left', 'Top-right', 'Bot-left', 'Bot-right', 'Custom'],
+            method = self._setOffset)
+        self.addParameter(
+            'Custom position', [10, 10],
             names  = ['x', 'y'],
             method = self._setOffset)
         self.addParameter(
-            'Text length',  100,
+            'Text length',  130,
             method = self._setTextLength)
         self.addParameter(
             'Pen color',QtGui.QColor(100,100,100,alpha = 255),
@@ -74,7 +78,7 @@ class Legend(ParameterHandler):
             'Text color',QtGui.QColor(0,0,0,alpha = 50),
             method = self._setTextColor)
         self.addParameter(
-            'Text size',  8,
+            'Text size',  9,
             method = self._setTextSize)
 
         self.runAll()
@@ -89,12 +93,7 @@ class Legend(ParameterHandler):
         for plot_handler in self.canvas._plot_root._children:
             for element in plot_handler._children:
                 if hasattr(element, 'legendItems'):
-                    items = element.legendItems()
-                    for item in items:
-                        if hasattr(item, 'draw_items'):
-                            for draw_item in item.draw_items:
-                                if not isinstance(draw_item, pg.ImageItem) and not isinstance(draw_item, SimpleErrorBarItem):
-                                    self.legend_item.addItem(draw_item, element._name)
+                    self.legend_item.addItem(element.legendItems(), element._name)
 
     def tearLegendDown(self):
         '''
@@ -115,7 +114,21 @@ class Legend(ParameterHandler):
         '''
         Set the legend offset
         '''
-        self.legend_item.setOffset(self['Position'])
+        self.canvas.plot_widget.sceneObj.update()
+        if self['Position'] == 'Top-left':
+            position = [10,10]
+        elif self['Position'] == 'Top-right':
+            position = [self.canvas.widget.width()-self.legend_item.box_width-10,10]
+        if self['Position'] == 'Bot-left':
+            position = [10,self.canvas.widget.height()-self.legend_item.box_height-10]
+        elif self['Position'] == 'Bot-right':
+            position = [
+                self.canvas.widget.width()-self.legend_item.box_width-10,
+                self.canvas.widget.height()-self.legend_item.box_height-10]
+        elif self['Position'] == 'Custom':
+            position = self['Position']
+        
+        self.legend_item.setOffset(position)
         self.canvas.plot_widget.sceneObj.update()
 
     def _setPen(self):

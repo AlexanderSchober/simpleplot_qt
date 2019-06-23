@@ -83,17 +83,38 @@ class Type_0_Position(PointerPosition):
         points  = []
         node    = np.array([cursor_x, cursor_y])
         for element in self.mapping:
-            nodes       = np.zeros((len(element[1][0]),2)) 
-            nodes[:,0] = element[1][0]
-            nodes[:,1] = element[1][1]
-            points.append(nodes[distance.cdist([node], nodes).argmin()])
-
-        nodes   = points
-        select  = distance.cdist([node], nodes).argmin()
-        point   = nodes[select]
+            nodes   = np.array([element[1][0],element[1][1]]).transpose()
+            deltas  = nodes - node
+            points.append(nodes[np.einsum('ij,ij->i', deltas, deltas).argmin()])
+            
+        deltas  = points - node
+        select  = np.einsum('ij,ij->i', deltas, deltas).argmin()
+        point   = points[select]
 
         self.parent.cursor_x = np.log10(point[0]) if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else point[0]
         self.parent.cursor_y = np.log10(point[1]) if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else point[1]
+
+class Type_1_Position(PointerPosition):
+
+    def __init__(self, parent):
+        '''
+        Type_0 cursor init
+        '''
+        PointerPosition.__init__(self,parent)
+        self.parent = parent
+
+    def evaluate(self):
+        '''
+        old find_nearestY. This method aims at 
+        searching successively for the nearest value in 
+        all plots by first scanning the nearest X. 
+        Then e find the second nearest to zero after 
+        X-Nearest. This will give us back two point 
+        ids which whom we can calculate the nearest Y
+        '''
+
+        self.parent.cursor_x = 10**self.parent.cursor_x if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else self.parent.cursor_x
+        self.parent.cursor_y = 10**self.parent.cursor_y if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else self.parent.cursor_y
 
 class Type_3_Position(PointerPosition):
     

@@ -31,8 +31,7 @@ from ...pyqtgraph.pyqtgraph         import opengl as gl
 from ...pyqtgraph.pyqtgraph.graphicsItems.GradientEditorItem import GradientEditorItem
 
 from ..plot_geometries.shaders      import ShaderConstructor
-from ...model.parameter_class       import ParameterHandler 
-from ..plot_geometries.transformer  import Transformer
+from ...model.parameter_class       import ParameterHandler
 
 class IsoCurvePlot(ParameterHandler):  
     '''
@@ -60,7 +59,6 @@ class IsoCurvePlot(ParameterHandler):
         ParameterHandler.__init__(self, 'Iso curves')
 
         self.addChild(ShaderConstructor())
-        self.addChild(Transformer())
         self.initialize(**kwargs)
         self._mode = '2D'
 
@@ -71,21 +69,27 @@ class IsoCurvePlot(ParameterHandler):
         '''
         self.addParameter(
             'Visible', False, 
+            tags    = ['2D', '3D'],
             method = self.refresh)
         self.addParameter(
             'Line thickness', 2, 
+            tags    = ['2D', '3D'],
             method = self.refresh)
         self.addParameter(
             'Line offset', 0.2, 
+            tags    = ['2D', '3D'],
             method = self.refresh)
         self.addParameter(
             'Levels', 10, 
+            tags    = ['2D', '3D'],
             method = self.refresh)
         self.addParameter(
             'Use shader', False, 
+            tags    = ['2D', '3D'],
             method = self.setColor)
         self.addParameter(
             'Color', QtGui.QColor('blue'),
+            tags    = ['2D', '3D'],
             method = self.setColor)
 
     def refresh(self):
@@ -94,8 +98,6 @@ class IsoCurvePlot(ParameterHandler):
         program decide which procedure to target Note
         that this routine aims at updating the data only
         '''
-        self.childFromName('Transform').unTransform()
-
         if hasattr(self, 'draw_items'):
             isocurves = []
             for draw_item in self.draw_items:
@@ -140,8 +142,6 @@ class IsoCurvePlot(ParameterHandler):
                 self.draw()
             elif self._mode == '3D':
                 self.drawGL()
-
-        self.childFromName('Transform').reTransform()
 
     def _getColors(self):
         '''
@@ -193,7 +193,6 @@ class IsoCurvePlot(ParameterHandler):
         '''
         Redundant calculation of the levelsS
         '''
-        data    = self.parent()['Data'].getData()
         bounds  = self.parent()['Data'].getBounds()
 
         return [((bounds[2][1] - bounds[2][0])/self['Levels'] * i + bounds[2][0]) for i in range(self['Levels'])]
@@ -205,9 +204,10 @@ class IsoCurvePlot(ParameterHandler):
         self._mode = '2D'
         if not target_surface == None:
             self.default_target = target_surface
+            self.setCurrentTags(['2D'])
             
+        self.draw_items = []
         if self['Visible']:
-            self.draw_items = []
             data    = self.parent()['Data'].getData()
             for level in self._processLevels():
                 self.draw_items.append(pg.IsocurveItem(data = data[2], level = level))
@@ -222,10 +222,10 @@ class IsoCurvePlot(ParameterHandler):
         self._mode = '3D'
         if not target_view == None:
             self.default_target = target_view
+            self.setCurrentTags(['3D'])
 
+        self.draw_items = []
         if self['Visible']:
-            self.draw_items = []
-
             data    = self.parent()['Data'].getData()
             bounds  = self.parent()['Data'].getBounds()
             x_fac   = (bounds[0][1] - bounds[0][0])
@@ -252,7 +252,9 @@ class IsoCurvePlot(ParameterHandler):
 
     def removeItems(self):
         '''
+        Remove the objects.
         '''
-        for curve in self.draw_items:
-            self.default_target.draw_surface.removeItem(curve)
+        if hasattr(self, 'draw_items'):
+            for curve in self.draw_items:
+                self.default_target.draw_surface.removeItem(curve)
 

@@ -32,12 +32,12 @@ class LineData(PlotData, SessionNode):
     to be inherited by variations with different
     variations.
     '''
-    def __init__(self,x = None, y = None, z = None, error = None, **kwargs):
+    def __init__(self,**kwargs):
         PlotData.__init__(self, **kwargs) 
         SessionNode.__init__(self, 'Data')
 
         self._axes = ['x','y','z']
-        self.setData(x = x, y = y, z = z)
+        self.setData(**kwargs)
         
     def setData(self, **kwargs):
         '''
@@ -47,8 +47,9 @@ class LineData(PlotData, SessionNode):
         elements = [None for i in self._axes]
 
         for i,value in enumerate(self._axes):
-            if value in kwargs.keys() and not kwargs[value] is None :
-                elements[i] = np.array(kwargs[value])
+            if value in kwargs.keys():
+                if isinstance(kwargs[value],np.ndarray) or isinstance(kwargs[value],list):
+                    elements[i] = np.array(kwargs[value])
 
         shape = np.amax(
             np.array(

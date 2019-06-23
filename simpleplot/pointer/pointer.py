@@ -224,6 +224,7 @@ class Pointer(SessionNode):
             self.cursor_x = x
             self.cursor_y = y
             self.cursor_z = 0
+
             try:
                 self.pointer_position.evaluate()
                 self.canvas.multi_canvas.bottom_selector.label.setText(
@@ -232,8 +233,8 @@ class Pointer(SessionNode):
                         ", y = %"+str(self.pointer_handler['Precision'])+"f"
                         ", z = %"+str(self.pointer_handler['Precision'])+"f"
                         )%(
-                            self.cursor_x,
-                            self.cursor_y,
+                            10**self.cursor_x if self.canvas.draw_surface.ctrl.logXCheck.isChecked() else self.cursor_x,
+                            10**self.cursor_y if self.canvas.draw_surface.ctrl.logYCheck.isChecked() else self.cursor_y,
                             self.cursor_z))
             except:
                 pass

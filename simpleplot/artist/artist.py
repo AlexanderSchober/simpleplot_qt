@@ -33,11 +33,12 @@ from .legend            import Legend
 from .grid_gl           import GridGl
 from ..model.node       import SessionNode
 
-from ..ploting.plot_handler import get_plot_handler
+from ..ploting.main_handler import get_main_handler
 from ..pyqtgraph import pyqtgraph as pg
 
 from copy import deepcopy
 import numpy as np
+import os
 
 class Artist():
     '''
@@ -47,6 +48,7 @@ class Artist():
         self.canvas         = canvas
         self.artist_type    = '2D'
         self.child_widgets  = []
+        self.draw_surface   = None
         
 
     def addPlot(self, name_type, *args, **kwargs):
@@ -59,7 +61,7 @@ class Artist():
         active_handlers = [child._name for child in self.canvas._plot_root._children]
 
         if not name_type in active_handlers:
-            new_child = get_plot_handler(name_type)
+            new_child = get_main_handler(name_type)
             self.canvas._plot_root.addChild(new_child)
 
         active_handlers = [child._name for child in self.canvas._plot_root._children]
@@ -67,6 +69,42 @@ class Artist():
         self.canvas._plot_model.referenceModel()
 
         return output
+
+    def addFromDrop(self, file_paths):
+        '''
+        '''
+        for file_path in file_paths:
+            if file_path.split('.')[-1] == 'txt':
+                data = np.loadtxt(file_path).transpose()
+            elif file_path.split('.')[-1] == "npy":
+                data = np.fromfile(file_path).transpose()
+
+            shape = data.shape
+            if len(shape) == 1:
+                item = self.addPlot(
+                    'Scatter',
+                    Name = file_path.split('.')[-2].split(os.path.sep)[-1], 
+                    y = data[0],
+                    Style = ['-','o',10])
+
+            elif len(shape) == 2:
+                item = self.addPlot(
+                    'Scatter',
+                    Name = file_path.split('.')[-2].split(os.path.sep)[-1], 
+                    x = data[0], y = data[1],
+                    Style = ['-','o',10])
+
+            elif len(shape) == 1:
+                item = self.addPlot('Scatter',
+                Name = file_path.split('.')[-2].split(os.path.sep)[-1], 
+                x = data[0], y = data[1], error = data[2],
+                    Style = ['-','o',10])
+
+        
+            if self.artist_type == '2D':
+                item.draw(self.canvas)
+            elif self.artist_type == '3D':
+                item.drawGL(self.canvas)
 
     def removePlot(self,name_type, name = '', idx = None):
         '''
@@ -150,7 +188,7 @@ class Artist2DNode(SessionNode, Artist):
         Send to the adequate elements that the plot data has changed
         and thus the some things have to be done
         '''
-        if self.canvas._plot_model.itemAt(index)._name == 'Data':
+        if not self.canvas._plot_model.itemAt(index) is None and self.canvas._plot_model.itemAt(index)._name == 'Data':
             self.pointer.refreshPlotData()
             self.zoomer.zoom()
 

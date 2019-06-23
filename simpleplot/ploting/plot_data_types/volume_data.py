@@ -31,7 +31,7 @@ from ...pyqtgraph.pyqtgraph     import functions
 
 from ...model.node   import SessionNode
 
-class SurfaceData(PlotData, SessionNode): 
+class VolumeData(PlotData, SessionNode): 
     '''
     This will be the main data class purposed
     to be inherited by variations with different
@@ -41,16 +41,19 @@ class SurfaceData(PlotData, SessionNode):
         PlotData.__init__(self, **kwargs) 
         SessionNode.__init__(self,'Data')
 
-        self._axes = ['x','y','z']
-        self._data = [None, None, None]
+        self._axes = ['x','y','z','data']
+        self._data = [None, None, None, None]
+        self._bounds = [[0,1],[0,1],[0,1],[0,1]]
+        self._buffer = {}
 
     def setData(self, **kwargs):
         '''
         set the local data manually even after
         initialization of the class
         '''
-        elements = [None]*len(self._axes)
-        changed  = [False, False, False]
+        self._buffer = {}
+        elements = [None, None, None, None]
+        changed  = [False, False, False, False]
 
         for i,value in enumerate(self._axes):
             if value in kwargs.keys():
@@ -58,45 +61,41 @@ class SurfaceData(PlotData, SessionNode):
                     elements[i] = np.array(kwargs[value])
                     changed[self._axes.index(value)] = True
 
-        if elements[self._axes.index('z')] is None:
-            if not self._data[self._axes.index('z')] is None:
-                elements[self._axes.index('z')] = self._data[self._axes.index('z')]  
+        if elements[self._axes.index('data')] is None:
+            if not self._data[self._axes.index('data')] is None:
+                elements[self._axes.index('data')] = self._data[self._axes.index('data')]  
             else:
-                elements[self._axes.index('z')] = np.zeros((1,1))
-                changed[self._axes.index('z')] = True
+                elements[self._axes.index('data')] = np.zeros((5,5,5))
+                changed[self._axes.index('data')] = True
 
         if elements[self._axes.index('x')] is None:
             if not self._data[self._axes.index('x')] is None:
                 elements[self._axes.index('x')] = self._data[self._axes.index('x')]  
             else:
-                elements[self._axes.index('x')] = np.arange(elements[self._axes.index('z')].shape[0])
+                elements[self._axes.index('x')] = np.arange(elements[self._axes.index('data')].shape[0])
                 changed[self._axes.index('x')] = True
 
         if elements[self._axes.index('y')] is None:
             if not self._data[self._axes.index('y')] is None:
                 elements[self._axes.index('y')] = self._data[self._axes.index('y')]  
             else:
-                elements[self._axes.index('y')] = np.arange(elements[self._axes.index('z')].shape[1])
+                elements[self._axes.index('y')] = np.arange(elements[self._axes.index('data')].shape[1])
                 changed[self._axes.index('y')] = True
 
+        if elements[self._axes.index('z')] is None:
+            if not self._data[self._axes.index('z')] is None:
+                elements[self._axes.index('z')] = self._data[self._axes.index('z')]  
+            else:
+                elements[self._axes.index('z')] = np.arange(elements[self._axes.index('data')].shape[2])
+                changed[self._axes.index('z')] = True
+
         if self._sanity(elements):
-
-            self._data = elements 
+            self._level = None
+            norm_data = np.array(elements[3]) - np.amin(elements[3])
+            if not np.amax(norm_data) == 0:
+                norm_data /= np.amax(norm_data)
+            self._data = elements + [norm_data]
             self._setBounds()
-
-            if self.parent().childFromName('Surface')._mode == '3D':
-                self.set3D(changed = changed)
-
-    def set3D(self, changed = [True, True, True]):
-        '''
-        return a dataset as the data on the 
-        wanted orientation
-        '''
-        if changed[0] or changed[1]:
-            self._buildVerticeMap()
-        elif changed[2] and not changed[0] and not changed[1]:
-            self._updateTopography()
-        self._setBoundingBox()
 
     def getData(self):
         '''
@@ -111,19 +110,23 @@ class SurfaceData(PlotData, SessionNode):
         '''
         return self._bounds
 
-    def getMesh(self):
-        '''
-        return a dataset as the data on the 
-        wanted orientation
-        '''
-        return [self._points, self._vertices]
-
-    def getIsocurve(self, level):
+    def getIsoSurface(self, value):
         '''
         Returns the x,y,z isocurve position fo the given
         level omn the present data
         '''
-        return functions.isocurve(self._data[2], level, connected = True)
+        if self._level is None or not value == self._level:
+            self._level = value
+            vertices, faces = functions.isosurface(self._data[3], value)
+            offset = np.array(self._bounds)[0:3,0]
+            mult   = (
+                np.array(self._bounds)[0:3,1] 
+                - np.array(self._bounds)[0:3,0])
+            div    = np.array(self._data[3].shape)
+            vertices[:] = vertices[:] * mult / div  + offset
+            self._vertices = vertices
+            self._faces    = faces
+        return self._vertices, self._faces
 
     def getBoundingBox(self):
         '''
@@ -136,9 +139,11 @@ class SurfaceData(PlotData, SessionNode):
         '''
         Check that the data makes sense in 
         '''
-        if not elements[self._axes.index('x')].shape[0] == elements[self._axes.index('z')].shape[0]:
+        if not elements[self._axes.index('x')].shape[0] == elements[self._axes.index('data')].shape[0]:
             return False
-        if not elements[self._axes.index('y')].shape[0] == elements[self._axes.index('z')].shape[1]:
+        if not elements[self._axes.index('y')].shape[0] == elements[self._axes.index('data')].shape[1]:
+            return False
+        if not elements[self._axes.index('z')].shape[0] == elements[self._axes.index('data')].shape[2]:
             return False
         return True
 
@@ -149,28 +154,6 @@ class SurfaceData(PlotData, SessionNode):
         self._bounds = []
         for element in self._data:
             self._bounds.append([np.amin(element), np.amax(element)])
-
-    def _buildVerticeMap(self):
-        '''
-        build the vertices and positions locally from
-        the given axes
-        '''
-        border_points = [
-            Point('Point_0', self._bounds[0][0], self._bounds[1][0], 0),
-            Point('Point_1', self._bounds[0][1], self._bounds[1][0], 0),
-            Point('Point_2', self._bounds[0][1], self._bounds[1][1], 0),
-            Point('Point_3', self._bounds[0][0], self._bounds[1][1], 0)]
-        
-        self._shape = QuadSurface(name = 'Surface', border_points = border_points)
-        self._updateTopography()
-
-    def _updateTopography(self):
-        '''
-        Update the topography of the surface
-        '''
-        self._shape.setTopography(self._data[self._axes.index('z')])
-        self._points     = self._shape.getVertices()
-        self._vertices   = self._shape.getFaces()
         
     def _setBoundingBox(self):
         '''

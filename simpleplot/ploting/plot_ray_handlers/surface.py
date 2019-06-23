@@ -191,13 +191,14 @@ class SurfaceRayHandler(ParameterHandler):
         canvas widget and perform necessary
         operations
         '''
-        temp        = self.parent().childFromName('Surface').draw_items[0].viewTransform().inverted()[0]
-        transform   = np.reshape(np.array(temp.data()),(4,4)).transpose()
-        new_ray     = [np.dot(transform,np.hstack((e,1)))[:3] for e in ray]
-        intersec    = self._checkBoundingBox(new_ray)
-        if not intersec is None:
-            self.point = self._retrievePosition(new_ray, intersec)
-            self._dispatchCoordinate()
+        if hasattr(self.parent().childFromName('Surface'), 'draw_items'):
+            temp        = self.parent().childFromName('Surface').draw_items[0].viewTransform().inverted()[0]
+            transform   = np.reshape(np.array(temp.data()),(4,4)).transpose()
+            new_ray     = [np.dot(transform,np.hstack((e,1)))[:3] for e in ray]
+            intersec    = self._checkBoundingBox(new_ray)
+            if not intersec is None:
+                self.point = self._retrievePosition(new_ray, intersec)
+                self._dispatchCoordinate()
         
     def _checkBoundingBox(self, ray):
         '''

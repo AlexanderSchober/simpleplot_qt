@@ -76,7 +76,8 @@ class ScatterPlot(ParameterHandler):
         '''
         style           = kwargs['Style'] if 'Style' in kwargs.keys() else []
         options         = ['o', 'd', 's', 't']
-        scatter_bool    = [element in options for element in style]
+        scatter_bool    = [option in style for option in options]
+
         symbol = options[scatter_bool.index(True)] if any(scatter_bool) else 'o'
         color  = QtGui.QColor(kwargs['Color']) if 'Color' in kwargs.keys() else QtGui.QColor('blue')
         if any(scatter_bool):
@@ -89,29 +90,37 @@ class ScatterPlot(ParameterHandler):
 
         self.addParameter(
             'Visible', True if any(scatter_bool) else False, 
+            tags     = ['2D', '3D'],
             method = self.refresh)
         self.addParameter(
             'Symbol', [True, QtGui.QColor('blue'),10,4], 
             names   = ['Show', 'Color','Size', 'Thickness'],
+            tags     = ['2D', '3D'],
             method  = self.refresh)
         self.addParameter(
             'Type', symbol ,
             names   = options,
+            tags     = ['2D'],
             method  = self.refresh)
         self.addParameter(
-            'Size', size ,
+            'Size', float(size) ,
+            tags     = ['2D', '3D'],
             method  = self.refresh)
         self.addParameter(
             'Fill color', color ,
+            tags     = ['2D'],
             method  = self.refresh)
         self.addParameter(
             'Line color', QtGui.QColor('black') ,
+            tags     = ['2D', '3D'],
             method  = self.refresh)
         self.addParameter(
             'Line width', 3 ,
+            tags     = ['2D', '3D'],
             method  = self.refresh)
         self.addParameter(
             'Antialiassing', True ,
+            tags     = ['2D', '3D'],
             method  = self.refresh)
 
     def _setVisual(self):
@@ -137,6 +146,7 @@ class ScatterPlot(ParameterHandler):
 
             kwargs['x']             = data[0]
             kwargs['y']             = data[1]
+            kwargs['pen']           = None
             kwargs['symbol']        = self['Type']
             kwargs['symbolSize']    = self['Size']
             kwargs['symbolPen']     = self.symbol_pen
@@ -157,7 +167,6 @@ class ScatterPlot(ParameterHandler):
         Set the data of the plot manually after the plot item 
         has been actualized
         '''
-        self.childFromName('Transform').unTransform()
         if hasattr(self, 'draw_items'):
 
             if self['Visible'] and self._mode == '2D':
@@ -179,8 +188,6 @@ class ScatterPlot(ParameterHandler):
             elif self['Visible'] and self._mode == '3D':
                 self.drawGL()
 
-        self.childFromName('Transform').reTransform()
-
     def draw(self, target_surface = None):
         '''
         Draw the objects.
@@ -188,21 +195,17 @@ class ScatterPlot(ParameterHandler):
         self._mode = '2D'
         if not target_surface == None:
             self.default_target = target_surface
+            self.setCurrentTags(['2D'])
 
-        self.draw_items = []
-        kwargs = self._getDictionary()
-        self.draw_items = [SimplePlotDataItem(**kwargs)]
-            
-        # if not self.getParameter('Error') == None and self.getParameter('Show error')[0]:
-        #     self.draw_items.append(
-        #         SimpleErrorBarItem(
-        #             x   = kwargs['x'], 
-        #             y   = kwargs['y'],
-        #             pen = self.error_pen,
-        #             **self.getParameter('Error')))
+        if self['Visible']:
+            self.draw_items = []
+            kwargs          = self._getDictionary()
+            self.draw_items = [SimplePlotDataItem(**kwargs)]
+            self.draw_items[-1].setZValue(-25)
+            self.draw_items[-1].scatter.opts['useCache'] = False
 
-        for curve in self.draw_items:
-            self.default_target.draw_surface.addItem(curve)
+            for curve in self.draw_items:
+                self.default_target.draw_surface.addItem(curve)
 
     def drawGL(self, target_view = None):
         '''
@@ -211,24 +214,21 @@ class ScatterPlot(ParameterHandler):
         self._mode = '3D'
         if not target_view == None:
             self.default_target = target_view
-
-        self.draw_items = []
-        kwargs = self._getDictionary()
-        self.draw_items.append(gl.GLScatterPlotItem(**kwargs))
-        self.draw_items[-1].setGLOptions('translucent')
+            self.setCurrentTags(['3D'])
             
-        for curve in self.draw_items:
-            self.default_target.view.addItem(curve)
+        if self['Visible']:
+            self.draw_items = []
+            kwargs = self._getDictionary()
+            self.draw_items.append(gl.GLScatterPlotItem(**kwargs))
+            self.draw_items[-1].setGLOptions('translucent')
+                
+            for curve in self.draw_items:
+                self.default_target.view.addItem(curve)
 
     def removeItems(self):
         '''
         Remove the objects.
         '''
-        for curve in self.draw_items:
-            self.default_target.draw_surface.removeItem(curve)
-
-    def processRay(self, ray):
-        '''
-        try to process the ray intersection
-        '''
-        pass
+        if hasattr(self, 'draw_items'):
+            for curve in self.draw_items:
+                self.default_target.draw_surface.removeItem(curve)

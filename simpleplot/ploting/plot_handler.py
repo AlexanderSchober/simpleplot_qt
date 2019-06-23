@@ -17,105 +17,64 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 # Module authors:
-#   Alexander Schober <alexander.schober@mac.com>
+#   Alexander Schober <alex.schober@mac.com>
 #
 # *****************************************************************************
+
 from PyQt5 import QtGui, QtCore
-import numpy as np
 
-from .scatter_plot_handler          import ScatterPlotHandler
-from .surface_plot_handler          import SurfacePlotHandler
-from .plot_items.bar_plot           import BarPlot
-from .plot_items.volume_plot        import VolumePlot
-from .plot_items.vector_field_plot  import VectorFieldPlot
-from ..model.node                   import SessionNode
+from ..model.node                  import SessionNode
+from .plot_geometries.transformer  import Transformer
 
-def get_plot_handler(select):
+class PlotHandler(SessionNode): 
     '''
-    Will return the right fit manager depending 
-    on the initial input
+    This class will be the scatter plots. 
     '''
-    if select == 'Scatter':
-        return PlotHandler(select, ScatterPlotHandler)
-    elif select == 'Surface':
-        return PlotHandler(select, SurfacePlotHandler)
-    elif select == 'Bar':
-        return PlotHandler(select, BarPlot)
-    elif select == 'Volume':
-        return PlotHandler(select, VolumePlot)
-    elif select == 'Vector field':
-        return PlotHandler(select, VectorFieldPlot)
-    else:
-        print('Could not find the fit class you are looking for. Error...')        
-        return None
+    plotDataChanged = QtCore.pyqtSignal()
 
-class PlotHandler(SessionNode):
-    '''
-    This class will be the manager of all the 
-    scatter plots. 
-    '''
+    def __init__(self, name):
+        '''
+        '''
+        SessionNode.__init__(self, name)
+        self.transformer = Transformer()
+        self.addChild(self.transformer)
 
-    def __init__(self, name, target_class):
-        SessionNode.__init__(self,name)
-        self.identifier     = 0
-        self.target_class   = target_class
-        self.name           = name
-        self.type           = 'None'
+    def __getitem__(self, value):
+        '''
+        return the items that are in the 
+        current base.
+        '''
+        return self.childFromName(value)
+
+    def draw(self, target_surface = None):
+        '''
+        Draw the objects on a 2D canvas
+        '''
+        for child in self._children:
+            if hasattr(child, 'draw'):
+                child.draw(target_surface)
+
+        if self.childFromName(self.transformer._name) is not None:
+            self._model.removeRows(self.transformer.index().row(),1,self)
+
+    def drawGL(self, target_view = None):
+        '''
+        Draw the objects on a 3D canvas
+        '''
+        if hasattr(self['Data'], 'set3D'):
+            self['Data'].set3D()
+
+        for child in self._children:
+            if hasattr(child, 'drawGL'):
+                child.drawGL(target_view)
+
+        if self.childFromName(self.transformer._name) is None:
+            self._model.insertRows(0,1,[self.transformer],self)
+
+    def removeItems(self):
+        '''
+        '''
+        for child in self._children:
+            if hasattr(child, 'removeItems'):
+                child.removeItems()
         
-    def addChild(self,*args, **kwargs):
-        '''
-        This will effectively add an element to the 
-        plot_elements array. 
-        '''
-        self._children.append(self.target_class(*args,**kwargs))
-        self._children[-1]._parent = self
-        return self._children[-1]
-
-    def removeItem(self, name = '', idx = None, target = None):
-        '''
-        here we will ask the element in question to 
-        remove one of its items and proceed to a clean
-        removal. 
-        '''
-        # if idx == None and name == '':
-        #     print("You can't remove nothing ...")
-
-        # elif not name == '':
-        #     names = [element.get_para('Name') for element in self.plot_elements]
-        #     self.plot_elements[names.index(name)].remove_items(target)
-        #     del self.plot_elements[names.index(name)]
-
-        # elif not idx == None:
-        #     self.plot_elements[idx].remove_items(target)
-        #     del self.plot_elements[idx]
-
-    def clear(self, target):
-        '''
-        Draw all the items onto the plot
-        '''
-        for plot_element in self._children:
-            plot_element.removeItems()
-        
-        self._model.removeRows(0,len(self._children), self)
-
-    def draw(self, target):
-        '''
-        Draw all the items onto the plot
-        '''
-        for plot_element in self._children:
-            if target.handler['Type'] == "2D":
-                plot_element.draw(target)
-            elif target.handler['Type'] == "3D":
-                plot_element.drawGL(target)
-
-    def processRay(self, ray):
-        '''
-        process the ray tracing and then give
-        the result back as a hits
-        '''
-        hits = []
-        for plot_element in self._children:
-            if hasattr(plot_element, '_ray_handler'):
-                plot_element._ray_handler.processRay(ray)
-
-        return hits

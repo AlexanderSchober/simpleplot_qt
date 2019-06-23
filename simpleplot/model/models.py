@@ -80,9 +80,7 @@ class SessionModel(QtCore.QAbstractItemModel):
     def setData(self, index, value, role=QtCore.Qt.EditRole):
 
         if index.isValid():
-            
             node = index.internalPointer()
-            
             if role == QtCore.Qt.EditRole:
                 node.setData(index.column(), value)
                 self.dataChanged.emit(index, index)
@@ -141,11 +139,15 @@ class SessionModel(QtCore.QAbstractItemModel):
         '''
         returns the ite, associated to the model index
         '''
-        return index.parent().internalPointer().child(index.row())
+        if not index.parent().internalPointer() is None:
+            return index.parent().internalPointer().child(index.row())
+        else:
+            return None
 
     """INPUTS: int, int, QModelIndex"""
     def insertRows(self, position, rows, items, parentNode):
 
+        success = False
         self.beginInsertRows(
             parentNode.index(), position, 
             position + rows - 1)
@@ -161,8 +163,7 @@ class SessionModel(QtCore.QAbstractItemModel):
 
     # """INPUTS: int, int, QModelIndex"""
     def removeRows(self, position, rows, parentNode):
-        
-        self.beginResetModel()
+        success = False
         self.beginRemoveRows(
             parentNode.index(), position, 
             position + rows - 1)
@@ -171,7 +172,6 @@ class SessionModel(QtCore.QAbstractItemModel):
             success = parentNode.removeChild(position)
             
         self.endRemoveRows()
-        self.endResetModel()
         
         return success
 

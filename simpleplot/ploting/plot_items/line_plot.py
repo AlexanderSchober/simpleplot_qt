@@ -32,7 +32,7 @@ from ..custom_pg_items.SimplePlotDataItem import SimplePlotDataItem
 from ..custom_pg_items.SimpleErrorBarItem import SimpleErrorBarItem
 
 from ...model.parameter_class       import ParameterHandler 
-from ..plot_geometries.transformer  import Transformer
+
 
 from ..custom_pg_items.GLLinePlotItem import GLLinePlotItem
 
@@ -50,7 +50,7 @@ class LinePlot(ParameterHandler):
         natural.
 
         Parameters
-        -----------
+        - - - - - - - - - - -
         x : 1D numpy array
             the x data
         y : 1D numpy array
@@ -61,7 +61,6 @@ class LinePlot(ParameterHandler):
             The error of each point
         '''
         ParameterHandler.__init__(self, 'Line')
-        self.addChild(Transformer())
         
         self._initialize(**kwargs)
         self._mode = '2D'
@@ -71,7 +70,7 @@ class LinePlot(ParameterHandler):
         This class will be the scatter plots. 
 
         Parameters
-        -----------
+        - - - - - - - - - - -
         kwargs : dict
             The parameters passed on by the user that 
             will override the predefined values
@@ -81,21 +80,27 @@ class LinePlot(ParameterHandler):
 
         self.addParameter(
             'Visible', True if '-' in style else False, 
+            tags    = ['2D', '3D'],
             method = self.refresh)
         self.addParameter(
             'Antialiassing', True ,
+            tags     = ['2D', '3D'],
             method  = self.refresh)
         self.addParameter(
-            'Line color', QtGui.QColor('blue') ,
+            'Line color', color ,
+            tags     = ['2D', '3D'],
             method  = self.refresh)
         self.addParameter(
-            'Line width', kwargs['Thickness'] if 'Thickness' in kwargs.keys() else 3 ,
+            'Line width', float(kwargs['Thickness']) if 'Thickness' in kwargs.keys() else 2. ,
+            tags     = ['2D', '3D'],
             method  = self.refresh)
         self.addParameter(
             'Shadow color', QtGui.QColor('black') ,
+            tags     = ['2D'],
             method  = self.refresh)
         self.addParameter(
-            'Shadow width', 5 ,
+            'Shadow width', 0 ,
+            tags     = ['2D'],
             method  = self.refresh)
 
     def _setVisual(self):
@@ -133,18 +138,16 @@ class LinePlot(ParameterHandler):
             
             kwargs['pos']   = np.vstack(data).transpose()
             kwargs['color'] = self['Line color'].getRgbF()
-            kwargs['width'] = self['Line width']/100
+            kwargs['width'] = self['Line width']/100.
 
         return kwargs
 
-    def refresh(self, **kwargs):
+    def refresh(self):
         '''
         Set the data of the plot manually after the plot item 
         has been actualized
         '''
-        self.childFromName('Transform').unTransform()
         if hasattr(self, 'draw_items'):
-
             if self['Visible'] and self._mode == '2D':
                 kwargs = self._getDictionary()
                 self.draw_items[0].setData(**kwargs)
@@ -164,8 +167,6 @@ class LinePlot(ParameterHandler):
             elif self['Visible'] and self._mode == '3D':
                 self.drawGL()
 
-        self.childFromName('Transform').reTransform()
-
     def draw(self, target_surface = None):
         '''
         Draw the objects.
@@ -173,18 +174,13 @@ class LinePlot(ParameterHandler):
         self._mode = '2D'
         if not target_surface == None:
             self.default_target = target_surface
+            self.setCurrentTags(['2D'])
 
         self.draw_items = []
-        kwargs          = self._getDictionary()
-        self.draw_items = [SimplePlotDataItem(**kwargs)]
-            
-        # if not self.getParameter('Error') == None and self.getParameter('Show error')[0]:
-        #     self.draw_items.append(
-        #         SimpleErrorBarItem(
-        #             x   = kwargs['x'], 
-        #             y   = kwargs['y'],
-        #             pen = self.error_pen,
-        #             **self.getParameter('Error')))
+        if self['Visible']:
+            kwargs          = self._getDictionary()
+            self.draw_items = [SimplePlotDataItem(**kwargs)]
+            self.draw_items[-1].setZValue(-50)
 
         for curve in self.draw_items:
             self.default_target.draw_surface.addItem(curve)
@@ -196,11 +192,13 @@ class LinePlot(ParameterHandler):
         self._mode = '3D'
         if not target_view == None:
             self.default_target = target_view
+            self.setCurrentTags(['3D'])
 
         self.draw_items = []
-        kwargs = self._getDictionary()
-        self.draw_items.append(GLLinePlotItem(**kwargs))
-        self.draw_items[-1].setGLOptions('translucent')
+        if self['Visible']:
+            kwargs = self._getDictionary()
+            self.draw_items.append(GLLinePlotItem(**kwargs))
+            self.draw_items[-1].setGLOptions('translucent')
 
         for curve in self.draw_items:
             self.default_target.view.addItem(curve)
@@ -209,11 +207,6 @@ class LinePlot(ParameterHandler):
         '''
         Remove the objects.
         '''
-        for curve in self.draw_items:
-            self.default_target.draw_surface.removeItem(curve)
-
-    def processRay(self, ray):
-        '''
-        try to process the ray intersection
-        '''
-        pass
+        if hasattr(self, 'draw_items'):
+            for curve in self.draw_items:
+                self.default_target.draw_surface.removeItem(curve)

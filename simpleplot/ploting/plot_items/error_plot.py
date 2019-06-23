@@ -32,7 +32,6 @@ from ..custom_pg_items.SimplePlotDataItem import SimplePlotDataItem
 from ..custom_pg_items.SimpleErrorBarItem import SimpleErrorBarItem
 
 from ...model.parameter_class       import ParameterHandler 
-from ..plot_geometries.transformer  import Transformer
 
 class ErrorPlot(ParameterHandler): 
     '''
@@ -59,8 +58,6 @@ class ErrorPlot(ParameterHandler):
             The error of each point
         '''
         ParameterHandler.__init__(self, 'Error')
-        self.addChild(Transformer())
-        
         self._initialize(**kwargs)
         self._mode = '2D'
 
@@ -76,18 +73,23 @@ class ErrorPlot(ParameterHandler):
         '''
         self.addParameter(
             'Visible', True , 
+            tags    = ['2D'],
             method = self.refresh)
         self.addParameter(
             'Antialiassing', True ,
+            tags    = ['2D'],
             method  = self.refresh)
         self.addParameter(
             'Line color', QtGui.QColor('grey') ,
+            tags    = ['2D'],
             method  = self.refresh)
         self.addParameter(
-            'Line width', 1,
+            'Line width', 2,
+            tags    = ['2D'],
             method  = self.refresh)
         self.addParameter(
             'Beam', 0.1 ,
+            tags    = ['2D'],
             method  = self.refresh)
 
     def _setVisual(self):
@@ -118,21 +120,19 @@ class ErrorPlot(ParameterHandler):
                 kwargs['beam']      = 0
                 kwargs = {**kwargs, **error}
             else:
-
                 kwargs['x']         = data[0]
                 kwargs['y']         = data[1]
                 kwargs['pen']       = self.line_pen
                 kwargs['beam']      = self['Beam']
                 kwargs = {**kwargs, **error}
-
+                
         return kwargs
 
-    def refresh(self, **kwargs):
+    def refresh(self):
         '''
         Set the data of the plot manually after the plot item 
         has been actualized
         '''
-        self.childFromName('Transform').unTransform()
         if hasattr(self, 'draw_items'):
             if self['Visible'] and self._mode == '2D':
                 kwargs = self._getDictionary()
@@ -146,8 +146,6 @@ class ErrorPlot(ParameterHandler):
             if self['Visible'] and self._mode == '2D':
                 self.draw()
 
-        self.childFromName('Transform').reTransform()
-
     def draw(self, target_surface = None):
         '''
         Draw the objects.
@@ -155,20 +153,35 @@ class ErrorPlot(ParameterHandler):
         self._mode = '2D'
         if not target_surface == None:
             self.default_target = target_surface
+            self.setCurrentTags(['2D'])
 
         self.draw_items = []
         kwargs          = self._getDictionary()
         self.draw_items.append(SimpleErrorBarItem(**kwargs))
+        self.draw_items[-1].setZValue(-75)
 
         for curve in self.draw_items:
             self.default_target.draw_surface.addItem(curve)
+
+    def drawGL(self, target_view = None):
+        '''
+        Draw the objects.
+        '''
+        self._mode = '3D'
+        
+        if not target_view == None:
+            self.default_target = target_view
+            self.setCurrentTags(['3D'])
+
+        self.draw_items = []
 
     def removeItems(self):
         '''
         Remove the objects.
         '''
-        for curve in self.draw_items:
-            self.default_target.draw_surface.removeItem(curve)
+        if hasattr(self, 'draw_items'):
+            for curve in self.draw_items:
+                self.default_target.draw_surface.removeItem(curve)
 
     def processRay(self, ray):
         '''
