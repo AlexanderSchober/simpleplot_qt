@@ -90,29 +90,37 @@ class ScatterPlot(ParameterHandler):
 
         self.addParameter(
             'Visible', True if any(scatter_bool) else False, 
+            tags     = ['2D', '3D'],
             method = self.refresh)
         self.addParameter(
             'Symbol', [True, QtGui.QColor('blue'),10,4], 
             names   = ['Show', 'Color','Size', 'Thickness'],
+            tags     = ['2D', '3D'],
             method  = self.refresh)
         self.addParameter(
             'Type', symbol ,
             names   = options,
+            tags     = ['2D'],
             method  = self.refresh)
         self.addParameter(
             'Size', float(size) ,
+            tags     = ['2D', '3D'],
             method  = self.refresh)
         self.addParameter(
             'Fill color', color ,
+            tags     = ['2D'],
             method  = self.refresh)
         self.addParameter(
             'Line color', QtGui.QColor('black') ,
+            tags     = ['2D', '3D'],
             method  = self.refresh)
         self.addParameter(
             'Line width', 3 ,
+            tags     = ['2D', '3D'],
             method  = self.refresh)
         self.addParameter(
             'Antialiassing', True ,
+            tags     = ['2D', '3D'],
             method  = self.refresh)
 
     def _setVisual(self):
@@ -159,7 +167,6 @@ class ScatterPlot(ParameterHandler):
         Set the data of the plot manually after the plot item 
         has been actualized
         '''
-        self.childFromName('Transform').unTransform()
         if hasattr(self, 'draw_items'):
 
             if self['Visible'] and self._mode == '2D':
@@ -181,8 +188,6 @@ class ScatterPlot(ParameterHandler):
             elif self['Visible'] and self._mode == '3D':
                 self.drawGL()
 
-        self.childFromName('Transform').reTransform()
-
     def draw(self, target_surface = None):
         '''
         Draw the objects.
@@ -191,6 +196,7 @@ class ScatterPlot(ParameterHandler):
         if not target_surface == None:
             self.default_target = target_surface
 
+        self.setCurrentTags(['2D'])
         if self['Visible']:
             self.draw_items = []
             kwargs          = self._getDictionary()
@@ -209,6 +215,7 @@ class ScatterPlot(ParameterHandler):
         if not target_view == None:
             self.default_target = target_view
 
+        self.setCurrentTags(['3D'])
         if self['Visible']:
             self.draw_items = []
             kwargs = self._getDictionary()

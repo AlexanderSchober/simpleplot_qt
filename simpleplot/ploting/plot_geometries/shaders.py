@@ -26,7 +26,7 @@ from ...pyqtgraph.pyqtgraph.opengl import shaders
 from OpenGL.GL import glUseProgram, glGetUniformLocation, glCreateProgram, glAttachShader
 import numpy as np
 
-from ...pyqtgraph.pyqtgraph.graphicsItems.GradientEditorItem import GradientEditorItem
+from ...simpleplot_widgets.SimplePlotGradientEditorItem import GradientEditorItem
 
 from OpenGL import GL
 from ...model.parameter_class       import ParameterHandler 

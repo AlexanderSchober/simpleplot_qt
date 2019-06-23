@@ -230,7 +230,7 @@ def example():
         x = np.linspace(5,15,100) ,
         y = np.linspace(0,10,100) , 
         z = np.linspace(0,10,100) ,
-        vol = data_0)
+        data = data_0)
 
     data = np.zeros(4, [("position_vec", np.float32, 3),
                     ("color_vec",    np.float32, 4)])

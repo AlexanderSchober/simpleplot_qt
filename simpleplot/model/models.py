@@ -139,7 +139,10 @@ class SessionModel(QtCore.QAbstractItemModel):
         '''
         returns the ite, associated to the model index
         '''
-        return index.parent().internalPointer().child(index.row())
+        if not index.parent().internalPointer() is None:
+            return index.parent().internalPointer().child(index.row())
+        else:
+            return None
 
     """INPUTS: int, int, QModelIndex"""
     def insertRows(self, position, rows, items, parentNode):

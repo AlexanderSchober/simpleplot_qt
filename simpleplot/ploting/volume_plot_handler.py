@@ -23,18 +23,17 @@
 
 from PyQt5 import QtGui, QtCore
 
-from .plot_data_types.surface_data import SurfaceData
+from .plot_data_types.volume_data  import VolumeData
 from .plot_handler                 import PlotHandler
 
-from .plot_data_types.line_data    import LineData
-from .plot_items.scatter_plot      import ScatterPlot
-from .plot_items.line_plot         import LinePlot
-from .plot_items.error_plot        import ErrorPlot
+from .plot_items.volume_plot       import VolumePlot
+from .plot_items.iso_curve_plot    import IsoCurvePlot
+from .plot_ray_handlers.surface    import SurfaceRayHandler
 from .plot_items.SimpleItemSample  import SimpleItemSample
 
 from .plot_geometries.transformer  import Transformer
 
-class ScatterPlotHandler(PlotHandler):
+class VolumePlotHandler(PlotHandler):
 
     def __init__(self, **kwargs):
         '''
@@ -44,12 +43,15 @@ class ScatterPlotHandler(PlotHandler):
         else:
             PlotHandler.__init__(self, 'No_name')
 
-        self._plot_data     = LineData(**kwargs)
+        self._plot_data     = VolumeData()
         self.addChild(self._plot_data)
+        self.addChild(VolumePlot(**kwargs))
 
-        self.addChild(ScatterPlot(**kwargs))
-        self.addChild(LinePlot(**kwargs))
-        self.addChild(ErrorPlot(**kwargs))
+        # self.addChild(IsoCurvePlot(**kwargs))
+        # self._ray_handler   = SurfaceRayHandler()
+        # self.addChild(self._ray_handler)
+
+        self._plot_data.setData(**kwargs)
 
     def setData(self, **kwargs):
         '''
@@ -62,8 +64,8 @@ class ScatterPlotHandler(PlotHandler):
         for child in self._children:
             if hasattr(child, 'refresh'):
                 child.refresh()
-
-        self._model.dataChanged.emit(self['Data'].index(),self['Data'].index())
+        
+        self._model.dataChanged.emit(self.index(),self.index())
 
     def legendItems(self):
         '''

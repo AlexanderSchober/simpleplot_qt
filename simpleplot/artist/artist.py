@@ -33,7 +33,7 @@ from .legend            import Legend
 from .grid_gl           import GridGl
 from ..model.node       import SessionNode
 
-from ..ploting.plot_handler import get_plot_handler
+from ..ploting.main_handler import get_main_handler
 from ..pyqtgraph import pyqtgraph as pg
 
 from copy import deepcopy
@@ -61,7 +61,7 @@ class Artist():
         active_handlers = [child._name for child in self.canvas._plot_root._children]
 
         if not name_type in active_handlers:
-            new_child = get_plot_handler(name_type)
+            new_child = get_main_handler(name_type)
             self.canvas._plot_root.addChild(new_child)
 
         active_handlers = [child._name for child in self.canvas._plot_root._children]

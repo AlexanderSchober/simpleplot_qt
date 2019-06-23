@@ -38,7 +38,7 @@ from .widget_constructors import fontWidgetConstructor
 from .widget_constructors import checkBoxConstructor
 from .widget_constructors import gradientConstructor
 
-from ..pyqtgraph.pyqtgraph.graphicsItems.GradientEditorItem import GradientEditorItem
+from ..simpleplot_widgets.SimplePlotGradientEditorItem import GradientEditorItem
 
 class ParameterHandler(ParameterNode):
     '''
@@ -150,7 +150,10 @@ class ParameterHandler(ParameterNode):
         items to allow the management of the tags. Items will be 
         built and inserted by order.
         '''
-        self._order = [child._name for child in self._children]
+        self._order = []
+        for child in self._children:
+            if child._name in self.items.keys():
+                self._order.append(child._name )
 
     def setCurrentTags(self, tags):
         '''
@@ -163,12 +166,17 @@ class ParameterHandler(ParameterNode):
             The tags that will then be applied
         '''
         self._tags = tags
-        self._model.removeRows(0, len(self._children), self)
+
+        present = [child._name for child in self._children]
+        for name in self._order:
+            if name in present:
+                self._model.removeRows(self.items[name].index().row(), 1, self)
+
         for name in self._order:
             if any([tag in self._tags for tag in self.items[name].getTags()]) or self._tags is None:
                 self._model.insertRows(len(self._children),1,[self.items[name]], self)
 
-        self._model.dataChanged.emit(QtCore.QModelIndex(), QtCore.QModelIndex())
+        self._model.dataChanged.emit(self.index(), self.index())
 
     def runAll(self):
         '''
@@ -177,8 +185,6 @@ class ParameterHandler(ParameterNode):
         for key in self.items.keys():
             if 'method' in self.items[key].kwargs.keys():
                 self.items[key].kwargs['method']()
-
-
 
 class ParameterMaster:
     '''

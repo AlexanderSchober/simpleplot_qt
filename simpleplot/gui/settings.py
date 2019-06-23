@@ -97,7 +97,10 @@ class PreferenceWindow(QtGui.QMainWindow, Ui_preference_window):
         When the combobox is activated the selected canvas
         plot items should be displayed in the treeview
         '''
-        self.plot_tree_view.setModel(self.multi_canvas._rootNode._children[index]._plot_model)
+        try:
+            self.plot_tree_view.setModel(self.multi_canvas._rootNode._children[index]._plot_model)
+        except:
+            pass
 
     def _updateTable(self):
         '''
@@ -194,11 +197,11 @@ class DataTableModel(QtCore.QAbstractTableModel):
             return self.row_header[col]
         else:
             return None
-    def sort(self, col, order):
-        """sort table by given column number col"""
-        self.emit(QtCore.SIGNAL("layoutAboutToBeChanged()"))
-        self.data_list = sorted(self.data_list,
-            key=operator.itemgetter(col))
-        if order == QtCore.Qt.DescendingOrder:
-            self.data_list.reverse()
-        self.emit(QtCore.SIGNAL("layoutChanged()"))
+    # def sort(self, col, order):
+    #     """sort table by given column number col"""
+    #     self.emit(QtCore.SIGNAL("layoutAboutToBeChanged()"))
+    #     self.data_list = sorted(self.data_list,
+    #         key=operator.itemgetter(col))
+    #     if order == QtCore.Qt.DescendingOrder:
+    #         self.data_list.reverse()
+    #     self.emit(QtCore.SIGNAL("layoutChanged()"))

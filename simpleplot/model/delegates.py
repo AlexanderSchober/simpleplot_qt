@@ -22,7 +22,7 @@
 # *****************************************************************************
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from ..pyqtgraph.pyqtgraph.graphicsItems.GradientEditorItem import GradientEditorItem
+from ..simpleplot_widgets.SimplePlotGradientEditorItem import GradientEditorItem
 
 class ParameterDelegate(QtWidgets.QStyledItemDelegate):
     def createEditor(self, parent, option, index):
@@ -71,6 +71,8 @@ class ParameterDelegate(QtWidgets.QStyledItemDelegate):
             super().paint(painter, option, index)
 
     def getGradRect(self, option):
+        rect = option.rect
+        rect.setWidth(min([rect.width(), 200]))
         return option.rect
 
     def getCheckBoxRect(self, option):

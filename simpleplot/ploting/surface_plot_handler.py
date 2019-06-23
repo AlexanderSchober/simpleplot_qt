@@ -24,42 +24,24 @@
 from PyQt5 import QtGui, QtCore
 
 from .plot_data_types.surface_data import SurfaceData
-from ..model.node                  import SessionNode
+from .plot_handler                 import PlotHandler
 
 from .plot_items.surface_plot      import SurfacePlot
 from .plot_items.iso_curve_plot    import IsoCurvePlot
 from .plot_ray_handlers.surface    import SurfaceRayHandler
 from .plot_items.SimpleItemSample  import SimpleItemSample
 
-class SurfacePlotHandler(SessionNode): 
-    '''
-    This class will be the scatter plots. 
-    '''
+from .plot_geometries.transformer  import Transformer
+
+class SurfacePlotHandler(PlotHandler):
+
     def __init__(self, **kwargs):
         '''
-        This class serves as envelope for the 
-        PlotDataItem. Note that the axis of y will be
-        changed to z in case of a 3D representation while the 
-        y axis will be set to 0. This seems more
-        natural.
-
-        Parameters
-        -----------
-        x : 1D numpy array
-            the x data
-        y : 1D numpy array
-            the y data
-        z : 1D numpy array
-            the z data
-        error: dict of float arrays
-            The error of each point
         '''
         if 'Name' in kwargs.keys():
-            SessionNode.__init__(self, kwargs['Name'])
+            PlotHandler.__init__(self, kwargs['Name'])
         else:
-            SessionNode.__init__(self, 'No_name')
-            
-        self.add_options    = []
+            PlotHandler.__init__(self, 'No_name')
 
         self._plot_data     = SurfaceData()
         self.addChild(self._plot_data)
@@ -69,13 +51,6 @@ class SurfacePlotHandler(SessionNode):
         self.addChild(self._ray_handler)
 
         self._plot_data.setData(**kwargs)
-
-    def __getitem__(self, value):
-        '''
-        return the items that are in the 
-        current base.
-        '''
-        return self.childFromName(value)
 
     def setData(self, **kwargs):
         '''
@@ -91,34 +66,8 @@ class SurfacePlotHandler(SessionNode):
         
         self._model.dataChanged.emit(self.index(),self.index())
 
-    def draw(self, target_surface = None):
-        '''
-        Draw the objects on a 2D canvas
-        '''
-        for child in self._children:
-            if hasattr(child, 'draw'):
-                child.draw(target_surface)
-
-    def drawGL(self, target_view = None):
-        '''
-        Draw the objects on a 3D canvas
-        '''
-        self['Data'].set3D()
-
-        for child in self._children:
-            if hasattr(child, 'drawGL'):
-                child.drawGL(target_view)
-
-    def removeItems(self):
-        '''
-        '''
-        for child in self._children:
-            if hasattr(child, 'removeItems'):
-                child.removeItems()
-
     def legendItems(self):
         '''
         return to the legend the items to be used
         '''
         return SimpleItemSample([self.childFromName('Line'), self.childFromName('Scatter'), self.childFromName('Error')])
-

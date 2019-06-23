@@ -22,8 +22,9 @@
 # *****************************************************************************
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from ..pyqtgraph.pyqtgraph import GradientWidget
-from ..pyqtgraph.pyqtgraph.graphicsItems.GradientEditorItem import GradientEditorItem
+from ..simpleplot_widgets.SimplePlotGradientWidget import GradientWidget
+from ..simpleplot_widgets.SimplePlotGradientEditorItem import GradientEditorItem
+from functools import partial
 
 class spinBoxConstructor:
 
@@ -83,6 +84,11 @@ class doubleSpinBoxConstructor:
         else:
             item.setMaximum(1000)
 
+        if 'step' in self.manager.kwargs.keys():
+            item.setSingleStep(self.manager.kwargs['step'])
+        else:
+            item.setSingleStep(0.1)
+
         item.valueChanged.connect(self.updateInternals)
         return item
 
@@ -139,14 +145,37 @@ class gradientConstructor:
 
     def __init__(self, parent = None): 
         self.manager = parent
-        
-
+    
     def create(self,parent, value = None, index = None):
-        self._index = QtCore.QModelIndex(index)
         self._item = GradientWidget(parent = parent,orientation = 'bottom')
+        self._item.setMaximumWidth(200)
+        self._item.restoreState(self.manager._value.saveState())
         self._item.sigGradientChanged.connect(self.updateInternals)
-
+        self._item.item.tick_clicked.connect(self.tick_clicked)
         return self._item
+
+    def tick_clicked(self, initial_tick):
+        '''
+        '''
+        self.pos = self._item.item.ticks[initial_tick]
+        self.manager._model.color_picker.disconnectAll()
+        self.manager._model.color_picker.setCurrentColor(initial_tick.color)
+        self.manager._model.color_picker.show()
+        self.manager._model.color_picker.connectMethod(self.updateInternalsBeta)
+
+    def updateInternalsBeta(self, color):
+        '''
+        '''
+        state = self._item.saveState()
+
+        new_state = []
+        for item in state['ticks']:
+            if item[0] == self.pos:
+                new_state.append((self.pos, (color.red(), color.green(), color.blue(), color.alpha())))
+            else:
+                new_state.append(item)
+        state['ticks'] = new_state
+        self._item.restoreState(state)
 
     def updateInternals(self):
         '''
@@ -155,14 +184,12 @@ class gradientConstructor:
         temp.restoreState(self._item.saveState())
 
         self.manager._value = temp
-        # self.manager._model.dataChanged.emit(
-        #     self._index,
-        #     self._index)
+        self.manager._model.dataChanged.emit(
+            self.manager.index(),
+            self.manager.index())
 
         if 'method' in self.manager.kwargs.keys():
             self.manager.kwargs['method']()
-
-        # self.manager.parent().setString()
 
     def setEditorData(self, editor):
         editor.restoreState(self.manager._value.saveState())
@@ -188,8 +215,8 @@ class checkBoxConstructor:
         '''
         self.manager._value = self._item.isChecked()
         self.manager._model.dataChanged.emit(
-            self._index,
-            self._index)
+            self.manager.index(),
+            self.manager.index())
 
         if 'method' in self.manager.kwargs.keys():
             self.manager.kwargs['method']()
@@ -219,8 +246,8 @@ class comboBoxConstructor:
         '''
         self.manager._value = value
         self.manager._model.dataChanged.emit(
-            self._index,
-            self._index)
+            self.manager.index(),
+            self.manager.index())
 
         if 'method' in self.manager.kwargs.keys():
             self.manager.kwargs['method']()
@@ -257,8 +284,8 @@ class colorWidgetConstructor:
     def updateInternals(self, color):
         self.manager._value = color
         self.manager._model.dataChanged.emit(
-            self._index,
-            self._index)
+            self.manager.index(),
+            self.manager.index())
 
         if 'method' in self.manager.kwargs.keys():
             self.manager.kwargs['method']()
@@ -293,8 +320,8 @@ class fontWidgetConstructor:
         '''
         self.manager._value = font
         self.manager._model.dataChanged.emit(
-            self._index,
-            self._index)
+            self.manager.index(),
+            self.manager.index())
 
         if 'method' in self.manager.kwargs.keys():
             self.manager.kwargs['method']()

@@ -32,7 +32,7 @@ from ..custom_pg_items.SimplePlotDataItem import SimplePlotDataItem
 from ..custom_pg_items.SimpleErrorBarItem import SimpleErrorBarItem
 
 from ...model.parameter_class       import ParameterHandler 
-from ..plot_geometries.transformer  import Transformer
+
 
 from ..custom_pg_items.GLLinePlotItem import GLLinePlotItem
 
@@ -61,7 +61,6 @@ class LinePlot(ParameterHandler):
             The error of each point
         '''
         ParameterHandler.__init__(self, 'Line')
-        # self.addChild(Transformer())
         
         self._initialize(**kwargs)
         self._mode = '2D'
@@ -148,9 +147,7 @@ class LinePlot(ParameterHandler):
         Set the data of the plot manually after the plot item 
         has been actualized
         '''
-        # self.childFromName('Transform').unTransform()
         if hasattr(self, 'draw_items'):
-
             if self['Visible'] and self._mode == '2D':
                 kwargs = self._getDictionary()
                 self.draw_items[0].setData(**kwargs)
@@ -169,8 +166,6 @@ class LinePlot(ParameterHandler):
                 self.draw()
             elif self['Visible'] and self._mode == '3D':
                 self.drawGL()
-
-        # self.childFromName('Transform').reTransform()
 
     def draw(self, target_surface = None):
         '''

@@ -48,7 +48,8 @@ class ExportDialog(QtGui.QWidget):
         self.ui.formatList.currentItemChanged.connect(self.exportFormatChanged)
         
     def refreshSubplot(self,item):
-
+        if not hasattr(item, 'handler'):
+            return
         if item.handler['Type'] == '2D':
             self.current_type = '2D'
             item = item.plot_widget

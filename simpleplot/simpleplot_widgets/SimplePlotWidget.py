@@ -62,21 +62,21 @@ class SimplePlotWidget(PlotWidget):
         mouse move event
         '''
         self.canvas.artist.mouseMove(ev)
-        super(PlotWidget, self).mouseMoveEvent(ev)
+        super().mouseMoveEvent(ev)
 
     def mousePressEvent(self, ev):
         '''
         mouse press event
         '''
         self.canvas.artist.mousePress(ev)
-        super(PlotWidget, self).mousePressEvent(ev)
+        super().mousePressEvent(ev)
 
     def mouseReleaseEvent(self, ev):
         '''
         mouse release event
         '''
         self.canvas.artist.mouseRelease(ev)
-        super(PlotWidget, self).mouseReleaseEvent(ev)
+        super().mouseReleaseEvent(ev)
 
     def mouseDragEvent(self, ev):
         '''

@@ -30,7 +30,6 @@ from ...pyqtgraph.pyqtgraph         import opengl as gl
 
 from ..plot_geometries.shaders      import ShaderConstructor
 from ...model.parameter_class       import ParameterHandler 
-from ..plot_geometries.transformer  import Transformer
 from ..plot_geometries.shaders      import ShaderConstructor
 
 class SurfacePlot(ParameterHandler): 
@@ -58,8 +57,6 @@ class SurfacePlot(ParameterHandler):
         '''
         ParameterHandler.__init__(self, 'Surface')
         self.addChild(ShaderConstructor())
-        self.addChild(Transformer())
-        
         self.initialize(**kwargs)
         self._mode = '2D'
 
@@ -70,15 +67,19 @@ class SurfacePlot(ParameterHandler):
         '''
         self.addParameter(
             'Visible', True, 
+            tags     = ['2D', '3D'],
             method = self.refresh)
         self.addParameter(
             'Draw faces', True, 
+            tags     = ['3D'],
             method = self.refresh)
         self.addParameter(
             'Draw edges', False, 
+            tags     = ['3D'],
             method = self.refresh)
         self.addParameter(
             'Draw smooth', True, 
+            tags     = ['3D'],
             method = self.refresh)
         
     def refresh(self):
@@ -87,8 +88,6 @@ class SurfacePlot(ParameterHandler):
         program decide which procedure to target Note
         that this routine aims at updating the data only
         '''
-        self.childFromName('Transform').unTransform()
-
         if hasattr(self, 'draw_items'):
             if self['Visible']:
                 surface = None
@@ -125,8 +124,6 @@ class SurfacePlot(ParameterHandler):
                 self.draw()
             elif self['Visible'] and self._mode == '3D':
                 self.drawGL()
-
-        self.childFromName('Transform').reTransform()
         
     def setColor(self):
         '''
@@ -152,6 +149,7 @@ class SurfacePlot(ParameterHandler):
         if not target_surface == None:
             self.default_target = target_surface
 
+        self.setCurrentTags(['2D'])
         self.draw_items = []
         self.draw_items.append(pg.ImageItem())
         self.draw_items[-1].setImage(self.parent()._plot_data.getData()[2])
@@ -167,8 +165,8 @@ class SurfacePlot(ParameterHandler):
         if not target_view == None:
             self.default_target = target_view
 
+        self.setCurrentTags(['3D'])
         self.draw_items = []
-
         mesh = self.parent()._plot_data.getMesh()
         kwargs = {}
         kwargs['vertexes']  = mesh[0]
