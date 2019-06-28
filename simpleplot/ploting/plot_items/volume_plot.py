@@ -30,7 +30,6 @@ from ...pyqtgraph.pyqtgraph         import opengl as gl
 
 from ..plot_geometries.shaders      import ShaderConstructor
 from ...model.parameter_class       import ParameterHandler 
-from ..plot_geometries.shaders      import ShaderConstructor
 
 class VolumePlot(ParameterHandler): 
     '''
@@ -64,6 +63,11 @@ class VolumePlot(ParameterHandler):
             method = self.refresh)
         self.addParameter(
             'Slice density', 1, 
+            tags   = ['3D'],
+            method = self.refresh)
+        self.addParameter(
+            'OpenGl mode', 'translucent',
+            choices = ['translucent', 'opaque', 'additive'],
             tags   = ['3D'],
             method = self.refresh)
         self.addParameter(
@@ -108,9 +112,11 @@ class VolumePlot(ParameterHandler):
                     kwargs['z']  = data[2]
                     kwargs['sliceDensity']  = self['Slice density']
                     kwargs['smooth']        = self['Draw smooth']
+                    # kwargs['glOptions']     = self['OpenGl mode']
                     for key in kwargs.keys():
                         volume.__setattr__(key, kwargs[key])
                     self._refreshBounds()
+                    volume.setGLOptions(self['OpenGl mode'])
                     self.childFromName('Shader').runShader()
 
             else:
@@ -267,6 +273,7 @@ class VolumePlot(ParameterHandler):
             kwargs['z']  = data[2]
             kwargs['sliceDensity']  = self['Slice density']
             kwargs['smooth']        = self['Draw smooth']
+            kwargs['glOptions']     = self['OpenGl mode']
             self.draw_items.append(CustomGLVolumeItem(None,**kwargs))
             self.default_target.view.addItem(self.draw_items[-1])
             self._refreshBounds()

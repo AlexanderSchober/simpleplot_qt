@@ -81,6 +81,11 @@ class SurfacePlot(ParameterHandler):
             'Draw smooth', True, 
             tags     = ['3D'],
             method = self.refresh)
+        self.addParameter(
+            'OpenGl mode', 'opaque',
+            choices = ['translucent', 'opaque', 'additive'],
+            tags   = ['3D'],
+            method = self.refresh)
         
     def refresh(self):
         '''
@@ -109,6 +114,7 @@ class SurfacePlot(ParameterHandler):
                     kwargs['vertexes']  = data[0]
                     kwargs['faces']     = data[1]
                     surface.setMeshData(**kwargs)
+                    surface.setGLOptions(self['OpenGl mode'])
                     self.childFromName('Shader').runShader()
 
             else:
@@ -178,7 +184,7 @@ class SurfacePlot(ParameterHandler):
             kwargs['drawEdges'] = self['Draw edges']
 
             self.draw_items.append(gl.GLMeshItem(**kwargs))
-            self.draw_items[-1].setGLOptions('opaque')
+            self.draw_items[-1].setGLOptions(self['OpenGl mode'])
             self.default_target.view.addItem(self.draw_items[-1])
             self.childFromName('Shader').runShader()
 

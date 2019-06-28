@@ -248,7 +248,7 @@ def example():
     #example of 3D bar graphs
     bar = fx.addPlot('Bar')
     fx.draw()
-    bar.setData( x = x, y = x, z =  np.cos(xv)+np.sin(yv)+2, z_lower = np.cos(xv)+np.sin(yv)-2)
+    bar.setData( x = np.arange(100)/5., y = np.arange(100)/5., upper =  np.cos(xv)+np.sin(yv)+2, lower = np.cos(xv)+np.sin(yv)-2)
 
 
     #show widget

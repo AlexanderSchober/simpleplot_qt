@@ -25,7 +25,7 @@ import numpy as np
 
 from .scatter_plot_handler          import ScatterPlotHandler
 from .surface_plot_handler          import SurfacePlotHandler 
-from .plot_items.bar_plot           import BarPlot
+from .bar_plot_handler              import BarPlotHandler
 from .volume_plot_handler           import VolumePlotHandler
 from .plot_items.vector_field_plot  import VectorFieldPlot
 from ..model.node                   import SessionNode
@@ -40,7 +40,7 @@ def get_main_handler(select):
     elif select == 'Surface':
         return MainHandler(select, SurfacePlotHandler)
     elif select == 'Bar':
-        return MainHandler(select, BarPlot)
+        return MainHandler(select, BarPlotHandler)
     elif select == 'Volume':
         return MainHandler(select, VolumePlotHandler)
     elif select == 'Vector field':
