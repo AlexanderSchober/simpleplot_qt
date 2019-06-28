@@ -375,6 +375,7 @@ class Artist3DNode(SessionNode, Artist):
         '''
         self.canvas.widget.drop_success.connect(self.addFromDrop)
         self.canvas.view.rayUpdate.connect(self.processRay)
+        self.canvas._plot_model.dataChanged.connect(self.dispatchPlotDataChange)
 
     def disconnect(self):
         '''
@@ -382,6 +383,29 @@ class Artist3DNode(SessionNode, Artist):
         '''
         self.canvas.widget.drop_success.disconnect(self.addFromDrop)
         self.canvas.view.rayUpdate.disconnect(self.processRay)
+        self.canvas._plot_model.dataChanged.disconnect(self.dispatchPlotDataChange)
+
+    def dispatchPlotDataChange(self, index):
+        '''
+        Send to the adequate elements that the plot data has changed
+        and thus the some things have to be done
+        '''
+        if not self.canvas._plot_model.itemAt(index) is None and self.canvas._plot_model.itemAt(index)._name == 'Data':
+            self.axes.refreshAuto()
+            self.grid.refreshAuto()
+
+    def draw(self):
+        '''
+        This method will go through the plot handlers
+        and check if one of them has already the 
+        selected items. if not a new instance will be
+        generated and then fed into the handler system
+        '''
+        for plot_handler in self.canvas._plot_root._children:
+            plot_handler.draw(self.canvas)
+
+        self.axes.refreshAuto()
+        self.grid.refreshAuto()
 
     def setup(self):
         '''

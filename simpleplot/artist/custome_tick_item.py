@@ -254,3 +254,4 @@ class GLTickItem(GLAxisItem):
         glColor4f(*self._color)
 
         self._drawTick()
+        

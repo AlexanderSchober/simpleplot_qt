@@ -65,29 +65,39 @@ class GridGl(ParameterNode):
             method = self.setGrids)
 
         self.xy_handler.addParameter(
-            'Scale',  [0.1, 0.1],
+            'Auto',  True,
+            method = self.refreshAuto)
+        self.xz_handler.addParameter(
+            'Auto',  True,
+            method = self.refreshAuto)
+        self.yz_handler.addParameter(
+            'Auto',  True,
+            method = self.refreshAuto)
+
+        self.xy_handler.addParameter(
+            'Scale',  [1., 1.],
             names  = ['x', 'y'],
             method = self.scaleGrids)
         self.xz_handler.addParameter(
-            'Scale',  [0.1, 0.1],
+            'Scale',  [1., 1.],
             names  = ['x', 'y'],
             method = self.scaleGrids)
         self.yz_handler.addParameter(
-            'Scale',  [0.1, 0.1],
+            'Scale',  [1., 1.],
             names  = ['x', 'y'],
             method = self.scaleGrids)
 
         self.xy_handler.addParameter(
-            'Size', [10., 10.],
-            names  = ['x', 'y'],
+            'Size', [0., 10., 0., 10.],
+            names  = ['x min', 'x max', 'y min', 'y max'],
             method = self.sizeGrids)
         self.xz_handler.addParameter(
-            'Size', [10., 10.],
-            names  = ['x', 'y'],
+            'Size', [0., 10., 0., 10.],
+            names  = ['x min', 'x max', 'y min', 'y max'],
             method = self.sizeGrids)
         self.yz_handler.addParameter(
-            'Size', [10., 10.],
-            names  = ['x', 'y'],
+            'Size', [0., 10., 0., 10.],
+            names  = ['x min', 'x max', 'y min', 'y max'],
             method = self.sizeGrids)
 
         self.xy_handler.addParameter(
@@ -99,7 +109,7 @@ class GridGl(ParameterNode):
             names  = ['x', 'y', 'z'],
             method = self.processGrids)
         self.yz_handler.addParameter(
-            'Angle', [0., 90., 0.],
+            'Angle', [0., -90., 0.],
             names  = ['x', 'y', 'z'],
             method = self.processGrids)
 
@@ -117,13 +127,13 @@ class GridGl(ParameterNode):
             method = self.processGrids)
 
         self.xy_handler.addParameter(
-            'Color', QtGui.QColor(255, 255, 255),
+            'Color', QtGui.QColor(0, 0, 0, 255),
             method = self.setColors)
         self.xz_handler.addParameter(
-            'Color', QtGui.QColor(255, 255, 255),
+            'Color', QtGui.QColor(0, 0, 0, 255),
             method = self.setColors)
         self.yz_handler.addParameter(
-            'Color', QtGui.QColor(255, 255, 255),
+            'Color', QtGui.QColor(0, 0, 0, 255),
             method = self.setColors)
 
         self.handlers = [
@@ -166,8 +176,8 @@ class GridGl(ParameterNode):
         for i,grid in enumerate(self.grid_items):
             if grid in self.canvas.view.items:
                 grid.setSize(
-                    self.handlers[i]['Size'][0],
-                    self.handlers[i]['Size'][1])
+                    [self.handlers[i]['Size'][0],self.handlers[i]['Size'][1]],
+                    [self.handlers[i]['Size'][2],self.handlers[i]['Size'][3]])
 
     def processGrids(self):
         '''
@@ -197,3 +207,32 @@ class GridGl(ParameterNode):
         self.grid_items[0].setColor(*self.handlers[0]['Color'].getRgbF())
         self.grid_items[1].setColor(*self.handlers[1]['Color'].getRgbF())
         self.grid_items[2].setColor(*self.handlers[2]['Color'].getRgbF())
+
+    def refreshAuto(self):
+        '''
+        refresh the axes automatically 
+        based on the content
+        '''
+        bounds = [[1.e10, -1.e10], [1.e10, -1.e10], [1.e10, -1.e10]]
+        for child in self.canvas._plot_root._children:
+            for plot_child in child._children:
+                if hasattr(plot_child, '_plot_data'):
+                    new_bounds = plot_child._plot_data.getBounds()
+                    bounds = [
+                        [min(bounds[0][0], new_bounds[0][0]), max(bounds[0][1], new_bounds[0][1])],
+                        [min(bounds[1][0], new_bounds[1][0]), max(bounds[1][1], new_bounds[1][1])],
+                        [min(bounds[2][0], new_bounds[2][0]), max(bounds[2][1], new_bounds[2][1])]]
+
+        if self.xy_handler['Auto']:
+            self.xy_handler['Position'] = [bounds[0][0], bounds[1][0], bounds[2][0]]
+            self.xy_handler['Size'] = [0, bounds[0][1] - bounds[0][0], 0, bounds[1][1] - bounds[1][0]]
+
+        if self.xz_handler['Auto']:
+            self.xz_handler['Position'] = [bounds[0][0], bounds[1][0], bounds[2][0]]
+            self.xz_handler['Size'] = [0, bounds[0][1] - bounds[0][0], 0, bounds[2][1] - bounds[2][0]]
+
+        if self.xz_handler['Auto']:
+            self.yz_handler['Position'] = [bounds[0][0], bounds[1][0], bounds[2][0]]
+            self.yz_handler['Size'] = [0, bounds[2][1] - bounds[2][0], 0, bounds[1][1] - bounds[1][0]]
+
+        self.setColors()

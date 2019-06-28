@@ -76,6 +76,16 @@ class Axes3D(SessionNode):
             # self.canvas.view.addItem(self.label_list[-1])
 
         self.x_direction.addParameter(
+            'Auto',  True,
+            method = self.refreshAuto)
+        self.y_direction.addParameter(
+            'Auto',  True,
+            method = self.refreshAuto)
+        self.z_direction.addParameter(
+            'Auto',  True,
+            method = self.refreshAuto)
+
+        self.x_direction.addParameter(
             'Axis',  True,
             method = self.setAxes)
         self.y_direction.addParameter(
@@ -94,17 +104,6 @@ class Axes3D(SessionNode):
         self.z_direction.addParameter(
             'Ticks',  True,
             method = self.setTicks)
-
-        self.base_scaling = [1.,1.,1.]
-        self.x_direction.addParameter(
-            'Scaling',  1.0,
-            method = self.setScaling)
-        self.y_direction.addParameter(
-            'Scaling',  1.0,
-            method = self.setScaling)
-        self.z_direction.addParameter(
-            'Scaling',  1.0,
-            method = self.setScaling)
 
         # self.x_direction.addParameter(
         #     'Labels',  True,
@@ -117,15 +116,15 @@ class Axes3D(SessionNode):
         #     method = self.setLabels)
 
         self.x_direction.addParameter(
-            'Position', [0,0,0],
+            'Position', [0.,0.,0.],
             names  = ['x', 'y', 'z'],
             method = self.changePosition)
         self.y_direction.addParameter(
-            'Position', [0,0,0],
+            'Position', [0.,0.,0.],
             names  = ['x', 'y', 'z'],
             method = self.changePosition)
         self.z_direction.addParameter(
-            'Position', [0,0,0],
+            'Position', [0.,0.,0.],
             names  = ['x', 'y', 'z'],
             method = self.changePosition)
 
@@ -159,6 +158,9 @@ class Axes3D(SessionNode):
         self.axes_list[0].setPosition(self.x_direction['Position'])
         self.axes_list[1].setPosition(self.y_direction['Position'])
         self.axes_list[2].setPosition(self.z_direction['Position'])
+        self.tick_list[0].setPosition(self.x_direction['Position'])
+        self.tick_list[1].setPosition(self.y_direction['Position'])
+        self.tick_list[2].setPosition(self.z_direction['Position'])
 
     def changeLength(self):
         '''
@@ -166,6 +168,9 @@ class Axes3D(SessionNode):
         self.axes_list[0].setLength(*self.x_direction['Length'])
         self.axes_list[1].setLength(*self.y_direction['Length'])
         self.axes_list[2].setLength(*self.z_direction['Length'])
+        self.tick_list[0].setLength(*self.x_direction['Length'])
+        self.tick_list[1].setLength(*self.y_direction['Length'])
+        self.tick_list[2].setLength(*self.z_direction['Length'])
 
     def setAxes(self):
         '''
@@ -178,27 +183,6 @@ class Axes3D(SessionNode):
                 self.canvas.view.removeItem(self.axes_list[i])
             else:
                 pass
-
-    def setScaling(self):
-        '''
-        '''
-        array = [
-            self.x_direction['Scaling'] if not self.x_direction['Scaling'] == 0 else 1., 
-            self.y_direction['Scaling'] if not self.y_direction['Scaling'] == 0 else 1., 
-            self.z_direction['Scaling'] if not self.z_direction['Scaling'] == 0 else 1.]
-
-
-        for handler in self.canvas._plot_root._children:
-            for plot_element in handler._children:
-                for draw_item in plot_element.draw_items:
-                    draw_item.scale(
-                        1. / self.base_scaling[0],
-                        1. / self.base_scaling[1],
-                        1. / self.base_scaling[2])
-                    draw_item.scale(*array)
-
-        self.base_scaling = array
-
 
     def setTicks(self):
         '''
@@ -223,3 +207,30 @@ class Axes3D(SessionNode):
                 self.canvas.view.removeItem(self.label_list[i])
             else:
                 pass
+
+    def refreshAuto(self):
+        '''
+        refresh the axes automatically 
+        based on the content
+        '''
+        bounds = [[1.e10, -1.e10], [1.e10, -1.e10], [1.e10, -1.e10]]
+        for child in self.canvas._plot_root._children:
+            for plot_child in child._children:
+                if hasattr(plot_child, '_plot_data'):
+                    new_bounds = plot_child._plot_data.getBounds()
+                    bounds = [
+                        [min(bounds[0][0], new_bounds[0][0]), max(bounds[0][1], new_bounds[0][1])],
+                        [min(bounds[1][0], new_bounds[1][0]), max(bounds[1][1], new_bounds[1][1])],
+                        [min(bounds[2][0], new_bounds[2][0]), max(bounds[2][1], new_bounds[2][1])]]
+
+        
+        items = [self.x_direction,self.y_direction,self.z_direction]
+        for i,item in enumerate(items):
+            if item['Auto']:
+                item.items['Position'].updateValue([
+                    float(bounds[0][0]),
+                    float(bounds[1][0]), 
+                    float(bounds[2][0])], method = True)
+                item.items['Length'].updateValue(
+                    [0, float(bounds[i][1] - bounds[i][0])], method = True)
+        
