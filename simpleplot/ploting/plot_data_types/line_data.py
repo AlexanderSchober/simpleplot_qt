@@ -81,6 +81,12 @@ class LineData(PlotData, SessionNode):
         '''
         return [self._data[self._axes.index(value)] for value in axis]
 
+    def getBounds(self):
+        '''
+        returns the bounds
+        '''
+        return self._bounds
+        
     def getError(self):
         '''
         return a dataset as the data on the 
@@ -91,4 +97,20 @@ class LineData(PlotData, SessionNode):
         else:
             return None
 
-            
+    def _sanity(self, elements):
+        '''
+        Check that the data makes sense in 
+        '''
+        if not elements[self._axes.index('x')].shape[0] == elements[self._axes.index('y')].shape[0]:
+            return False
+        if not elements[self._axes.index('y')].shape[0] == elements[self._axes.index('z')].shape[0]:
+            return False
+        return True
+
+    def _setBounds(self):
+        '''
+        returns the bounds of the set datastructure
+        '''
+        self._bounds = []
+        for element in self._data:
+            self._bounds.append([np.amin(element), np.amax(element)])
