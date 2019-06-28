@@ -46,6 +46,8 @@ class ExportDialog(QtGui.QWidget):
         self.ui.copyBtn.clicked.connect(self.copyClicked)
         self.ui.itemTree.currentItemChanged.connect(self.exportItemChanged)
         self.ui.formatList.currentItemChanged.connect(self.exportFormatChanged)
+
+        self.ui.closeBtn.hide()
         
     def refreshSubplot(self,item):
         if not hasattr(item, 'handler'):

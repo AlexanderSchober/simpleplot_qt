@@ -4,8 +4,10 @@ import xml.dom.minidom as xml
 import numpy as np
 
 from ...pyqtgraph.pyqtgraph.Qt import QtGui, QtCore, QtSvg, QT_LIB
+from ...pyqtgraph.pyqtgraph.python2_3 import asUnicode
 from ...pyqtgraph.pyqtgraph import debug
 from ...pyqtgraph.pyqtgraph import functions as fn
+from ...pyqtgraph.pyqtgraph.parametertree.Parameter import Parameter
 
 from ...simpleplot_widgets.SimplePlotItem import SimplePlotItem as PlotItem
 
