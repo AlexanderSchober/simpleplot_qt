@@ -35,8 +35,8 @@ from ..pyqtgraph.pyqtgraph  import opengl as gl
 
 class GLGridItem(gl.GLGridItem):
     def __init__(self, *args, **kwargs):
-        gl.GLGridItem.__init__(self, *args, **kwargs)
-        self.__color = [1,1,1,0.3]
+        gl.GLGridItem.__init__(self, *args, glOptions='opaque', **kwargs)
+        self._color = [1,1,1,0.3]
 
     def setColor(self, r,g,b,a):
         '''
@@ -49,27 +49,38 @@ class GLGridItem(gl.GLGridItem):
         b : int blue
 
         '''
-        self.__color = [r,g,b,a]
+        self._color = [r,g,b,a]
         self.update()
+
+    def setSize(self, x=[0.,1.], y=[0.,1.], z=[0.,1.], size = None):
+        """
+        Set the size of the axes (in its local coordinate system; this does not affect the transform)
+        Arguments can be x,y,z or size=QVector3D().
+        """
+        self._size = [x,y,z]
+        self.update()
+
+    def size(self):
+        return self._size[:]
 
     def paint(self):
         self.setupGLState()
         
-        if self.antialias:
-            glEnable(GL_LINE_SMOOTH)
-            glEnable(GL_BLEND)
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
+        # if self.antialias:
+            # glEnable(GL_LINE_SMOOTH)
+            # glEnable(GL_BLEND)
+            # glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            # glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
         glBegin( GL_LINES )
         
         x,y,z = self.size()
         xs,ys,zs = self.spacing()
-        xvals = np.arange(-1 * x/2., x/2. + xs*0.001, xs) 
-        yvals = np.arange(-1 * y/2., y/2. + ys*0.001, ys) 
-        glColor4f(*self.__color)
+        xvals = np.arange(x[0] - xs*0.001, x[1] + xs*0.001, xs) 
+        yvals = np.arange(y[0] - ys*0.001, y[1] + ys*0.001, ys) 
+        glColor4f(*self._color)
         for x in xvals:
             glVertex3f(x, yvals[0], 0)
-            glVertex3f(x,  yvals[-1], 0)
+            glVertex3f(x, yvals[-1], 0)
         for y in yvals:
             glVertex3f(xvals[0], y, 0)
             glVertex3f(xvals[-1], y, 0)
