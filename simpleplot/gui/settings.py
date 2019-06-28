@@ -62,7 +62,7 @@ class PreferenceWindow(QtGui.QMainWindow, Ui_preference_window):
         self.plot_tree_view.collapsed.connect(self._resizePlotTree)
         self.plot_tree_view.expanded.connect(self._resizePlotTree)
 
-        self.plot_data_view.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        # self.plot_data_view.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.ResizeToContents)
         
         self._resizePlotTree()
         self._resizeTree()

@@ -123,6 +123,9 @@ class CanvasNode(SessionNode):
         self._setBackground()
 
     def switch(self):
+        '''
+        Switch from 2D to 3D and vice versa
+        '''
         self._model.removeRows(1,self.childCount()-1, self)
         self.plot_widget.deleteLater()
         self._populate()
@@ -135,6 +138,9 @@ class CanvasNode(SessionNode):
         General populate method that will check the 
         chosen state and try to redraw all.
         '''
+        if hasattr(self, 'artist'):
+            self.artist.disconnect()
+
         if self.handler['Type'] == '2D':
             self._populate2D()
 
@@ -148,13 +154,9 @@ class CanvasNode(SessionNode):
         self.plot_widget = SimplePlotWidget(self)
         self.draw_surface = self.plot_widget.getPlotItem()
         self.view = self.draw_surface.getViewBox()
-        
         self.grid_layout.addWidget(self.plot_widget, 1, 1)
-
         self.artist = Artist2DNode(name = '2D Artist', parent = self, canvas = self)
         self.artist.setup()
-
-        self.widget.drop_success.connect(self.artist.addFromDrop)
 
     def _populate3D(self):
         '''
@@ -163,11 +165,8 @@ class CanvasNode(SessionNode):
         self.view = MyGLViewWidget(parent = self)
         self.grid_layout.addWidget(self.view, 1, 1)
         self.plot_widget = self.view
-
         self.artist = Artist3DNode('3D Artist', parent = self, canvas = self)
         self.artist.setup()
-
-        self.widget.drop_success.connect(self.artist.addFromDrop)
 
     def _setBackground(self):
         self.plot_widget.setBackground(

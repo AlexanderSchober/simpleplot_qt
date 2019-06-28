@@ -48,7 +48,6 @@ class Legend(ParameterHandler):
         self.canvas = canvas
         self._initialize()
         self.legend_item.pos_updated.connect(self._updatePos)
-        self.canvas._plot_model.dataChanged.connect(self.buildLegend)
         
     def _initialize(self):
         '''

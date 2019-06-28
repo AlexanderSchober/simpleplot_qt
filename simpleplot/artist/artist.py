@@ -50,6 +50,15 @@ class Artist():
         self.child_widgets  = []
         self.draw_surface   = None
         
+    def connect(self):
+        '''
+        Template to be overwritten
+        '''
+
+    def disconnect(self):
+        '''
+        Template to be overwritten
+        '''
 
     def addPlot(self, name_type, *args, **kwargs):
         '''
@@ -181,7 +190,21 @@ class Artist2DNode(SessionNode, Artist):
         self.legend     = Legend(self.canvas)
         # self.Modifier   = ModificationClass.Modify(self.Canvas)
         # self.Title      = None #TitleClass.TitleClass(self.Canvas)
+        self.connect()
+        
+    def connect(self):
+        '''
+        Connect the methods
+        '''
         self.canvas._plot_model.dataChanged.connect(self.dispatchPlotDataChange)
+        self.canvas.widget.drop_success.connect(self.addFromDrop)
+
+    def disconnect(self):
+        '''
+        Disconnect the methods
+        '''
+        self.canvas._plot_model.dataChanged.disconnect(self.dispatchPlotDataChange)
+        self.canvas.widget.drop_success.disconnect(self.addFromDrop)
 
     def dispatchPlotDataChange(self, index):
         '''
@@ -191,6 +214,7 @@ class Artist2DNode(SessionNode, Artist):
         if not self.canvas._plot_model.itemAt(index) is None and self.canvas._plot_model.itemAt(index)._name == 'Data':
             self.pointer.refreshPlotData()
             self.zoomer.zoom()
+            self.legend.buildLegend()
 
     def draw(self):
         '''
@@ -342,8 +366,22 @@ class Artist3DNode(SessionNode, Artist):
 
         self.grid = GridGl(canvas)
         self.axes = Axes3D(canvas)
+        
+        self.connect()
 
+    def connect(self):
+        '''
+        Connect the methods
+        '''
+        self.canvas.widget.drop_success.connect(self.addFromDrop)
         self.canvas.view.rayUpdate.connect(self.processRay)
+
+    def disconnect(self):
+        '''
+        Disconnect the methods
+        '''
+        self.canvas.widget.drop_success.disconnect(self.addFromDrop)
+        self.canvas.view.rayUpdate.disconnect(self.processRay)
 
     def setup(self):
         '''
