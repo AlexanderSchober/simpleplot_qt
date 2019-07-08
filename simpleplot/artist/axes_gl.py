@@ -213,15 +213,15 @@ class Axes3D(SessionNode):
         refresh the axes automatically 
         based on the content
         '''
-        bounds = [[1.e10, -1.e10], [1.e10, -1.e10], [1.e10, -1.e10]]
+        bounds = [[-1.e2, 1.e2], [-1.e2, 1.e2], [-1.e2, 1.e2]]
         for child in self.canvas._plot_root._children:
             for plot_child in child._children:
                 if hasattr(plot_child, '_plot_data'):
                     new_bounds = plot_child._plot_data.getBounds()
                     bounds = [
-                        [min(bounds[0][0], new_bounds[0][0]), max(bounds[0][1], new_bounds[0][1])],
-                        [min(bounds[1][0], new_bounds[1][0]), max(bounds[1][1], new_bounds[1][1])],
-                        [min(bounds[2][0], new_bounds[2][0]), max(bounds[2][1], new_bounds[2][1])]]
+                        [max(bounds[0][0], new_bounds[0][0]), min(bounds[0][1], new_bounds[0][1])],
+                        [max(bounds[1][0], new_bounds[1][0]), min(bounds[1][1], new_bounds[1][1])],
+                        [max(bounds[2][0], new_bounds[2][0]), min(bounds[2][1], new_bounds[2][1])]]
 
         
         items = [self.x_direction,self.y_direction,self.z_direction]

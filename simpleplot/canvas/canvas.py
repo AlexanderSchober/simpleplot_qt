@@ -129,6 +129,7 @@ class CanvasNode(SessionNode):
         self._model.removeRows(1,self.childCount()-1, self)
         self.plot_widget.deleteLater()
         self._populate()
+        self._model.referenceModel()
         self._setBackground()
         self.artist.draw()
         self.multi_canvas._model.referenceModel()
