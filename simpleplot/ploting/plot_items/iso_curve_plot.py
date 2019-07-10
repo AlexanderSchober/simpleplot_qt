@@ -107,7 +107,7 @@ class IsoCurvePlot(ParameterHandler):
             if self['Visible']:
                 if len(isocurves) == 0:
                     if self._mode == '2D':
-                        self.drawIsocurves()
+                        self.draw()
                         self.childFromName('Shader').runShader()
                         isocurves = []
                         for draw_item in self.draw_items:
