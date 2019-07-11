@@ -83,6 +83,7 @@ class SurfaceData(PlotData, SessionNode):
 
             self._data = elements 
             self._setBounds()
+            self._setHistogram()
 
             if self.parent().childFromName('Surface')._mode == '3D':
                 self.set3D(changed = changed)
@@ -104,6 +105,13 @@ class SurfaceData(PlotData, SessionNode):
         wanted orientation
         '''
         return self._data
+
+    def getHistogram(self, direction = 'z'):
+        '''
+        Produce the histogram according to the 
+        direction selected
+        '''
+        return self._histogram[self._axes.index(direction)]
 
     def getBounds(self):
         '''
@@ -141,6 +149,26 @@ class SurfaceData(PlotData, SessionNode):
         if not elements[self._axes.index('y')].shape[0] == elements[self._axes.index('z')].shape[1]:
             return False
         return True
+
+    def _setHistogram(self):
+        '''
+        Set the histogram of the data along all 
+        axes
+        '''
+        axis        = [0 for i in range(100)]
+        elements    = [0 for i in range(100)]
+        factor      = (np.amax(self._data[2]) - np.amin(self._data[2]))/(100-1)
+        offset      = np.amin(self._data[2])
+        for i in range(len(axis)):
+            axis[i] = i*factor + offset
+            elements[i] = np.argwhere(
+                (self._data[2] > i*factor + offset)
+                & (self._data[2] < (i+1)*factor + offset)).shape[0]
+            
+        self._histogram = [
+            [self._data[0], np.sum(self._data[2],axis = 0)],
+            [self._data[1], np.sum(self._data[2],axis = 0)],
+            [axis, elements]]
 
     def _setBounds(self):
         '''

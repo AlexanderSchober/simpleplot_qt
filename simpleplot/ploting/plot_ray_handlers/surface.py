@@ -53,7 +53,7 @@ class SurfaceRayHandler(ParameterHandler):
             choices = ['Fast','Mixed', 'Precise'],
             method = self._dispatchCoordinate)
         self.addParameter(
-            'Width', 0.1, 
+            'Width', 0.5, 
             method = self._dispatchCoordinate)
         self.addParameter(
             'Color', QtGui.QColor('Black'), 
@@ -361,3 +361,4 @@ class SurfaceRayHandler(ParameterHandler):
         si = -planeNormal.dot(w) / ndotu
         Psi = w + si * rayDirection + planePoints[0]
         return Psi
+        

@@ -96,6 +96,7 @@ class VolumeData(PlotData, SessionNode):
                 norm_data /= np.amax(norm_data)
             self._data = elements + [norm_data]
             self._setBounds()
+            self._setHistogram()
 
     def getData(self):
         '''
@@ -103,6 +104,13 @@ class VolumeData(PlotData, SessionNode):
         wanted orientation
         '''
         return self._data
+
+    def getHistogram(self, direction = 'data'):
+        '''
+        Produce the histogram according to the 
+        direction selected
+        '''
+        return self._histogram[self._axes.index(direction)]
 
     def getBounds(self):
         '''
@@ -146,6 +154,27 @@ class VolumeData(PlotData, SessionNode):
         if not elements[self._axes.index('z')].shape[0] == elements[self._axes.index('data')].shape[2]:
             return False
         return True
+
+    def _setHistogram(self):
+        '''
+        Set the histogram of the data along all 
+        axes
+        '''
+        axis        = [0 for i in range(100)]
+        elements    = [0 for i in range(100)]
+        factor      = (np.amax(self._data[3]) - np.amin(self._data[3]))/(100-1)
+        offset      = np.amin(self._data[3])
+        for i in range(len(axis)):
+            axis[i] = i*factor + offset
+            elements[i] = np.argwhere(
+                (self._data[3] > i*factor + offset)
+                & (self._data[3] < (i+1)*factor + offset)).shape[0]
+            
+        self._histogram = [
+            [self._data[0], np.sum(self._data[3],axis = (1,2))],
+            [self._data[1], np.sum(self._data[3],axis = (1,0))],
+            [self._data[2], np.sum(self._data[3],axis = (0,1))],
+            [axis, elements]]
 
     def _setBounds(self):
         '''

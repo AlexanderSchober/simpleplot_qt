@@ -21,7 +21,7 @@
 #
 # *****************************************************************************
 
-from PyQt5 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 
 from ..pointer.pointer  import Pointer
 from ..pointer.zoomer   import Zoomer
@@ -164,6 +164,33 @@ class Artist():
         for plot_handler in self.canvas._plot_root._children:
             plot_handler.clear(self.canvas)
 
+    def addItem(self, location, item):
+        '''
+        Put a histogram on the layout
+        The location is a string that will 
+        indicate the four possible options.
+
+        Parameters
+        ----------
+        location : str
+            The location of the hist, left, right top, bottom
+
+        item: Q item
+            The item that should be linked 
+        '''
+        locations = {
+            'left'  : [1,0],
+            'top'   : [0,1],
+            'bottom': [2,1],
+            'right' : [1,2]}
+
+        self.canvas.grid_layout.addWidget(
+            item,
+            locations[location][0],
+            locations[location][1])
+
+        self.canvas._setBackground()
+        
 class Artist2DNode(SessionNode, Artist):
     '''
     This is the 2D artist manager, which can be seen as
@@ -285,47 +312,6 @@ class Artist2DNode(SessionNode, Artist):
         elif idx == 1:
             self.measurer.listen()
         
-    def setHistogram(self, location, item = None):
-        '''
-        Put a histogram on the layout
-        The location is a string that will 
-        indicate the four possible options.
-
-        Parameters
-        ----------
-        location : str
-            The location of the hist, left, right top, bottom
-
-        item: Q item
-            The item that should be linked 
-        '''
-        locations = {
-            'left'  : [1,0],
-            'top'   : [0,1],
-            'bottom': [2,1],
-            'right' : [1,2]}
-
-        self.gradient_widget  = pg.GradientWidget(orientation = location)
-        self.gradient_widget.setBackground(self.canvas.handler['Background'])
-
-        if not item == None:
-            state = {
-                'mode':'rgb', 
-                'ticks':[
-                    tuple(
-                        [item.getParameter('Positions')[i], 
-                        tuple((np.array(item.getParameter('Colors')[i])*255).tolist())])
-                    for i in range(len(item.getParameter('Positions')))]}
-            self.gradient_widget.restoreState(state)
-
-        self.canvas.grid_layout.addWidget(
-            self.gradient_widget,
-            locations[location][0],
-            locations[location][1])
-
-        self.gradient_widget.sigGradientChanged.connect(self._updateColors)
-        return self.gradient_widget
-
     def _updateColors(self):
         '''
         Tell the plot item to update the colors

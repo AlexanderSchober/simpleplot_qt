@@ -138,13 +138,13 @@ class SurfacePlot(ParameterHandler):
         here allow the setting of colors either through the 
         color map or through shaders.
         '''
-        if self._mode == '2D':
+        if self._mode == '2D' and hasattr(self, 'draw_items'):
             color_map = pg.ColorMap(
                 self.childFromName('Shader')._positions,
                 np.array(self.childFromName('Shader')._colors, dtype=np.uint)*255)
             self.draw_items[0].setLookupTable(color_map.getLookupTable(0.0, 1.0, alpha = False))
 
-        elif self._mode == '3D':
+        elif self._mode == '3D' and hasattr(self, 'draw_items'):
             self.draw_items[0].setShader(self.childFromName('Shader').getShader('height'))
 
     def draw(self, target_surface = None):

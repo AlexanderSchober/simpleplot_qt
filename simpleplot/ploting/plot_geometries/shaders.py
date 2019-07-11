@@ -20,12 +20,13 @@
 #   Alexander Schober <alex.schober@mac.com>
 #
 # *****************************************************************************
-
-from ...pyqtgraph.pyqtgraph.opengl.shaders import initShaders
-from ...pyqtgraph.pyqtgraph.opengl import shaders
-from OpenGL.GL import glUseProgram, glGetUniformLocation, glCreateProgram, glAttachShader
+from PyQt5 import QtGui
 import numpy as np
+from OpenGL.GL import glUseProgram, glGetUniformLocation, glCreateProgram, glAttachShader
 
+from ...pyqtgraph.pyqtgraph.opengl.shaders  import initShaders
+from ...pyqtgraph.pyqtgraph.opengl          import shaders
+from ...simpleplot_widgets.SimpleHistogramLUTWidget import HistogramLUTWidget
 from ...simpleplot_widgets.SimplePlotGradientEditorItem import GradientEditorItem
 
 from OpenGL import GL
@@ -60,6 +61,7 @@ class ShaderConstructor(ParameterHandler):
         self._epsilon           = 1.e-6
         self._light_active      = True
         self._light_direction   = [1,1,1]
+        self._link_widget       = None
 
         self._setShaderParameters()
 
@@ -80,10 +82,12 @@ class ShaderConstructor(ParameterHandler):
             'Range x values', [0.,1.],
             names = ['min', 'max'],
             method = self.runShader)
+
         self.addParameter(
             'Range y values', [0.,1.],
             names = ['min', 'max'],
             method = self.runShader)
+
         self.addParameter(
             'Range z values', [0.,1.],
             names = ['min', 'max'],
@@ -93,6 +97,7 @@ class ShaderConstructor(ParameterHandler):
             'Range factors', [1.0,0.],
             names = ['factor max', 'factor min'],
             method = self.runShader)
+
         self.addParameter(
             'Range epsilon',  1.e-6,
             method = self.runShader)
@@ -101,6 +106,7 @@ class ShaderConstructor(ParameterHandler):
             'Light active', True,
             names = ['factor max', 'factor min'],
             method = self.runShader)
+
         self.addParameter(
             'Light direction', [1.,1.,1.],
             names = ['x', 'y', 'z'],
@@ -110,6 +116,89 @@ class ShaderConstructor(ParameterHandler):
         '''
         Set the colors of the shader display
         '''
+        self._setColors()
+        self._setRangeAuto()
+        self._setLight()
+        self.parent().setColor()
+
+        if not self._link_widget is None:
+            self._link_widget.sigLookupTableChanged.disconnect(self._externalGradientChange)
+            self._link_widget.sigLevelsChanged.disconnect(self._externalLevelChange)
+            self._link_widget.restoreState({
+                'mode'      : 'mono',
+                'gradient'  : self['Gradient'].saveState(),
+                'levels'    : self.parent().parent()._plot_data.getBounds()[2] + [None]})
+
+            self._link_widget.sigLookupTableChanged.connect(self._externalGradientChange)
+            self._link_widget.sigLevelsChanged.connect(self._externalLevelChange)
+
+    def getHistogramItem(self):
+        '''
+        generates and returns the linked histogram item
+        '''
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Fixed, 
+            QtGui.QSizePolicy.Expanding)
+
+        histogram  = HistogramLUTWidget()
+
+        histogram.axis.setStyle(autoExpandTextSpace = False)
+        histogram.setSizePolicy(sizePolicy)
+        self._linkWidget(histogram)
+
+        return histogram
+
+    def _linkWidget(self, widget):
+        '''
+        This allows the shader editor to be linked to 
+        a Histogram LUT item and vice versa
+        '''
+        self._link_widget = widget
+        self._link_widget.restoreState({
+            'mode'      : 'mono',
+            'gradient'  : self._gradient_item.saveState(),
+            'levels'    : self.parent().parent()._plot_data.getBounds()[2] + [None]})
+        self.items['Range auto'].updateValue(
+            [True, True, False],
+            method = False)
+        self._externalLevelChange()
+        self._link_widget.plots[0].setVisible(True)
+        self.items['Range z values'].updateValue(
+            self._link_widget.getLevels(),
+            method = False)
+        self._link_widget.sigLookupTableChanged.connect(self._externalGradientChange)
+        self._link_widget.sigLevelsChanged.connect(self._externalLevelChange)
+        
+    def _unlinkWidget(self):
+        '''
+        This allows the shader editor to be unlinked from 
+        a Histogram LUT item and vice versa
+        '''
+        if not self._link_widget is None:
+            self._link_widget.sigLookupTableChanged.disconnect(self._externalGradientChange)
+            self._link_widget.sigLevelsChanged.disconnect(self._externalLevelChange)
+            self._link_widget = None
+
+    def _externalLevelChange(self):
+        '''
+        Allows to change the local gradient item from an 
+        external source
+        '''
+        self._link_widget.plots[0].setData(
+            *self.parent().parent().childFromName('Data').getHistogram())
+        self._setColors()
+        self._setRangeAuto()
+        self._setLight()
+        self.parent().setColor()
+
+    def _externalGradientChange(self):
+        '''
+        Allows to change the local gradient item from an 
+        external source
+        '''
+        self.items['Gradient'].updateValue(
+            self._link_widget.gradient, 
+            method = False)
         self._setColors()
         self._setRangeAuto()
         self._setLight()
@@ -591,3 +680,4 @@ class ShaderConstructor(ParameterHandler):
             [vertex, fragment])
 
         return to_use
+

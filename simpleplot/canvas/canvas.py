@@ -108,6 +108,7 @@ class CanvasNode(SessionNode):
         self.widget.setSizePolicy(QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.grid_layout = QtWidgets.QGridLayout()
+        self.grid_layout.setSpacing(0)
         self.widget.setLayout(self.grid_layout)
 
     def _buildGraph(self):
@@ -170,10 +171,13 @@ class CanvasNode(SessionNode):
         self.artist.setup()
 
     def _setBackground(self):
-        self.plot_widget.setBackground(
-            self.handler['Background'])
-        for widget in self.artist.child_widgets:
-            widget.setBackground(self.handler['Background'])
+        '''
+        Set the background of the elements present in the
+        current grid layout of the canvas
+        '''
+        for i in range(self.grid_layout.count()):
+            if hasattr(self.grid_layout.itemAt(i).widget(), 'setBackground'):
+                self.grid_layout.itemAt(i).widget().setBackground(self.handler['Background'])
 
     def _setVerticalSpacing(self):
         self.grid_layout.setVerticalSpacing(

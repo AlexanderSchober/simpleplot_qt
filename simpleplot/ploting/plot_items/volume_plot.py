@@ -151,7 +151,7 @@ class VolumePlot(ParameterHandler):
         here allow the setting of colors either through the 
         color map or through shaders.
         '''
-        if self._mode == '3D':
+        if self._mode == '3D'and hasattr(self, 'draw_items'):
             positions = self.childFromName('Shader')._positions
             colors    = np.array(self.childFromName('Shader')._colors, dtype=np.uint)*255
             color_map = pg.ColorMap(positions,colors)

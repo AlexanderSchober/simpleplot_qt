@@ -95,7 +95,7 @@ def exampleSurfacePlot():
     Positions = [0,0.25,0.5,0.75,1.]
 
     #set the ax plot
-    ax.addPlot(
+    surface = ax.addPlot(
         'Surface', 
         x = x,
         y = x,
@@ -104,6 +104,9 @@ def exampleSurfacePlot():
         Colors      = Colors,
         Positions   = Positions)
     ax.draw()
+    histogram = surface.childFromName('Surface').childFromName('Shader').getHistogramItem()
+    ax.addItem('right', histogram)
+    
 
     #show widget
     widget.show()
@@ -257,5 +260,5 @@ def example():
 
 if __name__ == '__main__':
     # exampleLinePlot()
-    example()
-    # exampleSurfacePlot()
+    # example()
+    exampleSurfacePlot()
