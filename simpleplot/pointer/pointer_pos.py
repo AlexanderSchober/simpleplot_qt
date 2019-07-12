@@ -81,15 +81,16 @@ class Type_0_Position(PointerPosition):
         cursor_y = 10**self.parent.cursor_y if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else self.parent.cursor_y
         
         points  = []
-        node    = np.array([cursor_x, cursor_y])
+        idx     = []
+        cursor  = np.array([cursor_x, cursor_y])
         for element in self.mapping:
             nodes   = np.array([element[1][0],element[1][1]]).transpose()
-            deltas  = nodes - node
-            points.append(nodes[np.einsum('ij,ij->i', deltas, deltas).argmin()])
-            
-        deltas  = points - node
-        select  = np.einsum('ij,ij->i', deltas, deltas).argmin()
-        point   = points[select]
+            distances = [np.sqrt((node[0]-cursor[0])**2+(node[1]-cursor[1])**2) for node in nodes]
+            idx.append(np.array(distances).argmin())
+            points.append(distances[idx[-1]])
+
+        select  = np.array(points).argmin()
+        point   = [self.mapping[select][1][0][idx[select]], self.mapping[select][1][1][idx[select]]]
 
         self.parent.cursor_x = np.log10(point[0]) if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else point[0]
         self.parent.cursor_y = np.log10(point[1]) if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else point[1]
