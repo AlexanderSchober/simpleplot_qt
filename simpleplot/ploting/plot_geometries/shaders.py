@@ -162,10 +162,7 @@ class ShaderConstructor(ParameterHandler):
             [True, True, False],
             method = False)
         self._externalLevelChange()
-        self._link_widget.plots[0].setVisible(True)
-        self.items['Range z values'].updateValue(
-            self._link_widget.getLevels(),
-            method = False)
+
         self._link_widget.sigLookupTableChanged.connect(self._externalGradientChange)
         self._link_widget.sigLevelsChanged.connect(self._externalLevelChange)
         
@@ -184,6 +181,11 @@ class ShaderConstructor(ParameterHandler):
         Allows to change the local gradient item from an 
         external source
         '''
+        self._link_widget.plots[0].setVisible(True)
+        self.items['Range z values'].updateValue(
+            self._link_widget.getLevels(),
+            method = False)
+            
         self._link_widget.plots[0].setData(
             *self.parent().parent().childFromName('Data').getHistogram())
         self._setColors()
@@ -373,7 +375,9 @@ class ShaderConstructor(ParameterHandler):
 
         uniforms['position'] = self._positions
         uniforms['factor']   = [
-            1./np.abs(self._range[2][1] - self._range[2][0]),
+            1./np.abs(
+                self._range[2][1] - self._range[2][0] 
+                if not self._range[2][1] == self._range[2][0] else 1.),
             self._range[2][0]]
         for i,element in enumerate(self._colors):
             uniforms['color_'+str(i)] = element
