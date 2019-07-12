@@ -102,6 +102,18 @@ class LinePlot(ParameterHandler):
             'Shadow width', 0 ,
             tags     = ['2D'],
             method  = self.refresh)
+        self.addParameter(
+            'Fill', False ,
+            tags     = ['2D'],
+            method  = self.refresh)
+        self.addParameter(
+            'Fill level', 0. ,
+            tags     = ['2D'],
+            method  = self.refresh)
+        self.addParameter(
+            'Fill color', QtGui.QColor('blue') ,
+            tags     = ['2D'],
+            method  = self.refresh)
 
     def _setVisual(self):
         '''
@@ -115,7 +127,9 @@ class LinePlot(ParameterHandler):
         self.shadow_pen = pg.mkPen({
             'color': self['Shadow color'],
             'width': self['Shadow width']})
-            
+
+        self.fill_brush = pg.mkBrush(self['Fill color'])
+
     def _getDictionary(self):
         '''
         Build the dictionary used for plotting
@@ -132,6 +146,8 @@ class LinePlot(ParameterHandler):
             kwargs['pen']       = self.line_pen
             kwargs['shadowPen'] = self.shadow_pen
             kwargs['antialias'] = True
+            kwargs['brush']     = self.fill_brush if self['Fill'] else None
+            kwargs['fillLevel'] = self['Fill level'] if self['Fill'] else None
 
         elif self._mode == '3D':
             data = self.parent()._plot_data.getData(['x','y','z'])
