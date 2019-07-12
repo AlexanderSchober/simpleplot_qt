@@ -21,36 +21,15 @@
 #
 # *****************************************************************************
 
-#import personal dependencies
-from .canvas   import CanvasNode
-from ..model.models import SessionModel
-from ..gui.mode_select import ModeSelect
-from ..model.node import SessionNode
-from ..model.parameter_class import ParameterHandler 
-
 #import general
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-class Second(QtGui.QMainWindow):
-    def __init__(self, model, parent=None):
-        super(Second, self).__init__(parent)
-        self.tree = preferenceTree(self)
-        self.setCentralWidget(self.tree)
-        self.tree.setModel(model)
-        self.tree.collapsed.connect(self.resizeTree)
-        self.tree.expanded.connect(self.resizeTree)
-
-    def resizeTree(self):
-        self.tree.resizeColumnToContents(0)
-
-class preferenceTree(QtWidgets.QTreeView):
-    def __init__(self, parent=None):
-        QtWidgets.QTreeView.__init__(self, parent = parent)
-        self.clicked.connect(self.clickManager)
-        
-    def clickManager(self, index):
-        if index.column() > 0:
-            self.edit(index)
+#import personal dependencies
+from .canvas                    import CanvasNode
+from ..model.models             import SessionModel
+from ..gui.mode_select          import ModeSelect
+from ..model.node               import SessionNode
+from ..model.parameter_class    import ParameterHandler 
 
 class MultiCanvasItem(QtWidgets.QGridLayout):
     
@@ -125,8 +104,7 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
                         **kwargs),i,j]
 
         self._initialise()
-
-        # self._proxyModel    = QtCore.QSortFilterProxyModel(self)
+        
         self._model         = SessionModel(
             self._rootNode, self, 
             max([4,len(self.x_ratios), 
@@ -201,14 +179,14 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         '''
         if self.handler['Select'] == 'All':
             for child in self._rootNode._children:
-                if 'Subplot'in child._name:
+                if 'Subplot' in child._name:
                     child.widget.setVisible(True)
             self._configureGrid()
         else:
             for child in self._rootNode._children:
-                if 'Subplot'in child._name and not child._name == self.handler['Select']:
+                if 'Subplot' in child._name and not child._name == self.handler['Select']:
                     child.widget.setVisible(False)
-                elif 'Subplot'in child._name and child._name == self.handler['Select']:
+                elif 'Subplot' in child._name and child._name == self.handler['Select']:
                     child.widget.setVisible(True)
             self._configureGrid(zeros = True)
 
@@ -268,4 +246,3 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         link[1].append(self.link_list[-1])
         
         return ID
-    

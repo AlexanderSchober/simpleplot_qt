@@ -118,6 +118,7 @@ class LinePlot(ParameterHandler):
             'Depth', 0.,
             tags     = ['2D'],
             method  = self.refresh)
+            
     def _setVisual(self):
         '''
         This method will initialise the Qpen as the
