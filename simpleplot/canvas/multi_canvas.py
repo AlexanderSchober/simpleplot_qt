@@ -63,7 +63,17 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         self.grid       = grid
         self.x_ratios   = [float(e) for e in x_ratios]
         self.y_ratios   = [float(e) for e in y_ratios]
-        self.parent     = widget
+
+        self.parent         = widget
+        self.widget_layout  = QtWidgets.QGridLayout()
+        self.widget_layout.setContentsMargins(0,0,0,0)
+        self.parent.setLayout(self.widget_layout)
+        self.dock_widget = QtWidgets.QMainWindow()
+        self.plot_widget = QtWidgets.QWidget()
+        self.dock_widget.setCentralWidget(self.plot_widget)
+        self.setContentsMargins(0,0,0,0)
+        self.plot_widget.setLayout(self)
+        self.widget_layout.addWidget(self.dock_widget)
         self.icon_dim   = 25
         self.subplot_names      = []
 
@@ -113,7 +123,6 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         self._placeObjects()
         self._configureGrid()
         self._layoutManager()
-        self.parent.setLayout(self)
 
     def _initialise(self):
         self.handler        = ParameterHandler(

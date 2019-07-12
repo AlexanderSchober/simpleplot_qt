@@ -25,7 +25,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 import os
 from functools import partial
-from .settings import PreferenceWindow
+from .settings import PreferenceWidget
 
 class ModeSelect(QtWidgets.QHBoxLayout):
 
@@ -43,6 +43,7 @@ class ModeSelect(QtWidgets.QHBoxLayout):
         self.initialize(parent, icon_dim)
         self.selected = 0
         self.process(0)
+        self.settings = PreferenceWidget(self.multi_canvas)
 
     def initialize(self, parent, icon_dim):
         '''
@@ -110,14 +111,12 @@ class ModeSelect(QtWidgets.QHBoxLayout):
         Open the settings window with the proper mode in
         place
         '''
-        if mode == None and target == None:
-            self.settings = PreferenceWindow(self.multi_canvas)
-            self.settings.show()
-        elif mode == 'Save' and not target == None:
-            self.settings = PreferenceWindow(self.multi_canvas)
+        if mode == 'Save' and not target == None:
             self.settings.tabWidget.setCurrentIndex(3)
             self.settings.export_widget.ui.expSubplot.setCurrentText(target)
-            self.settings.show()
+            
         
-
+        self.multi_canvas.dock_widget.addDockWidget(
+            QtCore.Qt.RightDockWidgetArea, 
+            self.settings.setting_widget)
 
