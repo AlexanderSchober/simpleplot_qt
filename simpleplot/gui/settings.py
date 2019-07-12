@@ -26,22 +26,19 @@ from ..pyqtgraph import pyqtgraph as pg
 from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
-from .setting_window_ui import Ui_preference_window
+from .setting_widget_ui import Ui_settings_widget
 from ..model.delegates  import ParameterDelegate
-
-# from .scatter_widget    import ScatterWidget
-# from .surface_widget    import SurfaceWidget
-# from .bar_widget        import BarWidget
-# from .volume_widget     import VolumeWidget
 from .export_dialog     import ExportDialog
 
 import sys
 import numpy as np
 
-class PreferenceWindow(QtGui.QMainWindow, Ui_preference_window):
+class PreferenceWidget(Ui_settings_widget):
     def __init__(self, multi_canvas, parent=None):
-        super(PreferenceWindow, self).__init__(parent)
-        self.setupUi(self)
+        self.setting_widget = QtWidgets.QDockWidget()
+        self.dummy_widget   = QtWidgets.QWidget()
+        self.setupUi(self.dummy_widget)
+        self.setting_widget.setWidget(self.dummy_widget)
 
         self.multi_canvas = multi_canvas
         self._initialize()
@@ -197,11 +194,4 @@ class DataTableModel(QtCore.QAbstractTableModel):
             return self.row_header[col]
         else:
             return None
-    # def sort(self, col, order):
-    #     """sort table by given column number col"""
-    #     self.emit(QtCore.SIGNAL("layoutAboutToBeChanged()"))
-    #     self.data_list = sorted(self.data_list,
-    #         key=operator.itemgetter(col))
-    #     if order == QtCore.Qt.DescendingOrder:
-    #         self.data_list.reverse()
-    #     self.emit(QtCore.SIGNAL("layoutChanged()"))
+            
