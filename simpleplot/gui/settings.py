@@ -35,11 +35,6 @@ import numpy as np
 
 class PreferenceWidget(Ui_settings_widget):
     def __init__(self, multi_canvas, parent=None):
-        self.setting_widget = QtWidgets.QDockWidget()
-        self.dummy_widget   = QtWidgets.QWidget()
-        self.setupUi(self.dummy_widget)
-        self.setting_widget.setWidget(self.dummy_widget)
-
         self.multi_canvas = multi_canvas
         self._initialize()
 
@@ -59,8 +54,6 @@ class PreferenceWidget(Ui_settings_widget):
         self.plot_tree_view.collapsed.connect(self._resizePlotTree)
         self.plot_tree_view.expanded.connect(self._resizePlotTree)
 
-        # self.plot_data_view.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.ResizeToContents)
-        
         self._resizePlotTree()
         self._resizeTree()
 
@@ -73,7 +66,15 @@ class PreferenceWidget(Ui_settings_widget):
         '''
         Load the widgets
         '''
-
+        self.setting_widget = QtWidgets.QDockWidget()
+        self.setting_widget.setAllowedAreas(
+            QtCore.Qt.LeftDockWidgetArea 
+            | QtCore.Qt.RightDockWidgetArea
+            | QtCore.Qt.TopDockWidgetArea
+            | QtCore.Qt.BottomDockWidgetArea)
+        self.dummy_widget   = QtWidgets.QWidget()
+        self.setupUi(self.dummy_widget)
+        self.setting_widget.setWidget(self.dummy_widget)
 
     def _resizeTree(self):
         '''

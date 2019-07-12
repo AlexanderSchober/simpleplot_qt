@@ -59,29 +59,53 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         no_title allows to set titles or not
         '''
         QtWidgets.QGridLayout.__init__(self)
+        self.grid               = grid
+        self.element_types      = element_types
+        self.x_ratios           = [float(e) for e in x_ratios]
+        self.y_ratios           = [float(e) for e in y_ratios]
+        self.parent             = widget
 
-        self.grid       = grid
-        self.x_ratios   = [float(e) for e in x_ratios]
-        self.y_ratios   = [float(e) for e in y_ratios]
+        self._setUp()
+        self._processSubPlots(**kwargs)
+        self._initialise()
 
-        self.parent         = widget
+        self._placeObjects()
+        self._configureGrid()
+        self._layoutManager()
+
+    def _setUp(self):
+        '''
+        set up the pyqt part of the elements
+        '''
         self.widget_layout  = QtWidgets.QGridLayout()
         self.widget_layout.setContentsMargins(0,0,0,0)
         self.parent.setLayout(self.widget_layout)
         self.dock_widget = QtWidgets.QMainWindow()
+        self.dock_widget.setDockOptions(
+            QtGui.QMainWindow.AnimatedDocks 
+            | QtGui.QMainWindow.AllowNestedDocks)
         self.plot_dock   = QtWidgets.QDockWidget()
         self.plot_dock.setFeatures(QtGui.QDockWidget.DockWidgetFloatable | 
                  QtGui.QDockWidget.DockWidgetMovable)
+        self.plot_dock.setAllowedAreas(
+            QtCore.Qt.LeftDockWidgetArea 
+            | QtCore.Qt.RightDockWidgetArea
+            | QtCore.Qt.TopDockWidgetArea
+            | QtCore.Qt.BottomDockWidgetArea)
         self.plot_widget = QtWidgets.QWidget()
         self.plot_dock.setWidget(self.plot_widget)
         self.dock_widget.addDockWidget(QtCore.Qt.LeftDockWidgetArea,self.plot_dock)
         self.setContentsMargins(0,0,0,0)
         self.plot_widget.setLayout(self)
         self.widget_layout.addWidget(self.dock_widget)
-        self.icon_dim   = 25
-        self.subplot_names      = []
 
-        self._rootNode  = SessionNode("Root", None)
+    def _processSubPlots(self, **kwargs):
+        '''
+        set up the pyqt part of the elements
+        '''
+        self.icon_dim           = 25
+        self.subplot_names      = []
+        self._rootNode          = SessionNode("Root", None)
         
         self.canvas_nodes = [
             [None 
@@ -94,41 +118,39 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
             for j in range(len(self.grid[0]))]
 
         for i,j in grid_loop:
-            if not grid[i][j]:
+            if not self.grid[i][j]:
                 self.canvas_nodes[i][j]=[None, i,j]
 
-            elif element_types  ==  None or element_types[i][j] == '2D':
+            elif self.element_types  ==  None or self.element_types[i][j] == '2D':
                 self.subplot_names.append("Subplot ("+str(i)+", "+str(j)+")")
                 self.canvas_nodes[i][j]=[
                     CanvasNode(
                         "Subplot ("+str(i)+", "+str(j)+")", self._rootNode,
-                        multi_canvas = self,
-                        idx = len(self.canvas_nodes),
-                        Type = '2D',
+                        multi_canvas    = self,
+                        idx             = len(self.canvas_nodes),
+                        Type            = '2D',
                         **kwargs),i,j]
 
-            elif element_types[i][j] == '3D':
+            elif self.element_types[i][j] == '3D':
                 self.subplot_names.append("Subplot ("+str(i)+", "+str(j)+")")
                 self.canvas_nodes[i][j]=[
                     CanvasNode(
                         "Subplot ("+str(i)+", "+str(j)+")", self._rootNode,
-                        multi_canvas = self,
-                        idx = len(self.canvas_nodes),
-                        Type = '3D',
+                        multi_canvas    = self,
+                        idx             = len(self.canvas_nodes),
+                        Type            = '3D',
                         **kwargs),i,j]
 
-        self._initialise()
-        
-        self._model         = SessionModel(
+        self._model = SessionModel(
             self._rootNode, self, 
             max([4,len(self.x_ratios), 
             len(self.y_ratios)])+2)
 
-        self._placeObjects()
-        self._configureGrid()
-        self._layoutManager()
-
     def _initialise(self):
+        '''
+        Build the parameter class linked to 
+        the session model
+        '''
         self.handler        = ParameterHandler(
             name = 'Multi-canvas options', 
             parent = self._rootNode) 
@@ -218,30 +240,16 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         
     def getSubplot(self,i,j):
         '''
-        This method allows the user to fetch the 
-        sublot that he recquires. This is though to be
-        used very much like the subplot function in
-        matplotlib. 
+        Return the artist of a subplot
+        similar to matplotlib
         '''
         return self.canvas_nodes[i][j][0].artist
 
 
     def link(self, ax , bx , variableIn = 'x', variableOut = 'x'):
         '''
-        This class is here to allow for corss listening between variables
-        between different subplots...
-        
-        
-        This will call the pointer of ax and bx and tell them to pass on the
-        coordinates to the pointer handlers each time there is a refresh. 
-        
-        So basically we parasite the pointer to speak to another element
-        
-        This will also return a link in the link list and an associated ID
-        The ID will be returned and can be fed to the Unlink
+
         '''
-        
-        #set the target
         target = bx.mouse
         link = [
             '',
@@ -250,12 +258,8 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
             variableOut, 
             target, 
             bx.mouse]
-        #add the element at the end of the list
         self.link_list.append(link)
-        #append the ID
         ID = self.link_list[-1][0] = len(self.link_list)
-
-        #finally send it out to the linker
         link[1].append(self.link_list[-1])
         
         return ID

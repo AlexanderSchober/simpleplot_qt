@@ -66,6 +66,7 @@ class LineData(PlotData, SessionNode):
             self._setError(kwargs['error'])
 
         self._data = elements
+        self._setBounds()
 
     def _setError(self, error):
         '''
@@ -113,4 +114,9 @@ class LineData(PlotData, SessionNode):
         '''
         self._bounds = []
         for element in self._data:
-            self._bounds.append([np.amin(element), np.amax(element)])
+            if not element.shape[0] == 0:
+                self._bounds.append([
+                    np.amin(element), 
+                    np.amax(element)])
+            else:
+                self._bounds.append([0,1])
