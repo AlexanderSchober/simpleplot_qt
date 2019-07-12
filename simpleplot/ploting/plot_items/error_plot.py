@@ -91,6 +91,10 @@ class ErrorPlot(ParameterHandler):
             'Beam', 0.1 ,
             tags    = ['2D'],
             method  = self.refresh)
+        self.addParameter(
+            'Depth', -1,
+            tags     = ['2D'],
+            method  = self.refresh)
 
     def _setVisual(self):
         '''
@@ -137,6 +141,7 @@ class ErrorPlot(ParameterHandler):
             if self['Visible'] and self._mode == '2D':
                 kwargs = self._getDictionary()
                 self.draw_items[0].setData(**kwargs)
+                self.draw_items[0].setZValue(self['Depth'])
             else:
                 for i in range(len(self.draw_items))[::-1]:
                     if self._mode == '2D':
@@ -158,7 +163,7 @@ class ErrorPlot(ParameterHandler):
         self.draw_items = []
         kwargs          = self._getDictionary()
         self.draw_items.append(SimpleErrorBarItem(**kwargs))
-        self.draw_items[-1].setZValue(-75)
+        self.draw_items[0].setZValue(self['Depth'])
 
         for curve in self.draw_items:
             self.default_target.draw_surface.addItem(curve)

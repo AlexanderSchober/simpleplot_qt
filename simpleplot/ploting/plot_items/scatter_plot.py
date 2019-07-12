@@ -122,6 +122,10 @@ class ScatterPlot(ParameterHandler):
             'Antialiassing', True ,
             tags     = ['2D', '3D'],
             method  = self.refresh)
+        self.addParameter(
+            'Depth', 1.,
+            tags     = ['2D'],
+            method  = self.refresh)
 
     def _setVisual(self):
         '''
@@ -172,6 +176,7 @@ class ScatterPlot(ParameterHandler):
             if self['Visible'] and self._mode == '2D':
                 kwargs = self._getDictionary()
                 self.draw_items[0].setData(**kwargs)
+                self.draw_items[0].setZValue(self['Depth'])
             elif self['Visible'] and self._mode == '3D':
                 kwargs = self._getDictionary()
                 self.draw_items[0].setData(**kwargs)
@@ -201,7 +206,7 @@ class ScatterPlot(ParameterHandler):
             self.draw_items = []
             kwargs          = self._getDictionary()
             self.draw_items = [SimplePlotDataItem(**kwargs)]
-            self.draw_items[-1].setZValue(-25)
+            self.draw_items[-1].setZValue(self['Depth'])
             self.draw_items[-1].scatter.opts['useCache'] = False
 
             for curve in self.draw_items:

@@ -114,7 +114,10 @@ class LinePlot(ParameterHandler):
             'Fill color', QtGui.QColor('blue') ,
             tags     = ['2D'],
             method  = self.refresh)
-
+        self.addParameter(
+            'Depth', 0.,
+            tags     = ['2D'],
+            method  = self.refresh)
     def _setVisual(self):
         '''
         This method will initialise the Qpen as the
@@ -167,6 +170,7 @@ class LinePlot(ParameterHandler):
             if self['Visible'] and self._mode == '2D':
                 kwargs = self._getDictionary()
                 self.draw_items[0].setData(**kwargs)
+                self.draw_items[0].setZValue(self['Depth'])
             elif self['Visible'] and self._mode == '3D':
                 kwargs = self._getDictionary()
                 self.draw_items[0].setData(**kwargs)
@@ -196,7 +200,7 @@ class LinePlot(ParameterHandler):
         if self['Visible']:
             kwargs          = self._getDictionary()
             self.draw_items = [SimplePlotDataItem(**kwargs)]
-            self.draw_items[-1].setZValue(-50)
+            self.draw_items[0].setZValue(self['Depth'])
 
         for curve in self.draw_items:
             self.default_target.draw_surface.addItem(curve)
