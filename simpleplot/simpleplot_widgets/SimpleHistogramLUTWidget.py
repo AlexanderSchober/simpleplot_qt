@@ -18,7 +18,7 @@ class HistogramLUTWidget(GraphicsView):
         self.item = HistogramLUTItem(*args, **kargs)
         self.setCentralItem(self.item)
         self.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
-        self.setMinimumWidth(95)
+        self.setMinimumWidth(115)
         
 
     def sizeHint(self):
