@@ -64,6 +64,7 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         self.x_ratios           = [float(e) for e in x_ratios]
         self.y_ratios           = [float(e) for e in y_ratios]
         self.parent             = widget
+        self.link_list          = []
 
         self._setUp()
         self._processSubPlots(**kwargs)

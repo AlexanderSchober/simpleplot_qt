@@ -135,7 +135,7 @@ class Mouse:
         mousePoint      = self.canvas.draw_surface.vb.mapSceneToView(pos)
         self.cursor_x   = mousePoint.x()
         self.cursor_y   = mousePoint.y()
-        self.transmit_motion()
+        self.transmitMotion(self.cursor_x, self.cursor_y)
         self.evaluateMotion()
 
     def drag(self,ev):
@@ -248,7 +248,7 @@ class Mouse:
                 else:
                     method[0]()
 
-    def transmit_motion(self):
+    def transmitMotion(self, x, y):
         '''
         This is a feature where the cursor motion in 
         a canvas can be transmitted to the counter-
@@ -258,12 +258,16 @@ class Mouse:
             if link[2] == 'x':
                 if link[3] == 'x':
                     link[4].cursor_x = np.copy(self.canvas.artist.pointer.cursor_x)
+                    link[4].cursor_y = np.copy(self.canvas.artist.pointer.cursor_y)
                 if link[3] == 'y':
+                    link[4].cursor_x = np.copy(self.canvas.artist.pointer.cursor_y)
                     link[4].cursor_y = np.copy(self.canvas.artist.pointer.cursor_x)
             if link[2] == 'y':
                 if link[3] == 'x':
                     link[4].cursor_x = np.copy(self.canvas.artist.pointer.cursor_y)
+                    link[4].cursor_y = np.copy(self.canvas.artist.pointer.cursor_x)
                 if link[3] == 'y':
+                    link[4].cursor_x = np.copy(self.canvas.artist.pointer.cursor_x)
                     link[4].cursor_y = np.copy(self.canvas.artist.pointer.cursor_y)
 
             link[5].evaluateMotion()

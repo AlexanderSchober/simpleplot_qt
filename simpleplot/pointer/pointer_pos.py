@@ -22,7 +22,6 @@
 #
 # *****************************************************************************
 import numpy as np
-from scipy.spatial import distance
 
 class PointerPosition:
         
@@ -58,8 +57,30 @@ class PointerPosition:
         '''
         pass
 
-
 class Type_0_Position(PointerPosition):
+
+    def __init__(self, parent):
+        '''
+        Type_0 cursor init
+        '''
+        PointerPosition.__init__(self,parent)
+        self.parent = parent
+
+    def evaluate(self):
+        '''
+        old find_nearestY. This method aims at 
+        searching successively for the nearest value in 
+        all plots by first scanning the nearest X. 
+        Then e find the second nearest to zero after 
+        X-Nearest. This will give us back two point 
+        ids which whom we can calculate the nearest Y
+        '''
+
+        self.parent.cursor_x = 10**self.parent.cursor_x if self.parent.canvas.draw_surface.ctrl.lo        gXCheck.isChecked() else self.parent.cursor_x
+        self.parent.cursor_y = 10**self.parent.cursor_y if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else self.parent.cursor_y
+
+
+class Type_1_Position(PointerPosition):
 
     def __init__(self, parent):
         '''
@@ -95,29 +116,7 @@ class Type_0_Position(PointerPosition):
         self.parent.cursor_x = np.log10(point[0]) if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else point[0]
         self.parent.cursor_y = np.log10(point[1]) if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else point[1]
 
-class Type_1_Position(PointerPosition):
-
-    def __init__(self, parent):
-        '''
-        Type_0 cursor init
-        '''
-        PointerPosition.__init__(self,parent)
-        self.parent = parent
-
-    def evaluate(self):
-        '''
-        old find_nearestY. This method aims at 
-        searching successively for the nearest value in 
-        all plots by first scanning the nearest X. 
-        Then e find the second nearest to zero after 
-        X-Nearest. This will give us back two point 
-        ids which whom we can calculate the nearest Y
-        '''
-
-        self.parent.cursor_x = 10**self.parent.cursor_x if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else self.parent.cursor_x
-        self.parent.cursor_y = 10**self.parent.cursor_y if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else self.parent.cursor_y
-
-class Type_3_Position(PointerPosition):
+class Type_2_Position(PointerPosition):
     
     def __init__(self, parent):
         '''
@@ -126,7 +125,7 @@ class Type_3_Position(PointerPosition):
         PointerPosition.__init__(self,parent)
         self.parent = parent
 
-    def evaluate(self):
+    def evaluate(self):        
         '''
         This tries to find the closest X and Y of the 
         a the first contour plots...
@@ -143,3 +142,111 @@ class Type_3_Position(PointerPosition):
         self.parent.cursor_x = self.mapping[0][1][0][idx_0]
         self.parent.cursor_y = self.mapping[0][1][1][idx_1]
         self.parent.cursor_z = self.mapping[0][1][2][idx_0, idx_1]
+
+class Type_3_Position(PointerPosition):
+
+    def __init__(self, parent):
+        '''
+        Type_3 cursor init
+        '''
+        PointerPosition.__init__(self,parent)
+        self.parent = parent
+
+    def evaluate(self):
+        '''
+        Fin the cursor which is the next projection along x
+        Then get the best guess of a projection for the 
+        spot on Y
+        '''
+        cursor_x = 10**self.parent.cursor_x if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else self.parent.cursor_x
+        cursor_y = 10**self.parent.cursor_y if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else self.parent.cursor_y
+        
+        xs      = []
+        ys      = []
+        idx     = []
+        cursor  = np.array([cursor_x, cursor_y])
+        for element in self.mapping:
+            nodes           = np.array([element[1][0],element[1][1]]).transpose()
+            distances       = [np.abs(node[0]-cursor[0]) for node in nodes]
+            idx.append(np.array(distances).argmin())
+
+            if cursor[0] < nodes[idx[-1]][0]:
+                xs.append(
+                    cursor[0]
+                    if not idx[-1] == 0 else nodes[idx[-1]][0])
+                ys.append(
+                    nodes[idx[-1]-1][1]
+                    + (cursor[0] - nodes[idx[-1]-1][0])
+                    * (nodes[idx[-1]][1]-nodes[idx[-1]-1][1])
+                    / (nodes[idx[-1]][0]-nodes[idx[-1]-1][0])
+                    if not idx[-1] == 0 else nodes[idx[-1]][1])
+            elif cursor[0] >= nodes[idx[-1]][0]:
+                xs.append(
+                    cursor[0]
+                    if not idx[-1] == len(distances)-1 else nodes[idx[-1]][0])
+                ys.append(
+                    nodes[idx[-1]][1]
+                    + (cursor[0] - nodes[idx[-1]][0])
+                    * (nodes[idx[-1]+1][1]-nodes[idx[-1]][1])
+                    / (nodes[idx[-1]+1][0]-nodes[idx[-1]][0])
+                    if not idx[-1] == len(distances)-1 else nodes[idx[-1]][1])
+
+        select  = np.array(np.abs(np.array(ys)-cursor[1])).argmin()
+        point   = [xs[select], ys[select]]
+
+        self.parent.cursor_x = np.log10(point[0]) if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else point[0]
+        self.parent.cursor_y = np.log10(point[1]) if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else point[1]
+
+class Type_4_Position(PointerPosition):
+
+    def __init__(self, parent):
+        '''
+        Type_0 cursor init
+        '''
+        PointerPosition.__init__(self,parent)
+        self.parent = parent
+
+    def evaluate(self):
+        '''
+        Fin the cursor which is the next projection along y
+        Then get the best guess of a projection for the 
+        spot on X
+        '''
+        cursor_x = 10**self.parent.cursor_x if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else self.parent.cursor_x
+        cursor_y = 10**self.parent.cursor_y if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else self.parent.cursor_y
+        
+        xs      = []
+        ys      = []
+        idx     = []
+        cursor  = np.array([cursor_x, cursor_y])
+        for element in self.mapping:
+            nodes           = np.array([element[1][0],element[1][1]]).transpose()
+            distances       = [np.abs(node[1]-cursor[1]) for node in nodes]
+            idx.append(np.array(distances).argmin())
+
+            if cursor[1] < nodes[idx[-1]][1]:
+                xs.append(
+                    cursor[1]
+                    if not idx[-1] == 0 else nodes[idx[-1]][1])
+                ys.append(
+                    nodes[idx[-1]-1][0]
+                    + (cursor[1] - nodes[idx[-1]-1][1])
+                    * (nodes[idx[-1]][0]-nodes[idx[-1]-1][0])
+                    / (nodes[idx[-1]][1]-nodes[idx[-1]-1][1])
+                    if not idx[-1] == 0 else nodes[idx[-1]][0])
+            elif cursor[1] >= nodes[idx[-1]][1]:
+                xs.append(
+                    cursor[1]
+                    if not idx[-1] == len(distances)-1 else nodes[idx[-1]][1])
+                ys.append(
+                    nodes[idx[-1]][0]
+                    + (cursor[1] - nodes[idx[-1]][1])
+                    * (nodes[idx[-1]+1][0]-nodes[idx[-1]][0])
+                    / (nodes[idx[-1]+1][1]-nodes[idx[-1]][1])
+                    if not idx[-1] == len(distances)-1 else nodes[idx[-1]][0])
+
+        select  = np.array(np.abs(np.array(ys)-cursor[1])).argmin()
+        point   = [ys[select], xs[select]]
+
+        self.parent.cursor_x = np.log10(point[0]) if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else point[0]
+        self.parent.cursor_y = np.log10(point[1]) if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else point[1]

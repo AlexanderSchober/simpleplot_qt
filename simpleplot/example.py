@@ -62,6 +62,75 @@ def exampleLinePlot():
     widget.show()
     sys.exit(app.exec_())
 
+def exampleMultiLinePlot():
+    #set upt the window and the plot widget
+    app 	        = QtWidgets.QApplication(sys.argv)
+    widget          = QtWidgets.QWidget()
+    multi_canvas    = MultiCanvasItem(
+        widget = widget,        
+        grid            = [[True, True], [True, True]],
+        element_types   = [['2D', '2D'], ['2D', '2D']],
+        x_ratios        = [1,1],
+        y_ratios        = [1,1],
+        background      = "b")
+    
+    #link to the subplots
+    ax = multi_canvas.getSubplot(0,0)  
+    bx = multi_canvas.getSubplot(0,1)  
+    cx = multi_canvas.getSubplot(1,0)  
+    dx = multi_canvas.getSubplot(1,1)    
+
+    ax.pointer.pointer_handler['Sticky'] = 3
+    bx.pointer.pointer_handler['Sticky'] = 3
+    cx.pointer.pointer_handler['Sticky'] = 4
+    
+    x = np.linspace(-4*np.pi, 4*np.pi, 100)
+    y = np.sin(x)
+    z = np.cos(x)
+    y_1 = np.cos(x+0.5)
+    y_2 = np.cos(x)+2*np.sin(x)
+
+    #set the ax plot
+    first = ax.addPlot(
+        'Scatter', 
+        Name        = 'sin', 
+        Style       = ['-','d','r', '10'], 
+        Log         = [False,False])
+    second = bx.addPlot(
+        'Scatter', 
+        Name        = 'cos', 
+        Style       = ['d','r','20'], 
+        Log         = [False,False])
+    third = cx.addPlot(
+        'Scatter', 
+        Name        = 'tan', 
+        Line_thickness   = 3, 
+        Style       = ['-'], 
+        Log         = [False,False])
+
+    ax.draw()
+    bx.draw()
+    cx.draw()
+    dx.draw()
+
+    x_2 = np.linspace(np.pi, 4*np.pi, 100)
+    y = np.sin(x_2)
+    y_1 = np.cos(x_2+0.5)
+    y_2 = np.cos(x_2)+2*np.sin(x_2)
+
+    first.setData(x = x_2, y = y+2)
+    second.setData(x = x_2, y = y_1+3, error = {'width' : 0.1,'height': 0.5})
+    third.setData(x = y_2+4, y = x_2)
+    ax.zoomer.zoom()
+
+    multi_canvas.link(ax,bx, 'x', 'x')
+    multi_canvas.link(ax,cx, 'x', 'y')
+    multi_canvas.link(bx,ax, 'x', 'x')
+
+    #show widget
+    widget.show()
+    sys.exit(app.exec_())
+
 def exampleSurfacePlot():
     #set upt the window and the plot widget
     app 	        = QtWidgets.QApplication(sys.argv)
@@ -259,6 +328,7 @@ def example():
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
-    exampleLinePlot()
+    exampleMultiLinePlot()
+    # exampleLinePlot()
     # example()
     # exampleSurfacePlot()
