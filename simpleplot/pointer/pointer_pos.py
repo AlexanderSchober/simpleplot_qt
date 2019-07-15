@@ -76,7 +76,7 @@ class Type_0_Position(PointerPosition):
         ids which whom we can calculate the nearest Y
         '''
 
-        self.parent.cursor_x = 10**self.parent.cursor_x if self.parent.canvas.draw_surface.ctrl.lo        gXCheck.isChecked() else self.parent.cursor_x
+        self.parent.cursor_x = 10**self.parent.cursor_x if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else self.parent.cursor_x
         self.parent.cursor_y = 10**self.parent.cursor_y if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else self.parent.cursor_y
 
 

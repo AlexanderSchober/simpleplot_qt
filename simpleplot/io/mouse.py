@@ -205,6 +205,9 @@ class Mouse:
         for method in self.move_methods:
             method[0](self.cursor_x,self.cursor_y)
 
+        for element in self.canvas._plot_root._children:
+            element.processProjection(x = self.cursor_x, y = self.cursor_y)
+
     def evaluateDrag(self, ev):
         '''
         Evaluate the motion of the mouse onto the 

@@ -119,3 +119,11 @@ class MainHandler(SessionNode):
                 plot_element._ray_handler.processRay(ray)
 
         return hits
+
+    def processProjection(self, x = 0, y = 0, z = 0):
+        '''
+        process the ray tracing and then give
+        the result back as a hits
+        '''
+        for plot_element in self._children:
+            plot_element.processProjection(x,y,z)

@@ -38,6 +38,7 @@ class PlotHandler(SessionNode):
         SessionNode.__init__(self, name)
         self.transformer = Transformer()
         self.addChild(self.transformer)
+        self._proj_list = []
 
     def __getitem__(self, value):
         '''
@@ -78,3 +79,9 @@ class PlotHandler(SessionNode):
             if hasattr(child, 'removeItems'):
                 child.removeItems()
         
+    def processProjection(self, x = 0, y = 0, z = 0):
+        '''
+        The routine that will handle all the 
+        projections set by the user
+        '''
+        pass

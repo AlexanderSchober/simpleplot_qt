@@ -119,6 +119,17 @@ class SurfaceData(PlotData, SessionNode):
         '''
         return self._bounds
 
+    def getProjection(self, direction, x = 0, y = 0, z = 0):
+        '''
+        returns the bounds
+        '''
+        if direction == 'x':
+            return [self._data[0], self._data[2][:,np.argmin(np.abs(self._data[1]-y))]]
+        elif direction == 'y':
+            return [ self._data[2][np.argmin(np.abs(self._data[0]-x)), :], self._data[1]]
+        else:
+            return [[0], [0]]
+
     def getMesh(self):
         '''
         return a dataset as the data on the 
