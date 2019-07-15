@@ -27,6 +27,7 @@ import numpy as np
 
 from ..pyqtgraph            import pyqtgraph as pg
 from ..pyqtgraph.pyqtgraph  import opengl as gl
+from .mouse_drag_event      import SimpleMouseDragEvent
 
 from OpenGL.GL import glReadPixels, GL_RGBA,  GL_FLOAT, glPixelStorei, GL_UNPACK_ALIGNMENT, glFlush, glFinish, glGetIntegerv, glGetDoublev, GL_PROJECTION_MATRIX, GL_VIEWPORT, GL_MODELVIEW_MATRIX
 
@@ -43,13 +44,16 @@ class MyGLViewWidget(gl.GLViewWidget):
     sigUpdate = QtCore.pyqtSignal()
     rayUpdate = QtCore.pyqtSignal()
     
-    def __init__(self, parent = None):
+    def __init__(self,canvas, parent = None):
         '''
         '''
         gl.GLViewWidget.__init__(self)
-        self._initialize(parent)
+        self.canvas = canvas
+        self._initialize(canvas)
+        self._connect()
         self.setMouseTracking(True)
         self.mouse_ray = np.array([[0,0,0],[0,0,0]])
+        self._last_drag = None
 
     def _initialize(self, parent):
         '''
@@ -81,8 +85,29 @@ class MyGLViewWidget(gl.GLViewWidget):
             method = self._setCamera)
 
         self.mousePos = [None, None]
-
         self.handler.runAll()
+
+    def _connect(self):
+        '''
+        Initialise the canvas options
+        and the plot model that will then be
+        sued to edit plot data
+        '''
+        self.canvas.mouse.bind('release',self._shift,'shit',1, True)
+        self.canvas.mouse.bind('release',self._contextMenu,'context',2, True)
+
+        self.canvas.mouse.bind('press',self._showBall,'show_center',1)
+        self.canvas.mouse.bind('release',self._hideBall,'hide_center',1)
+        self.canvas.mouse.bind('press',self._showBall,'show_center',2)
+        self.canvas.mouse.bind('release',self._hideBall,'hide_center',2)
+        self.canvas.mouse.bind('press',self._showBall,'show_center',0)
+        self.canvas.mouse.bind('release',self._hideBall,'hide_center',0)
+
+        self.canvas.mouse.bind('move',self._rayMovement,'ray',1)
+
+        self.canvas.mouse.bind('drag',self._pan,'pan',1)
+        self.canvas.mouse.bind('drag',self._moveXY,'shift_xy',2)
+        self.canvas.mouse.bind('drag',self._moveXZ,'shift_yz',0)
 
     def _setSphere(self):
         '''
@@ -117,9 +142,39 @@ class MyGLViewWidget(gl.GLViewWidget):
         ''' 
         Store the position of the mouse press for later use.
         '''
-        super(MyGLViewWidget, self).mousePressEvent(ev)
-        self._downpos = ev.pos()
+        self._press_event = ev
+        self._press_button = self._press_event.button()
+        self.canvas.mouse.press(ev)
 
+    def mouseReleaseEvent(self, ev):
+        ''' 
+        '''
+        self.canvas.mouse.release(ev)
+        if not self._last_drag is None:
+            self._last_drag = None
+
+    def mouseMoveEvent(self, ev):
+        '''
+        manage the mouse move events
+        '''
+        if len(self.canvas.mouse.pressed) == 0:
+            self.canvas.mouse.move(ev)
+        else:
+            event = SimpleMouseDragEvent(
+                ev, 
+                self._press_event, 
+                self._last_drag, 
+                self._press_button,
+                start   = True, 
+                finish  = False)
+
+            self._last_drag = event
+            self.canvas.mouse.drag(self._last_drag)
+
+    def _showBall(self):
+        '''
+        Show the movement ball
+        '''
         if self.handler['Show center']:
             self.addItem(self.sphere)
             self.sphere.resetTransform()
@@ -128,29 +183,29 @@ class MyGLViewWidget(gl.GLViewWidget):
                 self.opts['center'][1],
                 self.opts['center'][2])
         
-    def mouseReleaseEvent(self, ev):
-        ''' Allow for single click to move and right click for context menu.
-        
-        Also emits a sigUpdate to refresh listeners.
+    def _hideBall(self):
         '''
-        super(MyGLViewWidget, self).mouseReleaseEvent(ev)
-        if self._downpos == ev.pos():
-            if ev.button() == 2:
-                print('show context menu')
-            elif ev.button() == 1:
-                x = ev.pos().x() - self.width() / 2
-                y = ev.pos().y() - self.height() / 2
-                self.pan(-x, -y, 0, relative=True)
-
-        self._prev_zoom_pos = None
-        self._prev_pan_pos = None
-        self.mousePos = [None, None]
-
+        Show the movement ball
+        '''
         if self.handler['Show center']:
             self.removeItem(self.sphere)
 
-        self.sigUpdate.emit()
+    def _shift(self, ev):
+        '''
+        Shift the view
+        '''
+        if self._last_drag is None:
+            x = ev.pos().x() - self.width() / 2
+            y = ev.pos().y() - self.height() / 2
+            self.pan(-x, -y, 0, relative=True)
         
+    def _contextMenu(self, ev):
+        '''
+        Shift the view
+        '''
+        if self._last_drag is None:
+            print('show context menu')
+
     def evalKeyState(self):
         speed = 2.0
         if len(self.keysPressed) > 0:
@@ -171,76 +226,90 @@ class MyGLViewWidget(gl.GLViewWidget):
         else:
             self.keyTimer.stop()
 
-    def mouseMoveEvent(self, ev):
+    def _pan(self, x, y, drag_start, drag_end):
         '''
-        manage the mouse move events
+        move
         '''
-        if not self.mousePos == [None, None]:
-            diff = ev.pos() - self.mousePos
-            self.mousePos = ev.pos()
-            
-            if ev.buttons() == QtCore.Qt.LeftButton:
-                self.handler['Camera position'] = [
-                    self.handler['Camera position'][0],
-                    -diff.x() + self.handler['Camera position'][1],
-                    np.clip(self.handler['Camera position'][2] + diff.y(), -90, 90)]
+        diff_x = x[2] - x[1]
+        diff_y = y[2] - y[1]
+        self.handler['Camera position'] = [
+            self.handler['Camera position'][0],
+            -diff_x + self.handler['Camera position'][1],
+            np.clip(self.handler['Camera position'][2] + diff_y, -90, 90)]
                 
-            elif ev.buttons() == QtCore.Qt.MidButton:
-                cPos = self.cameraPosition()
-                cVec = self.opts['center'] - cPos
-                dist = cVec.length()  ## distance from camera to center
-                xDist = dist * 2. * np.tan(0.5 * self.opts['fov'] * np.pi / 180.)  ## approx. width of view at distance of center point
-                xScale = xDist / self.width()
-                zVec = QtGui.QVector3D(0,0,1)
-                xVec = QtGui.QVector3D.crossProduct(zVec, cVec).normalized()
-                yVec = QtGui.QVector3D.crossProduct(xVec, zVec).normalized()
-                self.opts['center'] = (
-                    self.opts['center'] 
-                    + xVec * xScale * diff.x() 
-                    + yVec * xScale * diff.y()  
-                    + zVec * xScale * 0)
+    def _moveXZ(self, x, y, drag_start, drag_end):
+        '''
+        move
+        '''
+        diff_x = x[2] - x[1]
+        diff_y = y[2] - y[1]
+        cPos = self.cameraPosition()
+        cVec = self.opts['center'] - cPos
+        dist = cVec.length()  ## distance from camera to center
+        xDist = dist * 2. * np.tan(0.5 * self.opts['fov'] * np.pi / 180.)  ## approx. width of view at distance of center point
+        xScale = xDist / self.width()
+        zVec = QtGui.QVector3D(0,0,1)
+        xVec = QtGui.QVector3D.crossProduct(zVec, cVec).normalized()
+        yVec = QtGui.QVector3D.crossProduct(xVec, zVec).normalized()
+        self.opts['center'] = (
+            self.opts['center'] 
+            + xVec * xScale * np.array(diff_x)
+            + yVec * xScale * np.array(diff_y) 
+            + zVec * xScale * 0)
 
-                self.handler['Center position'] = (np.round(
-                    np.array([
-                        round(self.opts['center'][0],4),
-                        round(self.opts['center'][1],4),
-                        round(self.opts['center'][2],4)]) 
-                    - self._old_position, decimals = 4)).tolist() 
+        self.handler['Center position'] = (np.round(
+            np.array([
+                round(self.opts['center'][0],4),
+                round(self.opts['center'][1],4),
+                round(self.opts['center'][2],4)]) 
+            - self._old_position, decimals = 4)).tolist() 
 
-            elif ev.buttons() == QtCore.Qt.RightButton:
-                cPos = self.cameraPosition()
-                cVec = self.opts['center'] - cPos
-                dist = cVec.length()  ## distance from camera to center
-                xDist = dist * 2. * np.tan(0.5 * self.opts['fov'] * np.pi / 180.)  ## approx. width of view at distance of center point
-                xScale = xDist / self.width()
-                zVec = QtGui.QVector3D(0,0,1)
-                xVec = QtGui.QVector3D.crossProduct(zVec, cVec).normalized()
-                yVec = QtGui.QVector3D.crossProduct(xVec, zVec).normalized()
-                self.opts['center'] = (
-                    self.opts['center'] 
-                    + xVec * xScale * diff.x() 
-                    + yVec * xScale * 0
-                    + zVec * xScale * diff.y())
+    def _moveXY(self, x, y, drag_start, drag_end):
+        '''
+        move
+        '''
+        diff_x = x[2] - x[1]
+        diff_y = y[2] - y[1]
+        cPos = self.cameraPosition()
+        cVec = self.opts['center'] - cPos
+        dist = cVec.length()  ## distance from camera to center
+        xDist = dist * 2. * np.tan(0.5 * self.opts['fov'] * np.pi / 180.)  ## approx. width of view at distance of center point
+        xScale = xDist / self.width()
+        zVec = QtGui.QVector3D(0,0,1)
+        xVec = QtGui.QVector3D.crossProduct(zVec, cVec).normalized()
+        yVec = QtGui.QVector3D.crossProduct(xVec, zVec).normalized()
+        self.opts['center'] = (
+            self.opts['center'] 
+            + xVec * xScale * np.array(diff_x)
+            + yVec * xScale * 0
+            + zVec * xScale * np.array(diff_y))
 
-                self.handler['Center position'] = (np.round(
-                    np.array([
-                        round(self.opts['center'][0],4),
-                        round(self.opts['center'][1],4),
-                        round(self.opts['center'][2],4)]) 
-                    - self._old_position, decimals = 4)).tolist() 
+        self.handler['Center position'] = (np.round(
+            np.array([
+                round(self.opts['center'][0],4),
+                round(self.opts['center'][1],4),
+                round(self.opts['center'][2],4)]) 
+            - self._old_position, decimals = 4)).tolist() 
 
-            self.sphere.resetTransform()
-            self.sphere.translate(
-                self.opts['center'][0],
-                self.opts['center'][1],
-                self.opts['center'][2])
-        else:
-            screens = QtWidgets.QApplication.instance().screens()
-            num     = QtWidgets.QApplication.instance().desktop().screenNumber(self)
-            ratio   = QtGui.QScreen.devicePixelRatio(screens[num])
-            ray     = self._getPickingRay(ev.x()*ratio, ev.y()*ratio)
-            self.mouse_ray = np.array([self.cameraPosition(), ray[:3]])
-            self.rayUpdate.emit()
+        self.sphere.resetTransform()
+        self.sphere.translate(
+            self.opts['center'][0],
+            self.opts['center'][1],
+            self.opts['center'][2])
+
+    def _rayMovement(self, x, y):
+        '''
+        Manage the ray movement
+        '''
+        # fix the screen
+        screens = QtWidgets.QApplication.instance().screens()
+        num     = QtWidgets.QApplication.instance().desktop().screenNumber(self)
+        ratio   = QtGui.QScreen.devicePixelRatio(screens[num])
+        ray     = self._getPickingRay(x*ratio, y*ratio)
+
+        #save the new ray and emit ray
+        self.mouse_ray = np.array([self.cameraPosition(), ray[:3]])
+        self.rayUpdate.emit()
             
     def _getPickingRay(self,x,y):
         '''
@@ -262,7 +331,6 @@ class MyGLViewWidget(gl.GLViewWidget):
 
         return far_point - near_point
 
-            
     def wheelEvent(self, ev):
         delta = 0
 

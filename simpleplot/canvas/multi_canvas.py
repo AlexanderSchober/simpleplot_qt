@@ -251,14 +251,14 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         '''
 
         '''
-        target = bx.mouse
+        target = bx.canvas.mouse
         link = [
             '',
-            ax.mouse.link_list,
+            ax.canvas.mouse.link_list,
             variableIn,
             variableOut, 
             target, 
-            bx.mouse]
+            bx.canvas.mouse]
         self.link_list.append(link)
         ID = self.link_list[-1][0] = len(self.link_list)
         link[1].append(self.link_list[-1])

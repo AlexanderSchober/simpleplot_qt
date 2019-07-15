@@ -30,13 +30,15 @@ import numpy    as np
 from ..pyqtgraph.pyqtgraph.graphicsItems.ViewBox import ViewBox
 
 #personal imports
-from ..artist.artist import Artist2DNode, Artist3DNode
-from ..model.node import SessionNode
+from ..artist.artist         import Artist2DNode, Artist3DNode
+from ..model.node            import SessionNode
 from ..model.parameter_class import ParameterHandler 
-from ..model.models import SessionModel
+from ..model.models          import SessionModel
+from ..io.mouse              import Mouse
 
-from ..simpleplot_widgets.SimplePlotGLViewWidget import MyGLViewWidget
-from ..simpleplot_widgets.SimplePlotWidget import SimplePlotWidget
+from ..simpleplot_widgets.SimplePlotGLViewWidget    import MyGLViewWidget
+from ..simpleplot_widgets.SimplePlotWidget          import SimplePlotWidget
+from ..simpleplot_widgets.SimpleCanvasWidget        import CanvasWidget
 
 class CanvasNode(SessionNode):
 
@@ -69,6 +71,8 @@ class CanvasNode(SessionNode):
         and the plot model that will then be
         sued to edit plot data
         '''
+        self.mouse = Mouse(self)
+
         self.handler        = ParameterHandler(
             name = 'Canvas options', 
             parent = self) 
@@ -129,11 +133,12 @@ class CanvasNode(SessionNode):
         '''
         self._model.removeRows(1,self.childCount()-1, self)
         self.plot_widget.deleteLater()
+        self.mouse.clear()
         self._populate()
         self._model.referenceModel()
         self._setBackground()
         self.artist.draw()
-        self.multi_canvas._model.referenceModel()
+        self._model.referenceModel()
 
     def _populate(self):
         '''
@@ -159,12 +164,13 @@ class CanvasNode(SessionNode):
         self.grid_layout.addWidget(self.plot_widget, 1, 1)
         self.artist = Artist2DNode(name = '2D Artist', parent = self, canvas = self)
         self.artist.setup()
+        self.artist.zoomer.listen()
 
     def _populate3D(self):
         '''
         populate the ui elements on the grid
         '''
-        self.view = MyGLViewWidget(parent = self)
+        self.view = MyGLViewWidget(self)
         self.grid_layout.addWidget(self.view, 1, 1)
         self.plot_widget = self.view
         self.artist = Artist3DNode('3D Artist', parent = self, canvas = self)
@@ -187,59 +193,11 @@ class CanvasNode(SessionNode):
         self.grid_layout.setHorizontalSpacing(
             self.handler['Horizontal spacing'])
 
-from functools import partial
-class CanvasWidget(QtWidgets.QWidget): 
-    drop_success = QtCore.pyqtSignal(list)
-    '''
-    Thi method is a custom modification of the 
-    QListView widget that supports drag and 
-    drop.
-    '''        
-    def __init__(self, parent = None):
-        super(CanvasWidget, self).__init__(parent)
-        
-        self.setAcceptDrops(True)
-        self.dropEvent = partial(NumpyFileDrop, self)
-        self.check     = NumpyFileCheck
-
-    def dragEnterEvent(self, event):
-        if event.mimeData().hasUrls():
-            if self.check(event):
-                event.acceptProposedAction()
-            else:
-                super(CanvasWidget, self).dragEnterEvent(event)
-        else:
-            super(CanvasWidget, self).dragEnterEvent(event)
-
-    def dragMoveEvent(self, event):
-        super(CanvasWidget, self).dragMoveEvent(event)
-
-def NumpyFileDrop(generator_class, event):
-    '''
-    This is the drop method and will support the
-    drop of the files into the list. 
-    '''
-    if event.mimeData().hasUrls():
-        if NumpyFileCheck(event):
-            event.acceptProposedAction()
-            generator_class.drop_success.emit([url.path() for url in event.mimeData().urls()])
-
-def NumpyFileCheck(event):
-    '''
-    check if the file are numpy
-    '''
-    urls          = [url for url in event.mimeData().urls()]
-    bool_numpy    = [False for e in urls]
-
-    for i, url in enumerate(urls):
-        if url.path().split('.')[-1] == "txt":
-            bool_numpy[i] = True
-        elif url.path().split('.')[-1] == "npy":
-            bool_numpy[i] = True
-        elif url.path().split('.')[-1] == "npz":
-            bool_numpy[i] = True
-
-    if all(bool_numpy):
-        return True
-    else:
-        return False
+    def mouseMove(self,event):
+        self.mouse.move(event)
+    def mousePress(self,event):
+        self.mouse.press(event)
+    def mouseRelease(self,event):
+        self.mouse.release(event)
+    def mouseDrag(self,event):
+        self.mouse.drag(event)

@@ -96,19 +96,19 @@ class Zoomer(ParameterHandler):
         Make the class listen to the click event 
         related to the zoom initializingevent.
         '''
-        self.canvas.artist.mouse.bind('press', self.resetStart, 'reset_start', 1, True)
-        self.canvas.artist.mouse.bind('release', self.resetEnd, 'reset_end', 1, True)
-        self.canvas.artist.mouse.bind('drag', self.zoomHandler, 'zoom_handler', 1)
-        self.canvas.artist.mouse.bind('drag', self.scaleHandler, 'start_scale', 2)
+        self.canvas.mouse.bind('press', self.resetStart, 'reset_start', 1, True)
+        self.canvas.mouse.bind('release', self.resetEnd, 'reset_end', 1, True)
+        self.canvas.mouse.bind('drag', self.zoomHandler, 'zoom_handler', 1)
+        self.canvas.mouse.bind('drag', self.scaleHandler, 'start_scale', 2)
 
     def quiet(self):
         '''
         Quiet the zoom functionality.]
         '''
-        self.canvas.artist.mouse.unbind('press', 'reset_start')
-        self.canvas.artist.mouse.unbind('release', 'reset_end')
-        self.canvas.artist.mouse.unbind('drag', 'zoom_handler')
-        self.canvas.artist.mouse.unbind('drag', 'start_scale')
+        self.canvas.mouse.unbind('press', 'reset_start')
+        self.canvas.mouse.unbind('release', 'reset_end')
+        self.canvas.mouse.unbind('drag', 'zoom_handler')
+        self.canvas.mouse.unbind('drag', 'start_scale')
 
     def zoomHandler(self, x, y, drag_start, drag_end):
         '''

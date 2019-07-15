@@ -26,7 +26,6 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 from ..pointer.pointer  import Pointer
 from ..pointer.zoomer   import Zoomer
 from ..pointer.measurer import Measurer
-from ..io.mouse         import Mouse
 from .axes              import Axes
 from .axes_gl           import Axes3D
 from .legend            import Legend
@@ -209,7 +208,7 @@ class Artist2DNode(SessionNode, Artist):
         self.artist_type    = '2D'
 
         self.axes       = Axes(self.canvas)
-        self.mouse      = Mouse(self.canvas)
+        # self.mouse      = Mouse(self.canvas)
         # self.Keyboard   = KeyboardClass.Keyboard(self.Canvas,Multi = self.Multi)
         self.pointer    = Pointer(self.canvas)
         self.zoomer     = Zoomer(self.canvas)
@@ -303,6 +302,7 @@ class Artist2DNode(SessionNode, Artist):
         to set up the functionalities. 
 
         '''
+        print(idx)
         self.zoomer.quiet()
         self.measurer.quiet()
 
@@ -326,15 +326,6 @@ class Artist2DNode(SessionNode, Artist):
         self.canvas._plot_root.childFromName('Surface')
         for child in self.canvas._plot_root.childFromName('Surface')._children:
             child.setColor(colors, positions)
-
-    def mouseMove(self,event):
-        self.mouse.move(event)
-    def mousePress(self,event):
-        self.mouse.press(event)
-    def mouseRelease(self,event):
-        self.mouse.release(event)
-    def mouseDrag(self,event):
-        self.mouse.drag(event)
 
 class Artist3DNode(SessionNode, Artist):
     '''

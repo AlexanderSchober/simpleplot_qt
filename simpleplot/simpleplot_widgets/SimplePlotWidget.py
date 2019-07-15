@@ -61,28 +61,28 @@ class SimplePlotWidget(PlotWidget):
         '''
         mouse move event
         '''
-        self.canvas.artist.mouseMove(ev)
+        self.canvas.mouseMove(ev)
         super().mouseMoveEvent(ev)
 
     def mousePressEvent(self, ev):
         '''
         mouse press event
         '''
-        self.canvas.artist.mousePress(ev)
+        self.canvas.mousePress(ev)
         super().mousePressEvent(ev)
 
     def mouseReleaseEvent(self, ev):
         '''
         mouse release event
         '''
-        self.canvas.artist.mouseRelease(ev)
+        self.canvas.mouseRelease(ev)
         super().mouseReleaseEvent(ev)
 
     def mouseDragEvent(self, ev):
         '''
         mouse release event
         '''
-        self.canvas.artist.mouseDrag(ev)
+        self.canvas.mouseDrag(ev)
         # super(PlotWidget, self).mouseReleaseEvent(ev)
 
     def _setCtrlMenu(self):

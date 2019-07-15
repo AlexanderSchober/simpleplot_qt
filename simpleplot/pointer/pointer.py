@@ -89,7 +89,7 @@ class Pointer(SessionNode):
             method = self.processParameters)
         self.pointer_handler.addParameter(
             'Sticky', '0',
-            choices = ['0','1','2','3'],
+            choices = ['0','1','2','3','4'],
             method = self.processParameters)
         self.pointer_handler.addParameter(
             'Type', '0',
@@ -192,7 +192,7 @@ class Pointer(SessionNode):
         '''
         self.setup()
         self.refreshPlotData()
-        self.canvas.artist.mouse.bind('move', self.refreshPosition, 'pointer_move')
+        self.canvas.mouse.bind('move', self.refreshPosition, 'pointer_move')
         self.draw()
 
     def refreshPlotData(self):
@@ -207,7 +207,7 @@ class Pointer(SessionNode):
         Binds the cursor to the system signals of the
         mouse 
         '''
-        self.canvas.artist.mouse.unbind('move', 'pointer_move')
+        self.canvas.mouse.unbind('move', 'pointer_move')
         self.pointer_component.disconnect()
         self.label_component.disconnect()
         self.live = False
@@ -217,8 +217,8 @@ class Pointer(SessionNode):
         Refresh the local position of the cursor
         '''
         if x == None or y == None:
-            x = self.canvas.artist.mouse.cursor_x 
-            y = self.canvas.artist.mouse.cursor_y
+            x = self.canvas.mouse.cursor_x 
+            y = self.canvas.mouse.cursor_y
 
         if not self.pointer_handler['Locked']:
             self.cursor_x = x

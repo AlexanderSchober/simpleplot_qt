@@ -123,6 +123,17 @@ class Mouse:
                     del self.release_methods[i]
                     break
 
+    def clear(self):
+        '''
+        Clear all the bindings to allow purge of
+        the methods
+        '''
+        #Bound mouse method list
+        self.move_methods       = []
+        self.press_methods      = []
+        self.release_methods    = []
+        self.drag_methods       = []
+
     def move(self,ev):
         '''
         This method will manage the motion of the 
@@ -131,8 +142,12 @@ class Mouse:
         Input: 
         - Qt based mouse ev
         '''
-        pos             = ev.pos()
-        mousePoint      = self.canvas.draw_surface.vb.mapSceneToView(pos)
+        if self.canvas.handler['Type'] == '2D':
+            pos             = ev.pos()
+            mousePoint      = self.canvas.draw_surface.vb.mapSceneToView(pos)
+        elif self.canvas.handler['Type'] == '3D':
+            mousePoint      = ev.pos()
+
         self.cursor_x   = mousePoint.x()
         self.cursor_y   = mousePoint.y()
         self.transmitMotion(self.cursor_x, self.cursor_y)
@@ -147,11 +162,17 @@ class Mouse:
         - Qt based mouse ev
         '''
         ev.accept()
-
-        start = self.canvas.draw_surface.vb.mapToView(ev.buttonDownPos())
-        last  = self.canvas.draw_surface.vb.mapToView(ev.lastPos())
-        pos   = self.canvas.draw_surface.vb.mapToView(ev.pos())
         
+        if self.canvas.handler['Type'] == '2D':
+            start = self.canvas.draw_surface.vb.mapToView(ev.buttonDownPos())
+            last  = self.canvas.draw_surface.vb.mapToView(ev.lastPos())
+            pos   = self.canvas.draw_surface.vb.mapToView(ev.pos())
+        
+        elif self.canvas.handler['Type'] == '3D':
+            start = ev.buttonDownPos()
+            last  = ev.lastPos()
+            pos   = ev.pos()
+
         self.cursor_x_init = start.x()
         self.cursor_y_init = start.y()
 

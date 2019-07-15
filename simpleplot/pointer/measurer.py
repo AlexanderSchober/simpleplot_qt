@@ -56,13 +56,13 @@ class Measurer:
         Make the class listen to the click event 
         related to the zoom initializingevent.
         '''
-        self.canvas.artist.mouse.bind('press', self.startMeasure, 'startMeasure', 1)
+        self.canvas.mouse.bind('press', self.startMeasure, 'startMeasure', 1)
 
     def quiet(self):
         '''
         Quiet the zoom functionality.
         '''
-        self.canvas.artist.mouse.unbind('press', 'startMeasure')
+        self.canvas.mouse.unbind('press', 'startMeasure')
 
     def _setPen(self):
         '''
@@ -119,8 +119,8 @@ class Measurer:
         self.canvas.draw_surface.addItem(self.dots)
 
         #link the move listener
-        self.canvas.artist.mouse.bind('move', self.updateMeasure, 'updateMeasure')
-        self.canvas.artist.mouse.bind('release', self.endMeasure, 'endMeasure', 1)
+        self.canvas.mouse.bind('move', self.updateMeasure, 'updateMeasure')
+        self.canvas.mouse.bind('release', self.endMeasure, 'endMeasure', 1)
 
         #remove the pointer
         self.canvas.artist.pointer.unbindPointer()
@@ -173,5 +173,5 @@ class Measurer:
 
         self.canvas.multi_canvas.bottom_selector.label.setText('')
 
-        self.canvas.artist.mouse.unbind('move', 'updateMeasure')
-        self.canvas.artist.mouse.unbind('release','endMeasure')
+        self.canvas.mouse.unbind('move', 'updateMeasure')
+        self.canvas.mouse.unbind('release','endMeasure')

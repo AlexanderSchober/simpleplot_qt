@@ -248,7 +248,6 @@ def exampleSurfacePlot():
     histogram = surface.childFromName('Surface').childFromName('Shader').getHistogramItem()
     ax.addItem('right', histogram)
     
-
     #show widget
     widget.show()
     sys.exit(app.exec_())
