@@ -226,8 +226,9 @@ class Mouse:
         for method in self.move_methods:
             method[0](self.cursor_x,self.cursor_y)
 
-        for element in self.canvas._plot_root._children:
-            element.processProjection(x = self.cursor_x, y = self.cursor_y)
+        if self.canvas.handler['Type'] == '2D':
+            for element in self.canvas._plot_root._children:
+                element.processProjection(x = self.cursor_x, y = self.cursor_y)
 
     def evaluateDrag(self, ev):
         '''
@@ -281,18 +282,18 @@ class Mouse:
         for link in self.link_list:
             if link[2] == 'x':
                 if link[3] == 'x':
-                    link[4].cursor_x = np.copy(self.canvas.artist.pointer.cursor_x)
-                    link[4].cursor_y = np.copy(self.canvas.artist.pointer.cursor_y)
+                    link[4].cursor_x = np.copy(x)
+                    link[4].cursor_y = np.copy(y)
                 if link[3] == 'y':
-                    link[4].cursor_x = np.copy(self.canvas.artist.pointer.cursor_y)
-                    link[4].cursor_y = np.copy(self.canvas.artist.pointer.cursor_x)
+                    link[4].cursor_x = np.copy(y)
+                    link[4].cursor_y = np.copy(x)
             if link[2] == 'y':
                 if link[3] == 'x':
-                    link[4].cursor_x = np.copy(self.canvas.artist.pointer.cursor_y)
-                    link[4].cursor_y = np.copy(self.canvas.artist.pointer.cursor_x)
+                    link[4].cursor_x = np.copy(y)
+                    link[4].cursor_y = np.copy(x)
                 if link[3] == 'y':
-                    link[4].cursor_x = np.copy(self.canvas.artist.pointer.cursor_x)
-                    link[4].cursor_y = np.copy(self.canvas.artist.pointer.cursor_y)
+                    link[4].cursor_x = np.copy(x)
+                    link[4].cursor_y = np.copy(y)
 
             link[5].evaluateMotion()
     

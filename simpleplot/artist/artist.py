@@ -410,7 +410,15 @@ class Artist3DNode(SessionNode, Artist):
             distances = np.array([
                 np.linalg.norm(e[0] - self.canvas.view.mouse_ray[0]) 
                 for e in hits])
-            hits[np.argmin(distances)][1].dispatchCoordinate()
+
+            idx = np.argmin(distances)
+            hits[idx][1].dispatchCoordinate()
+            hits[idx][1].parent().processProjection(
+                x = hits[idx][0][0], 
+                y = hits[idx][0][1])
+            self.canvas.mouse.transmitMotion(
+                hits[idx][0][0], 
+                hits[idx][0][1])
 
             self.canvas.multi_canvas.bottom_selector.label.setText(
                 str(
@@ -418,10 +426,10 @@ class Artist3DNode(SessionNode, Artist):
                     ", y = %"+str(3)+"f"
                     ", z = %"+str(3)+"f"
                     )%(
-                        hits[np.argmin(distances)][0][0],
-                        hits[np.argmin(distances)][0][1],
-                        hits[np.argmin(distances)][0][2]))
+                        hits[idx][0][0],
+                        hits[idx][0][1],
+                        hits[idx][0][2]))
 
-            self.canvas.mouse.transmitMotion(
-                hits[np.argmin(distances)][0][0], 
-                hits[np.argmin(distances)][0][1])
+
+
+

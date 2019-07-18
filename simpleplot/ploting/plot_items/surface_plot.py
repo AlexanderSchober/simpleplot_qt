@@ -162,7 +162,6 @@ class SurfacePlot(ParameterHandler):
             self.draw_items[-1].setImage(self.parent()._plot_data.getData()[2])
             self.draw_items[-1].setZValue(-100)
             self.default_target.draw_surface.addItem(self.draw_items[-1])
-            self.draw_items[-1].setTransform(self.parent().transformer.getTransform())
             self.childFromName('Shader').runShader()
 
     def drawGL(self, target_view = None):
@@ -187,6 +186,7 @@ class SurfacePlot(ParameterHandler):
             self.draw_items.append(gl.GLMeshItem(**kwargs))
             self.draw_items[-1].setGLOptions(self['OpenGl mode'])
             self.default_target.view.addItem(self.draw_items[-1])
+            self.draw_items[-1].setTransform(self.parent().transformer.getTransform())
             self.childFromName('Shader').runShader()
 
     def removeItems(self):
