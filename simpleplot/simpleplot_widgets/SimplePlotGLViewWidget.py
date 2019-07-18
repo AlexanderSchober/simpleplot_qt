@@ -27,6 +27,7 @@ import numpy as np
 
 from ..pyqtgraph            import pyqtgraph as pg
 from ..pyqtgraph.pyqtgraph  import opengl as gl
+from ..pyqtgraph.pyqtgraph  import Vector
 from .mouse_drag_event      import SimpleMouseDragEvent
 
 from OpenGL.GL import glReadPixels, GL_RGBA,  GL_FLOAT, glPixelStorei, GL_UNPACK_ALIGNMENT, glFlush, glFinish, glGetIntegerv, glGetDoublev, GL_PROJECTION_MATRIX, GL_VIEWPORT, GL_MODELVIEW_MATRIX
@@ -77,7 +78,7 @@ class MyGLViewWidget(gl.GLViewWidget):
         self.handler.addParameter(
             'Center position', [0.,0.,0.],
             names = ['x', 'y', 'z'],
-            method = self._setCenter)
+            method = self._setCenterHard)
 
         self.handler.addParameter(
             'Camera position', [20.,45.,45.],
@@ -119,6 +120,15 @@ class MyGLViewWidget(gl.GLViewWidget):
         self.sphere = gl.GLMeshItem(
             meshdata = gl.MeshData.sphere(10,10,self.handler['Center size']))
         self.sphere.setShader(self.shader_prog)
+
+    def _setCenterHard(self):
+        '''
+        Draw the sphere at the center of the 
+        coordinates
+        '''
+        self.opts['center'] = Vector(*self.handler['Center position'])
+        self._old_position = np.array(self.handler['Center position'])
+        self.update()
 
     def _setCenter(self):
         '''
@@ -264,6 +274,22 @@ class MyGLViewWidget(gl.GLViewWidget):
                 round(self.opts['center'][2],4)]) 
             - self._old_position, decimals = 4)).tolist() 
 
+        self.handler.items['Center position'].updateValue(
+            (np.round(np.array([
+                round(self.opts['center'][0],4),
+                round(self.opts['center'][1],4),
+                round(self.opts['center'][2],4)]) 
+            - self._old_position, decimals = 4)).tolist(),
+            method = False)
+
+        self._setCenter()
+
+        self.sphere.resetTransform()
+        self.sphere.translate(
+            self.opts['center'][0],
+            self.opts['center'][1],
+            self.opts['center'][2])
+            
     def _moveXY(self, x, y, drag_start, drag_end):
         '''
         move
@@ -284,12 +310,15 @@ class MyGLViewWidget(gl.GLViewWidget):
             + yVec * xScale * 0
             + zVec * xScale * np.array(diff_y))
 
-        self.handler['Center position'] = (np.round(
-            np.array([
+        self.handler.items['Center position'].updateValue(
+            (np.round(np.array([
                 round(self.opts['center'][0],4),
                 round(self.opts['center'][1],4),
                 round(self.opts['center'][2],4)]) 
-            - self._old_position, decimals = 4)).tolist() 
+            - self._old_position, decimals = 4)).tolist(),
+            method = False)
+
+        self._setCenter()
 
         self.sphere.resetTransform()
         self.sphere.translate(
