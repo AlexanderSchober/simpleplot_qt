@@ -173,6 +173,7 @@ class BarPlot(ParameterHandler):
             kwargs['smooth']    = True
             kwargs['drawEdges'] = False
             self.draw_items.append(gl.GLMeshItem(**kwargs))
+            self.draw_items[-1].setTransform(self.parent().transformer.getTransform())
             self.default_target.view.addItem(self.draw_items[-1])
             self.childFromName('Shader').runShader()
 

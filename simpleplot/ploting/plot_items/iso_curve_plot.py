@@ -246,6 +246,7 @@ class IsoCurvePlot(ParameterHandler):
                             width = self['Line thickness'],
                             mode = 'line_strip'))
                     gl_iso_curve[-1].setGLOptions('opaque')
+                    gl_iso_curve[-1].setTransform(self.parent().transformer.getTransform())
                     self.default_target.view.addItem(gl_iso_curve[-1])
 
                 self.draw_items.append(list(gl_iso_curve))

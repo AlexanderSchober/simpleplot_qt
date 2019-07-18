@@ -162,6 +162,7 @@ class SurfacePlot(ParameterHandler):
             self.draw_items[-1].setImage(self.parent()._plot_data.getData()[2])
             self.draw_items[-1].setZValue(-100)
             self.default_target.draw_surface.addItem(self.draw_items[-1])
+            self.draw_items[-1].setTransform(self.parent().transformer.getTransform())
             self.childFromName('Shader').runShader()
 
     def drawGL(self, target_view = None):

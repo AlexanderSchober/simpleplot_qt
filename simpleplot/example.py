@@ -400,7 +400,7 @@ def example():
 
 if __name__ == '__main__':
     # exampleMultiLinePlot()
-    exampleProjectionPlot()
+    # exampleProjectionPlot()
     # exampleLinePlot()
     # example()
-    # exampleSurfacePlot()
+    exampleSurfacePlot()

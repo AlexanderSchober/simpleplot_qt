@@ -31,8 +31,6 @@ from .plot_items.iso_surface_plot  import IsoSurfacePlot
 from .plot_ray_handlers.surface    import SurfaceRayHandler
 from .plot_items.SimpleItemSample  import SimpleItemSample
 
-from .plot_geometries.transformer  import Transformer
-
 class VolumePlotHandler(PlotHandler):
 
     def __init__(self, **kwargs):
@@ -43,7 +41,7 @@ class VolumePlotHandler(PlotHandler):
         else:
             PlotHandler.__init__(self, 'No_name')
 
-        self._plot_data     = VolumeData()
+        self._plot_data = VolumeData()
         self.addChild(self._plot_data)
         self.addChild(VolumePlot(**kwargs))
         self.addChild(IsoSurfacePlot(**kwargs))

@@ -23,7 +23,8 @@
 # *****************************************************************************
 
 import numpy as np
-from ...model.parameter_class       import ParameterHandler 
+from ...model.parameter_class   import ParameterHandler 
+from ...pyqtgraph.pyqtgraph     import Transform3D
 
 class Transformer(ParameterHandler): 
     '''
@@ -34,12 +35,19 @@ class Transformer(ParameterHandler):
     def __init__(self):
         ParameterHandler.__init__(self, 'Transform')
 
+        self._transform     = Transform3D()
         self._position      = np.array([0.,0.,0.])
         self._scale         = np.array([1.,1.,1.])
         self._rotate_angle  = np.array([0.,0.,0.])
         self._rotate_axis   = np.array([[1.,0.,0.], [0.,1.,0.], [0.,0.,1.]])
 
         self._setTransformerParameters()
+
+    def getTransform(self):
+        '''
+        Get the current transform matrix
+        '''
+        return self._transform
 
     def _setTransformerParameters(self):
         '''
@@ -71,7 +79,7 @@ class Transformer(ParameterHandler):
 
     def unTransform(self):
         '''
-        Detranfrom the 3D item to perform the adequat
+        Detranfrom the 3D item to perform the adequate
         operations on it. 
         '''
         self.temp_position  = np.array(self._position)
@@ -83,6 +91,8 @@ class Transformer(ParameterHandler):
         self._scale         = np.array([1.,1.,1.])
         self._rotate_angle  = np.array([0.,0.,0.])
         self._rotate_axis   = np.array([[1.,0.,0.], [0.,1.,0.], [0.,0.,1.]])
+
+        self._transform.setToIdentity()
 
         for child in self.parent()._children:
             if not  hasattr(child, 'draw_items'):
@@ -114,27 +124,35 @@ class Transformer(ParameterHandler):
         if position is None:
             position = np.array(self['Position'])
 
+        self._transform.translate(
+            -self._position[0], 
+            -self._position[1], 
+            -self._position[2])
+
+        self._transform.translate(
+            position[0], 
+            position[1], 
+            position[2])
 
         for child in self.parent()._children:
             if  hasattr(child, 'draw_items'):
                 for draw_item in child.draw_items:
                     if isinstance(draw_item, list):
                         for item in draw_item:
-                            self.translateItem(item, position)
+                            self.translateItem(item)
                     else:
-                        self.translateItem(draw_item, position)
+                        self.translateItem(draw_item)
 
         self._position = position
 
         if hasattr(self.parent(), '_ray_handler'):
              self.parent()._ray_handler.reset()
 
-    def translateItem(self, item, position):
+    def translateItem(self, item):
         '''
         translate in the 3D view
         '''
-        item.translate(-self._position[0], -self._position[1], -self._position[2])
-        item.translate(position[0], position[1], position[2])
+        item.setTransform(self._transform)
 
     def scale(self, scale = None, child = None):
         '''
@@ -147,26 +165,35 @@ class Transformer(ParameterHandler):
             if scale[i] == 0. :
                 scale[i] = 1.
 
+        self._transform.scale(
+            1./self._scale[0], 
+            1./self._scale[1], 
+            1./self._scale[2])
+
+        self._transform.scale(
+            scale[0], 
+            scale[1], 
+            scale[2])
+
         for child in self.parent()._children:
             if  hasattr(child, 'draw_items'):
                 for draw_item in child.draw_items:
                     if isinstance(draw_item, list):
                         for item in draw_item:
-                            self.scaleItem(item, scale)
+                            self.scaleItem(item)
                     else:
-                        self.scaleItem(draw_item, scale)
+                        self.scaleItem(draw_item)
 
         self._scale = scale
 
         if hasattr(self.parent(), '_ray_handler'):
              self.parent()._ray_handler.reset()
 
-    def scaleItem(self, item, scale):
+    def scaleItem(self, item):
         '''
         scale in the 3D view
         '''
-        item.scale(1./self._scale[0], 1./self._scale[1], 1./self._scale[2])
-        item.scale(scale[0], scale[1], scale[2])
+        item.setTransform(self._transform)
 
     def rotate(self, angles = None, axes = None, child = None):
         '''
@@ -180,14 +207,39 @@ class Transformer(ParameterHandler):
 
             angles = np.array([e[0] for e in elements])
             axes = np.array([e[1:] for e in elements])
+
+        self._transform.translate(
+            -self._position[0], 
+            -self._position[1], 
+            -self._position[2])
+
+        for i in range(3):
+            self._transform.rotate(
+                -self._rotate_angle[-1-i],
+                self._rotate_axis[-1-i,0], 
+                self._rotate_axis[-1-i,1],
+                self._rotate_axis[-1-i,2])
+
+        for i in range(3):
+            self._transform.rotate(
+                angles[i],
+                axes[i,0], 
+                axes[i,1],
+                axes[i,2])
+
+        self._transform.translate(
+            self._position[0], 
+            self._position[1], 
+            self._position[2])
+
         for child in self.parent()._children:
             if  hasattr(child, 'draw_items'):
                 for draw_item in child.draw_items:
                     if isinstance(draw_item, list):
                         for item in draw_item:
-                            self.rotateItem(item,  angles, axes)
+                            self.rotateItem(item)
                     else:
-                        self.rotateItem(draw_item,  angles, axes)
+                        self.rotateItem(draw_item)
 
         self._rotate_angle = angles
         self._rotate_axis  = axes
@@ -195,20 +247,8 @@ class Transformer(ParameterHandler):
         if hasattr(self.parent(), '_ray_handler'):
              self.parent()._ray_handler.reset()
 
-    def rotateItem(self, item, angles, axes):
+    def rotateItem(self, item):
         '''
         rotate in the 3D view
         '''
-        for i in range(3):
-            item.rotate(
-                -self._rotate_angle[-1-i],
-                self._rotate_axis[-1-i,0] + self._position[0], 
-                self._rotate_axis[-1-i,1] + self._position[1],
-                self._rotate_axis[-1-i,2] + self._position[2])
-
-        for i in range(3):
-            item.rotate(
-                angles[i],
-                axes[i,0] + self._position[0], 
-                axes[i,1] + self._position[1],
-                axes[i,2] + self._position[2])
+        item.setTransform(self._transform)

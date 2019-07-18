@@ -275,6 +275,7 @@ class VolumePlot(ParameterHandler):
             kwargs['smooth']        = self['Draw smooth']
             kwargs['glOptions']     = self['OpenGl mode']
             self.draw_items.append(CustomGLVolumeItem(None,**kwargs))
+            self.draw_items[-1].setTransform(self.parent().transformer.getTransform())
             self.default_target.view.addItem(self.draw_items[-1])
             self._refreshBounds()
             self.childFromName('Shader').runShader()

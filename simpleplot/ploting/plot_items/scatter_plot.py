@@ -225,8 +225,9 @@ class ScatterPlot(ParameterHandler):
             self.draw_items = []
             kwargs = self._getDictionary()
             self.draw_items.append(gl.GLScatterPlotItem(**kwargs))
+            self.draw_items[-1].setTransform(self.parent().transformer.getTransform())
             self.draw_items[-1].setGLOptions('translucent')
-                
+            
             for curve in self.draw_items:
                 self.default_target.view.addItem(curve)
 

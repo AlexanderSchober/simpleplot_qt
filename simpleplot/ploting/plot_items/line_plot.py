@@ -219,6 +219,7 @@ class LinePlot(ParameterHandler):
         if self['Visible']:
             kwargs = self._getDictionary()
             self.draw_items.append(GLLinePlotItem(**kwargs))
+            self.draw_items[-1].setTransform(self.parent().transformer.getTransform())
             self.draw_items[-1].setGLOptions('translucent')
 
         for curve in self.draw_items:
