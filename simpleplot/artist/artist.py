@@ -404,19 +404,24 @@ class Artist3DNode(SessionNode, Artist):
         '''
         hits = []
         for child in self.canvas._plot_root._children:
-            hits.append(child.processRay(self.canvas.view.mouse_ray))
-        distances = [np.linalg.norm(e - self.canvas.view.mouse_ray[0]) for elements in hits for e in elements ]
-    
-    def _processDistances(self):
-        '''
-        Will process the distance arrangement of the ray
-        and then tell the program from whom to pick 
-        the data for the position lines
-        '''
-        pass
+            hits += child.processRay(self.canvas.view.mouse_ray)
+        
+        if not len(hits) == 0:
+            distances = np.array([
+                np.linalg.norm(e[0] - self.canvas.view.mouse_ray[0]) 
+                for e in hits])
+            hits[np.argmin(distances)][1].dispatchCoordinate()
 
-    def _getPointerData(self):
-        '''
-        Call the pointer onto the right child
-        '''
-        pass
+            self.canvas.multi_canvas.bottom_selector.label.setText(
+                str(
+                    "  x = %"+str(3)+"f"
+                    ", y = %"+str(3)+"f"
+                    ", z = %"+str(3)+"f"
+                    )%(
+                        hits[np.argmin(distances)][0][0],
+                        hits[np.argmin(distances)][0][1],
+                        hits[np.argmin(distances)][0][2]))
+
+            self.canvas.mouse.transmitMotion(
+                hits[np.argmin(distances)][0][0], 
+                hits[np.argmin(distances)][0][1])

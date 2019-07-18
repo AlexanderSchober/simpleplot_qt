@@ -113,11 +113,15 @@ class MainHandler(SessionNode):
         process the ray tracing and then give
         the result back as a hits
         '''
-        hits = []
         for plot_element in self._children:
             if hasattr(plot_element, '_ray_handler'):
                 plot_element._ray_handler.processRay(ray)
 
+        hits = []
+        for plot_element in self._children:
+            if hasattr(plot_element, '_ray_handler'):
+                if not plot_element._ray_handler.point is None:
+                    hits.append([plot_element._ray_handler.point, plot_element._ray_handler])
         return hits
 
     def processProjection(self, x = 0, y = 0, z = 0):

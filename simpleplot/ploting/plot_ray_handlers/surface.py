@@ -27,6 +27,11 @@ from ...pyqtgraph.pyqtgraph     import opengl as gl
 from ..custom_pg_items.GLLinePlotItem import GLLinePlotItem
 from ...model.parameter_class   import ParameterHandler 
 
+from .ray_intersec_lib import rayTriangleIntersection
+from .ray_intersec_lib import closestPointOnLine
+from .ray_intersec_lib import checkBoundingBox
+from .ray_intersec_lib import retrievePositionSurface
+
 class SurfaceRayHandler(ParameterHandler): 
     '''
     This will be the main data class purposed
@@ -47,33 +52,37 @@ class SurfaceRayHandler(ParameterHandler):
         self.addParameter(
             'Mode', 'Projection', 
             choices = ['IsoCurve', 'Projection'],
-            method = self._dispatchCoordinate)
+            method = self.dispatchCoordinate)
         self.addParameter(
             'Computation', 'Fast', 
             choices = ['Fast','Mixed', 'Precise'],
-            method = self._dispatchCoordinate)
+            method = self.dispatchCoordinate)
         self.addParameter(
             'Width', 0.5, 
-            method = self._dispatchCoordinate)
+            method = self.dispatchCoordinate)
         self.addParameter(
             'Color', QtGui.QColor('Black'), 
-            method = self._dispatchCoordinate)
+            method = self.dispatchCoordinate)
         self.addParameter(
             'Offset', 0.001, 
-            method = self._dispatchCoordinate)
+            method = self.dispatchCoordinate)
         self.addParameter(
             'Line mode', 'tube', 
             choices = ['line_strip','lines', 'tube'],
-            method = self._dispatchCoordinate)
+            method = self.dispatchCoordinate)
         self.addParameter(
             'GL options', 'opaque', 
             choices = ['opaque','translucent', 'additive'],
-            method = self._dispatchCoordinate)
+            method = self.dispatchCoordinate)
         self.addParameter(
             'Antialiasing', True,
-            method = self._dispatchCoordinate)
+            method = self.dispatchCoordinate)
 
     def drawGL(self,target):
+        '''
+        Dummy draw that sets the target of the 
+        pointer element
+        '''
         self.default_target = target
 
     def reset(self):
@@ -81,7 +90,26 @@ class SurfaceRayHandler(ParameterHandler):
         reprocess pointer
         '''
         self.point = None
-        self._dispatchCoordinate()
+        self.dispatchCoordinate()
+
+    def processRay(self, ray, dispatch = True):
+        '''
+        Process an input ray by the 
+        canvas widget and perform necessary
+        operations
+        '''
+        if hasattr(self.parent().childFromName('Surface'), 'draw_items'):
+            temp        = self.parent().transformer.getTransform().inverted()[0]
+            transform   = np.reshape(np.array(temp.data()),(4,4)).transpose()
+            new_ray     = [np.dot(transform,np.hstack((e,1)))[:3] for e in ray]
+            intersec    = checkBoundingBox(new_ray, self.parent().childFromName('Data'))
+            if not intersec is None:
+                self.point = retrievePositionSurface(
+                    new_ray, intersec, 
+                    self.parent().childFromName('Data'), 
+                    self['Computation'])
+            else:
+                self.point = None
 
     def _setActive(self):
         '''
@@ -97,7 +125,7 @@ class SurfaceRayHandler(ParameterHandler):
                 self.default_target.view.removeItem(element)
         self.pointer_elements = []
 
-    def _dispatchCoordinate(self):
+    def dispatchCoordinate(self):
         '''
         '''
         if self['Active']:
@@ -178,187 +206,3 @@ class SurfaceRayHandler(ParameterHandler):
             self.pointer_elements[-1].setGLOptions(self['GL options'])
             self.pointer_elements[-1].applyTransform(tranform, False)
             self.default_target.view.addItem(self.pointer_elements[-1])
-
-    def closestPointOnLine(self, a, b, p):
-        ap = p-a
-        ab = b-a
-        result = a + np.dot(ap,ab)/np.dot(ab,ab) * ab
-        return np.linalg.norm(result - p)
-
-    def processRay(self, ray):
-        '''
-        Process an input ray by the 
-        canvas widget and perform necessary
-        operations
-        '''
-        if hasattr(self.parent().childFromName('Surface'), 'draw_items'):
-            temp        = self.parent().transformer.getTransform().inverted()[0]
-            transform   = np.reshape(np.array(temp.data()),(4,4)).transpose()
-            new_ray     = [np.dot(transform,np.hstack((e,1)))[:3] for e in ray]
-            intersec    = self._checkBoundingBox(new_ray)
-            if not intersec is None:
-                self.point = self._retrievePosition(new_ray, intersec)
-                self._dispatchCoordinate()
-        
-    def _checkBoundingBox(self, ray):
-        '''
-        Check if the bounding box is hit
-        '''
-        data_handler = self.parent().childFromName('Data')
-        bounding_box = data_handler.getBoundingBox()
-
-        intersec = []
-        for i in range(bounding_box.shape[0]):
-            val  = self.rayTriangleIntersection(
-                ray[0], ray[1], [
-                    bounding_box[i,0],
-                    bounding_box[i,1],
-                    bounding_box[i,2]])
-            if val[0]:
-                intersec.append(val[1])
-
-        if len(intersec) == 0:
-            return None
-        elif len(intersec) == 1:
-            intersec.insert(0,ray[0])
-
-        return intersec
-
-    def _retrievePosition(self, ray, intersec):
-        '''
-        Check if the bounding box is hit
-        '''
-        data_handler    = self.parent().childFromName('Data')
-        vert_data       = data_handler.getMesh()
-        data            = data_handler.getData()
-
-        x_step = data[0][1] - data[0][0]
-        y_step = data[1][1] - data[1][0]
-
-        intersec = np.array(intersec)
-
-        maxima = [
-            np.amax(intersec[:,0])+x_step,
-            np.amax(intersec[:,1])+y_step,
-            np.amax(intersec[:,2])]
-
-        minima = [
-            np.amin(intersec[:,0])-x_step,
-            np.amin(intersec[:,1])-y_step,
-            np.amin(intersec[:,2])]
-
-        index_x = np.argwhere((data[0] > minima[0])&((data[0] < maxima[0])))[:,0]
-        index_y = np.argwhere((data[1] > minima[1])&((data[1] < maxima[1])))[:,0]
-
-        if index_x.shape[0] < 2:
-            val = np.argmin(np.abs(data[0] - minima[0]))
-            index_x = np.arange(val-1, val + 1)
-        if index_y.shape[0] < 2:
-            val = np.argmin(np.abs(data[1] - minima[1]))
-            index_y = np.arange(val-1, val + 1)
-
-        flat_x_2 = np.arange(index_x[0]*2-2, index_x[-1]*2+2)
-        flat_y_1 = np.arange(index_y[0]-1, index_y[-1]+1)
-
-        flat_x_2 = flat_x_2[np.where(flat_x_2>=0)]
-        flat_x_2 = flat_x_2[np.where(flat_x_2<data[0].shape[0]*2)]
-        flat_y_1 = flat_y_1[np.where(flat_y_1>=0)]
-        flat_y_1 = flat_y_1[np.where(flat_y_1<data[1].shape[0])]
-
-        flat_index = np.array([flat_x_2 + e*(data[0].shape[0]-1)*2 for e in index_y])
-        flat_index = np.reshape(flat_index,(flat_index.shape[0]*flat_index.shape[1]) )
-        flat_index = flat_index[np.where(flat_index<vert_data[1].shape[0])]
-            
-        if self['Computation'] in ('Fast','Mixed'): 
-            points = []
-            for face in vert_data[1][flat_index]:
-                points.append(face[0])
-                points.append(face[1])
-                points.append(face[2])
-            points = vert_data[0][np.array(list(set(points)))]
-            
-            ray_norm = np.linalg.norm(ray[1] - ray[0])
-            distance = np.zeros(points.shape[0])
-
-            point_vectors = points - ray[0]
-            for i in range(distance.shape[0]):
-                distance[i] = self.closestPointOnLine(ray[1], ray[0],points[i])
-
-            idx = np.argpartition(distance, 3)
-
-            transform   = np.array([self.parent().transformer.getTransform().data()[0+i*4:4+i*4]for i in range(4)])
-            triangle = np.array([
-                    points[idx[0]],
-                    points[idx[1]],
-                    points[idx[2]]])
-            test = self.rayTriangleIntersection(ray[0], ray[1], triangle)
-
-
-            if test[1] is None and self['Computation'] == 'Mixed':
-                for face in vert_data[1][flat_index]:
-                    triangle    = vert_data[0][np.array([face[0],face[1],face[2]])]
-                    test        = self.rayTriangleIntersection(ray[0], ray[1], triangle)
-                    if test[0]:
-                        return test[1]
-            else:
-                return test[1]
-            
-        if self['Computation'] == 'Precise':
-            points = []
-            for face in vert_data[1][flat_index]:
-                triangle    = vert_data[0][np.array([face[0],face[1],face[2]])]
-                z_values    = [triangle[i,2]>minima[2] and triangle[i,2]<maxima[2] for i in range(3)]
-                if any(z_values):
-                    test        = self.rayTriangleIntersection(ray[0], ray[1], triangle)
-                    if test[0]:
-                        points.append(test[1])
-
-            if not len(points) == 0:
-                points_scalar = np.array([np.linalg.norm(point-ray[0]) for point in points ])
-                return points[np.argmin(points_scalar)]
-            else:
-                return None
-
-    def rayTriangleIntersection(self, ray_near, ray_dir, v123):
-        """
-        Möller–Trumbore intersection algorithm in pure python
-        Based on http://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-        """
-        v1, v2, v3 = v123
-        eps = 0.000000001
-        edge1 = v2 - v1
-        edge2 = v3 - v1
-        p_vec = np.cross(ray_dir, edge2)
-        det = edge1.dot(p_vec)
-        if abs(det) < eps:
-            return False, None
-        inv_det = 1. / det
-        t_vec = ray_near - v1
-        u = t_vec.dot(p_vec) * inv_det
-        if u < 0. or u > 1.:
-            return False, None
-        q_vec = np.cross(t_vec, edge1)
-        v = ray_dir.dot(q_vec) * inv_det
-        if v < 0. or u + v > 1.:
-            return False, None
-
-        t = edge2.dot(q_vec) * inv_det
-        if t < eps:
-            return False, None
-
-        return True, self.linPlaneCollision([v1,v2,v3], ray_dir, ray_near)
-
-    def linPlaneCollision(self, planePoints, rayDirection, rayPoint, epsilon=1e-6):
-    
-        planeNormal = np.cross(planePoints[1] - planePoints[0], planePoints[2]- planePoints[0])
-        planeNormal = planeNormal/np.linalg.norm(planeNormal)
-        ndotu       = planeNormal.dot(rayDirection)
-
-        if abs(ndotu) < epsilon:
-            raise RuntimeError("no intersection or line is within plane")
-    
-        w = rayPoint - planePoints[0]
-        si = -planeNormal.dot(w) / ndotu
-        Psi = w + si * rayDirection + planePoints[0]
-        return Psi
-        

@@ -244,6 +244,16 @@ def exampleSurfacePlot():
         Name        = 'key',
         Colors      = Colors,
         Positions   = Positions)
+
+    ax.addPlot(
+        'Surface', 
+        x = x,
+        y = x,
+        z = -np.cos(xv)-np.sin(yv)+2,
+        Name        = 'key',
+        Colors      = Colors[::-1],
+        Positions   = Positions)
+
     ax.draw()
     histogram = surface.childFromName('Surface').childFromName('Shader').getHistogramItem()
     ax.addItem('right', histogram)
@@ -400,7 +410,7 @@ def example():
 
 if __name__ == '__main__':
     # exampleMultiLinePlot()
-    # exampleProjectionPlot()
+    exampleProjectionPlot()
     # exampleLinePlot()
     # example()
-    exampleSurfacePlot()
+    # exampleSurfacePlot()

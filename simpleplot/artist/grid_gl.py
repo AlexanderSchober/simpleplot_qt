@@ -213,26 +213,27 @@ class GridGl(ParameterNode):
         refresh the axes automatically 
         based on the content
         '''
-        bounds = [[-1.e2, 1.e2], [-1.e2, 1.e2], [-1.e2, 1.e2]]
-        for child in self.canvas._plot_root._children:
-            for plot_child in child._children:
-                if hasattr(plot_child, '_plot_data'):
-                    new_bounds = plot_child._plot_data.getDrawBounds()
-                    bounds = [
-                        [max(bounds[0][0], new_bounds[0][0]), min(bounds[0][1], new_bounds[0][1])],
-                        [max(bounds[1][0], new_bounds[1][0]), min(bounds[1][1], new_bounds[1][1])],
-                        [max(bounds[2][0], new_bounds[2][0]), min(bounds[2][1], new_bounds[2][1])]]
+        if any([self.xy_handler['Auto'], self.xz_handler['Auto'], self.xz_handler['Auto']]):
+            bounds = [[1.e2, -1.e2], [1.e2, -1.e2], [1.e2, -1.e2]]
+            for child in self.canvas._plot_root._children:
+                for plot_child in child._children:
+                    if hasattr(plot_child, '_plot_data'):
+                        new_bounds = plot_child._plot_data.getDrawBounds()
+                        bounds = [
+                            [min(bounds[0][0], new_bounds[0][0]), max(bounds[0][1], new_bounds[0][1])],
+                            [min(bounds[1][0], new_bounds[1][0]), max(bounds[1][1], new_bounds[1][1])],
+                            [min(bounds[2][0], new_bounds[2][0]), max(bounds[2][1], new_bounds[2][1])]]
 
-        if self.xy_handler['Auto']:
-            self.xy_handler['Position'] = [bounds[0][0], bounds[1][0], bounds[2][0]]
-            self.xy_handler['Size'] = [0, bounds[0][1] - bounds[0][0], 0, bounds[1][1] - bounds[1][0]]
+            if self.xy_handler['Auto']:
+                self.xy_handler['Position'] = [bounds[0][0], bounds[1][0], bounds[2][0]]
+                self.xy_handler['Size'] = [0, bounds[0][1] - bounds[0][0], 0, bounds[1][1] - bounds[1][0]]
 
-        if self.xz_handler['Auto']:
-            self.xz_handler['Position'] = [bounds[0][0], bounds[1][0], bounds[2][0]]
-            self.xz_handler['Size'] = [0, bounds[0][1] - bounds[0][0], 0, bounds[2][1] - bounds[2][0]]
+            if self.xz_handler['Auto']:
+                self.xz_handler['Position'] = [bounds[0][0], bounds[1][0], bounds[2][0]]
+                self.xz_handler['Size'] = [0, bounds[0][1] - bounds[0][0], 0, bounds[2][1] - bounds[2][0]]
 
-        if self.xz_handler['Auto']:
-            self.yz_handler['Position'] = [bounds[0][0], bounds[1][0], bounds[2][0]]
-            self.yz_handler['Size'] = [0, bounds[2][1] - bounds[2][0], 0, bounds[1][1] - bounds[1][0]]
+            if self.xz_handler['Auto']:
+                self.yz_handler['Position'] = [bounds[0][0], bounds[1][0], bounds[2][0]]
+                self.yz_handler['Size'] = [0, bounds[2][1] - bounds[2][0], 0, bounds[1][1] - bounds[1][0]]
 
-        self.setColors()
+            self.setColors()
