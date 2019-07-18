@@ -153,6 +153,7 @@ class Transformer(ParameterHandler):
         translate in the 3D view
         '''
         item.setTransform(self._transform)
+        self._model.dataChanged.emit(self.index(),self.index())
 
     def scale(self, scale = None, child = None):
         '''
@@ -194,6 +195,7 @@ class Transformer(ParameterHandler):
         scale in the 3D view
         '''
         item.setTransform(self._transform)
+        self._model.dataChanged.emit(self.index(),self.index())
 
     def rotate(self, angles = None, axes = None, child = None):
         '''
@@ -252,3 +254,12 @@ class Transformer(ParameterHandler):
         rotate in the 3D view
         '''
         item.setTransform(self._transform)
+        self._model.dataChanged.emit(self.index(),self.index())
+
+    def transformPoint(self, point):
+        '''
+        Allows to transform a point with the current 
+        transformation matrix
+        '''
+        transform   = np.reshape(np.array(self._transform.data()),(4,4)).transpose()
+        return np.dot(transform,np.hstack((point,1)))[:3]

@@ -300,9 +300,7 @@ class Artist2DNode(SessionNode, Artist):
         '''
         Once all elements are created it is possible 
         to set up the functionalities. 
-
         '''
-        print(idx)
         self.zoomer.quiet()
         self.measurer.quiet()
 
@@ -367,7 +365,8 @@ class Artist3DNode(SessionNode, Artist):
         Send to the adequate elements that the plot data has changed
         and thus the some things have to be done
         '''
-        if not self.canvas._plot_model.itemAt(index) is None and self.canvas._plot_model.itemAt(index)._name == 'Data':
+
+        if not self.canvas._plot_model.itemAt(index) is None and self.canvas._plot_model.itemAt(index)._name in ['Data', 'Transform']:
             self.axes.refreshAuto()
             self.grid.refreshAuto()
 

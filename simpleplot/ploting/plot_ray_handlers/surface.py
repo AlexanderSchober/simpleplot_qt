@@ -115,7 +115,7 @@ class SurfaceRayHandler(ParameterHandler):
         '''
         self._destroyPointer()
 
-        tranform    = self.parent()['Surface'].draw_items[0].viewTransform()
+        tranform    = self.parent().transformer.getTransform()
         data        = self.parent()['Data'].getData()
         index_x     = np.argmin(np.abs(x-data[0]))
         index_y     = np.argmin(np.abs(y-data[1]))
@@ -157,7 +157,7 @@ class SurfaceRayHandler(ParameterHandler):
         '''
         self._destroyPointer()
 
-        tranform    = self.parent()['Surface'].draw_items[0].viewTransform()
+        tranform    = self.parent().transformer.getTransform()
         iso_curves  = self.parent()['Data'].getIsocurve(level)
         data        = self.parent()['Data'].getData()
         bounds      = self.parent()['Data'].getBounds()
@@ -192,7 +192,7 @@ class SurfaceRayHandler(ParameterHandler):
         operations
         '''
         if hasattr(self.parent().childFromName('Surface'), 'draw_items'):
-            temp        = self.parent().childFromName('Surface').draw_items[0].viewTransform().inverted()[0]
+            temp        = self.parent().transformer.getTransform().inverted()[0]
             transform   = np.reshape(np.array(temp.data()),(4,4)).transpose()
             new_ray     = [np.dot(transform,np.hstack((e,1)))[:3] for e in ray]
             intersec    = self._checkBoundingBox(new_ray)
@@ -286,7 +286,7 @@ class SurfaceRayHandler(ParameterHandler):
 
             idx = np.argpartition(distance, 3)
 
-            transform   = np.array([self.parent().childFromName('Surface').draw_items[0].viewTransform().data()[0+i*4:4+i*4]for i in range(4)])
+            transform   = np.array([self.parent().transformer.getTransform().data()[0+i*4:4+i*4]for i in range(4)])
             triangle = np.array([
                     points[idx[0]],
                     points[idx[1]],

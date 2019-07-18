@@ -85,3 +85,4 @@ class PlotHandler(SessionNode):
         projections set by the user
         '''
         pass
+        

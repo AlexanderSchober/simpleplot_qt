@@ -87,7 +87,34 @@ class LineData(PlotData, SessionNode):
         returns the bounds
         '''
         return self._bounds
-        
+
+    def getDrawBounds(self):
+        '''
+        Provide the bounds that are really 
+        visible on the current figure
+        '''
+        bounds = self.getBounds()
+        points = [
+            [bounds[0][0], bounds[1][0], bounds[2][0]],
+            [bounds[0][1], bounds[1][0], bounds[2][0]],
+            [bounds[0][0], bounds[1][1], bounds[2][0]],
+            [bounds[0][1], bounds[1][1], bounds[2][0]],
+            [bounds[0][0], bounds[1][0], bounds[2][1]],
+            [bounds[0][1], bounds[1][0], bounds[2][1]],
+            [bounds[0][0], bounds[1][1], bounds[2][1]],
+            [bounds[0][1], bounds[1][1], bounds[2][1]]
+        ]
+
+        for i in range(len(points)):
+            points[i] = self.parent().transformer.transformPoint(np.array(points[i]))
+
+        points = np.array(points)
+
+        return [
+            [np.amin(points[:,0]), np.amax(points[:,0])],
+            [np.amin(points[:,1]), np.amax(points[:,1])],
+            [np.amin(points[:,2]), np.amax(points[:,2])]]
+
     def getError(self):
         '''
         return a dataset as the data on the 
