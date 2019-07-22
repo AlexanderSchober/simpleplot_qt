@@ -425,7 +425,7 @@ class Artist3DNode(SessionNode, Artist):
                     "  x = %"+str(3)+"f"
                     ", y = %"+str(3)+"f"
                     ", z = %"+str(3)+"f"
-                    )%(
+                    " "+hits[idx][1].parent()._name)%(
                         hits[idx][0][0],
                         hits[idx][0][1],
                         hits[idx][0][2]))

@@ -28,7 +28,7 @@ from .plot_handler                 import PlotHandler
 
 from .plot_items.volume_plot       import VolumePlot
 from .plot_items.iso_surface_plot  import IsoSurfacePlot
-from .plot_ray_handlers.surface    import SurfaceRayHandler
+from .plot_ray_handlers.ray_volume import VolumeRayHandler
 from .plot_items.SimpleItemSample  import SimpleItemSample
 
 class VolumePlotHandler(PlotHandler):
@@ -45,6 +45,8 @@ class VolumePlotHandler(PlotHandler):
         self.addChild(self._plot_data)
         self.addChild(VolumePlot(**kwargs))
         self.addChild(IsoSurfacePlot(**kwargs))
+        self._ray_handler   = VolumeRayHandler()
+        self.addChild(self._ray_handler)
         self._plot_data.setData(**kwargs)
 
     def setData(self, **kwargs):

@@ -27,7 +27,7 @@ from .plot_data_types.bar_data      import BarData
 from .plot_handler                  import PlotHandler
 
 from .plot_items.bar_plot           import BarPlot
-from .plot_ray_handlers.surface     import SurfaceRayHandler
+# from .plot_ray_handlers.surface     import SurfaceRayHandler
 from .plot_items.SimpleItemSample   import SimpleItemSample
 
 from .plot_geometries.transformer   import Transformer

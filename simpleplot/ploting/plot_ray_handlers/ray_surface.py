@@ -42,6 +42,7 @@ class SurfaceRayHandler(ParameterHandler):
         ParameterHandler.__init__(self,'Ray handler')
         self.pointer_elements = []
         self._initialize()
+        self.reset()
 
     def _initialize(self):
         '''

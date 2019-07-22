@@ -97,6 +97,7 @@ class VolumeData(PlotData, SessionNode):
             self._data = elements + [norm_data]
             self._setBounds()
             self._setHistogram()
+            self._setBoundingBox()
 
     def getData(self):
         '''

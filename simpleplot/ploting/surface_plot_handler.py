@@ -23,15 +23,15 @@
 
 from PyQt5 import QtGui, QtCore
 
-from .plot_data_types.surface_data import SurfaceData
-from .plot_handler                 import PlotHandler
+from .plot_data_types.surface_data  import SurfaceData
+from .plot_handler                  import PlotHandler
 
-from .plot_items.surface_plot      import SurfacePlot
-from .plot_items.iso_curve_plot    import IsoCurvePlot
-from .plot_ray_handlers.surface    import SurfaceRayHandler
-from .plot_items.SimpleItemSample  import SimpleItemSample
+from .plot_items.surface_plot       import SurfacePlot
+from .plot_items.iso_curve_plot     import IsoCurvePlot
+from .plot_ray_handlers.ray_surface import SurfaceRayHandler
+from .plot_items.SimpleItemSample   import SimpleItemSample
 
-from .plot_geometries.transformer  import Transformer
+from .plot_geometries.transformer   import Transformer
 
 class SurfacePlotHandler(PlotHandler):
 

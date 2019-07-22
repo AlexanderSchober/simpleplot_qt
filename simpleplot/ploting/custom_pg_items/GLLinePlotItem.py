@@ -49,7 +49,7 @@ class GLLinePlotItem(GLGraphicsItem):
                                 'tube': makes tubes
         ====================  ==================================================
         """
-        args = ['pos', 'color', 'width', 'mode', 'antialias', 'direction']
+        args = ['pos', 'color', 'width', 'mode', 'antialias', 'direction', 'dual']
         for k in kwds.keys():
             if k not in args:
                 raise Exception('Invalid keyword argument: %s (allowed arguments are %s)' % (k, str(args)))
@@ -95,8 +95,6 @@ class GLLinePlotItem(GLGraphicsItem):
         To avoid the computation of all elements on 
         any frame redraw the values are buffered here
         '''
-
-
         if self.antialias:
             glEnable(GL_LINE_SMOOTH)
             glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
