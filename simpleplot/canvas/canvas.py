@@ -113,6 +113,7 @@ class CanvasNode(SessionNode):
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.grid_layout = QtWidgets.QGridLayout()
         self.grid_layout.setSpacing(0)
+        self.grid_layout.setContentsMargins(0,0,0,0)
         self.widget.setLayout(self.grid_layout)
 
     def _buildGraph(self):

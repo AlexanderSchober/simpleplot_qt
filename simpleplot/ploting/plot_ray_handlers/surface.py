@@ -143,7 +143,9 @@ class SurfaceRayHandler(ParameterHandler):
         '''
         self._destroyPointer()
 
-        tranform    = self.parent().transformer.getTransform()
+        tranform    = np.reshape(
+            np.array(self.parent().transformer.getTransform().data()),
+            (4,4))[:3, :]
         data        = self.parent()['Data'].getData()
         index_x     = np.argmin(np.abs(x-data[0]))
         index_y     = np.argmin(np.abs(y-data[1]))
@@ -152,32 +154,36 @@ class SurfaceRayHandler(ParameterHandler):
         data_xy = data[1]
         data_xz = data[2][index_x,:]
 
+        data_x = np.vstack([data_xx, data_xy, data_xz + self['Offset']]).transpose()
+        data_x = np.dot(data_x, tranform)[:,:3]
+
         self.pointer_elements.append(
             GLLinePlotItem(
-                pos     = np.vstack([data_xx, data_xy, data_xz + self['Offset']]).transpose(),
+                pos     = data_x,
                 color   = self['Color'].getRgbF(),
                 width   = self['Width'],
                 mode    = self['Line mode'],
                 antialias = self['Antialiasing'],
                 direction = 'y'))
         self.pointer_elements[-1].setGLOptions(self['GL options'])
-        self.pointer_elements[-1].applyTransform(tranform, False)
         self.default_target.view.addItem(self.pointer_elements[-1])
 
         data_yx = data[0]
         data_yy = [data[1][index_y] for e in range(data[0].shape[0])]
         data_yz = data[2][:,index_y]
 
+        data_y = np.vstack([data_yx,data_yy,data_yz + self['Offset']]).transpose()
+        data_y = np.dot(data_y, tranform)[:,:3]
+        
         self.pointer_elements.append(   
             GLLinePlotItem(
-                pos     = np.vstack([data_yx,data_yy,data_yz + self['Offset']]).transpose(),
+                pos     = data_y,
                 color   = self['Color'].getRgbF(),
                 width   = self['Width'],
                 mode    = self['Line mode'],
                 antialias = self['Antialiasing'],
                 direction = 'x'))
         self.pointer_elements[-1].setGLOptions(self['GL options'])
-        self.pointer_elements[-1].applyTransform(tranform, False)
         self.default_target.view.addItem(self.pointer_elements[-1])
 
     def _isoCurve(self,level):
@@ -185,7 +191,9 @@ class SurfaceRayHandler(ParameterHandler):
         '''
         self._destroyPointer()
 
-        tranform    = self.parent().transformer.getTransform()
+        tranform    = np.reshape(
+            np.array(self.parent().transformer.getTransform().data()),
+            (4,4))[:3, :]
         iso_curves  = self.parent()['Data'].getIsocurve(level)
         data        = self.parent()['Data'].getData()
         bounds      = self.parent()['Data'].getBounds()
@@ -195,14 +203,14 @@ class SurfaceRayHandler(ParameterHandler):
         for curve in iso_curves:
             self.pointer_elements.append(
                 GLLinePlotItem(
-                    pos     =np.vstack([
+                    pos     =np.dot(np.vstack([
                                 [(item[0]-0.5) / (data[2].shape[0]-1) * x_fac + bounds[0][0] for item in curve],
                                 [(item[1]-0.5) / (data[2].shape[1]-1) * y_fac + bounds[1][0] for item in curve],
                                 [level + self['Offset']for item in curve]]).transpose(),
+                                tranform)[:,:3],
                     color   = self['Color'].getRgb(),
                     width   = self['Width'],
                     mode    = self['Line mode'],
                     antialias = self['Antialiasing']))
             self.pointer_elements[-1].setGLOptions(self['GL options'])
-            self.pointer_elements[-1].applyTransform(tranform, False)
             self.default_target.view.addItem(self.pointer_elements[-1])

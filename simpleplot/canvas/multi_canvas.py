@@ -86,8 +86,9 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
             QtGui.QMainWindow.AnimatedDocks 
             | QtGui.QMainWindow.AllowNestedDocks)
         self.plot_dock   = QtWidgets.QDockWidget()
-        self.plot_dock.setFeatures(QtGui.QDockWidget.DockWidgetFloatable | 
-                 QtGui.QDockWidget.DockWidgetMovable)
+        self.plot_dock.setFeatures(
+            QtGui.QDockWidget.DockWidgetFloatable
+            | QtGui.QDockWidget.DockWidgetMovable)
         self.plot_dock.setAllowedAreas(
             QtCore.Qt.LeftDockWidgetArea 
             | QtCore.Qt.RightDockWidgetArea
