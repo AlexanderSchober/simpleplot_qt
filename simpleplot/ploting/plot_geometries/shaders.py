@@ -60,7 +60,7 @@ class ShaderConstructor(ParameterHandler):
         self._factors           = [1.,0.]
         self._epsilon           = 1.e-6
         self._light_active      = True
-        self._light_direction   = [1,1,1]
+        self._light_direction   = [20,0,-20]
         self._link_widget       = None
 
         self._setShaderParameters()
@@ -108,7 +108,7 @@ class ShaderConstructor(ParameterHandler):
             method = self.runShader)
 
         self.addParameter(
-            'Light direction', [1.,1.,1.],
+            'Light direction', [20.,0.,-20.],
             names = ['x', 'y', 'z'],
             method = self.runShader)
 
@@ -313,6 +313,8 @@ class ShaderConstructor(ParameterHandler):
             return self.vecLengthShader()
         elif name == 'edgeShader':
             return self.edgeShader()
+        elif name == 'light':
+            return self.lightShader()
 
     def edgeShader(self):
         '''
@@ -364,6 +366,60 @@ class ShaderConstructor(ParameterHandler):
         to_use = shaders.ShaderProgram(
             'edgeShader', 
             [vertex, fragment])
+            
+        return to_use
+
+    def lightShader(self):
+        '''
+        produce the height shader
+        '''
+        uniforms = {}
+
+        start_text = '' 
+        fragment_text = (
+            """
+            varying vec3 pos;
+            varying vec3 normal;
+            varying vec4 color;
+            void main() {
+                float z_local;
+            """)
+
+        if self._light_active:
+            fragment_text += ("""
+                float p = dot(normalize(vec3("""
+                +str(self._light_direction[0])+","
+                +str(self._light_direction[1])+","
+                +str(self._light_direction[2])+""")),normal);
+                p = p < 0. ? 0. : p * 0.8;
+                color.x = color.x * (0.2 + p);
+                color.y = color.y * (0.2 + p);
+                color.z = color.z * (0.2 + p);""")
+
+        fragment_text += ("""gl_FragColor = color;}""")
+
+        # make the vertex
+        vertex  = shaders.VertexShader(
+            """
+            varying vec3 pos;
+            varying vec3 normal;
+            varying vec4 color;
+            void main() {
+                normal = normalize(gl_NormalMatrix * gl_Normal);
+                pos = vec3(gl_Vertex);
+                color = gl_Color;
+                gl_Position = ftransform();
+            }""")
+
+        #set shader up
+        fragment    = shaders.FragmentShader(
+            start_text + fragment_text)
+
+        #set shader up
+        to_use = shaders.ShaderProgram(
+            'light', 
+            [vertex, fragment], 
+            uniforms = uniforms)
             
         return to_use
 

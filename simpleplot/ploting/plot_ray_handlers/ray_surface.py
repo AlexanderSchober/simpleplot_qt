@@ -99,6 +99,8 @@ class SurfaceRayHandler(ParameterHandler):
         canvas widget and perform necessary
         operations
         '''
+        self._destroyPointer()
+        
         if hasattr(self.parent().childFromName('Surface'), 'draw_items'):
             temp        = self.parent().transformer.getTransform().inverted()[0]
             transform   = np.reshape(np.array(temp.data()),(4,4)).transpose()

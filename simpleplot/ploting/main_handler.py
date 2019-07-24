@@ -27,7 +27,9 @@ from .scatter_plot_handler          import ScatterPlotHandler
 from .surface_plot_handler          import SurfacePlotHandler 
 from .bar_plot_handler              import BarPlotHandler
 from .volume_plot_handler           import VolumePlotHandler
+from .distribution_plot_handler     import DistributionPlotHandler
 from .plot_items.vector_field_plot  import VectorFieldPlot
+from .crystal_plot_handler          import CrystalPlotHandler
 from ..model.node                   import SessionNode
 
 def get_main_handler(select):
@@ -43,8 +45,12 @@ def get_main_handler(select):
         return MainHandler(select, BarPlotHandler)
     elif select == 'Volume':
         return MainHandler(select, VolumePlotHandler)
+    elif select == 'Distribution':
+        return MainHandler(select, DistributionPlotHandler)
     elif select == 'Vector field':
         return MainHandler(select, VectorFieldPlot)
+    elif select == 'Crystal':
+        return MainHandler(select, CrystalPlotHandler)
     else:
         print('Could not find the fit class you are looking for. Error...')        
         return None

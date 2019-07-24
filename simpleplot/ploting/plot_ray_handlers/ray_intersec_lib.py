@@ -65,11 +65,16 @@ def linPlaneCollision(planePoints, rayDirection, rayPoint, epsilon=1e-6):
     Psi = w + si * rayDirection + planePoints[0]
     return Psi
     
-def closestPointOnLine(a, b, p):
+def closestDistOnLine(a, b, p):
     ap = p-a
     ab = b-a
     result = a + np.dot(ap,ab)/np.dot(ab,ab) * ab
     return np.linalg.norm(result - p)
+
+def closestPointOnLine(a, b, p):
+    ap = p-a
+    ab = b-a
+    return a + np.dot(ap,ab)/np.dot(ab,ab) * ab
 
 def checkBoundingBox(ray, data_handler):
     '''
@@ -151,7 +156,7 @@ def retrievePositionSurface(ray, intersec, data_handler, mode):
 
         point_vectors = points - ray[0]
         for i in range(distance.shape[0]):
-            distance[i] = closestPointOnLine(ray[1], ray[0],points[i])
+            distance[i] = closestDistOnLine(ray[1], ray[0],points[i])
 
         idx = np.argpartition(distance, 3)
 
@@ -186,3 +191,24 @@ def retrievePositionSurface(ray, intersec, data_handler, mode):
         else:
             return None
 
+def retrievePositionSpheres(ray, data_handler):
+    '''
+    Check if the bounding box is hit
+    '''
+    data = data_handler.getData()
+    points = []
+
+    for i in range(data[0].shape[0]):
+        if np.linalg.norm(closestPointOnLine(ray[1], ray[0],data[0][i,:3]) - data[0][i,:3]) < data[0][i,3]:
+            points.append(i)
+            
+    if not len(points) == 0:
+        array   = np.array([np.abs(np.linalg.norm(data[0][i,:3]-ray[0])) for i in points])
+        idx     = points[np.argmin(array)]
+        result  = data[0][idx,:3]
+
+    else:
+        result = None
+        idx    = None
+
+    return result, idx

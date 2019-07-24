@@ -429,6 +429,7 @@ class Artist3DNode(SessionNode, Artist):
                         hits[idx][0][0],
                         hits[idx][0][1],
                         hits[idx][0][2]))
+        
 
 
 

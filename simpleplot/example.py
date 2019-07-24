@@ -342,6 +342,78 @@ def exampleVolumePlot():
     widget.show()
     sys.exit(app.exec_())
 
+def exampleDistPlot():
+    #set upt the window and the plot widget
+    app 	        = QtWidgets.QApplication(sys.argv)
+    widget          = QtWidgets.QWidget()
+    multi_canvas    = MultiCanvasItem(
+        widget = widget,        
+        grid        = [[True]],
+        element_types = [['3D']],
+        x_ratios    = [1],
+        y_ratios    = [1],
+        background  = "b",
+        highlightthickness = 0)
+    
+    #link to the subplots
+    ax = multi_canvas.getSubplot(0,0)   
+    x =  np.random.rand(1000)
+
+    data = np.array([np.array([
+        x[i]+np.random.random()*3e-1*((x[i]-0.5)*2)**2, 
+        x[i]+np.random.random()*3e-1*((x[i]-0.5)*2)**2, 
+        x[i]+np.random.random()*3e-1*((x[i]-0.5)*2)**2,
+        ((x[i]-0.5)*2)**2])
+        for i in range(1000)])
+    data *= np.array([10,10,10,1])
+
+    color = np.array([np.random.rand(4) for i in range(1000)])
+
+    ax.addPlot(
+        'Distribution',
+        Name = 'Dist',
+        data = data,
+        color = color)
+
+    ax.draw()
+    
+    #show widget
+    widget.show()
+    sys.exit(app.exec_())
+
+def exampleCrystalPlot():
+    #set upt the window and the plot widget
+    app 	        = QtWidgets.QApplication(sys.argv)
+    widget          = QtWidgets.QWidget()
+    multi_canvas    = MultiCanvasItem(
+        widget = widget,        
+        grid        = [[True]],
+        element_types = [['3D']],
+        x_ratios    = [1],
+        y_ratios    = [1],
+        background  = "b",
+        highlightthickness = 0)
+    
+    #link to the subplots
+    ax = multi_canvas.getSubplot(0,0)    
+
+    data = np.array([np.random.rand(4) for i in range(100)])
+    data *= np.array([10,10,10,1])
+
+    color = np.array([np.random.rand(4) for i in range(100)])
+
+    ax.addPlot(
+        'Crystal',
+        Name = 'Dist',
+        data = data,
+        color = color)
+
+    ax.draw()
+    
+    #show widget
+    widget.show()
+    sys.exit(app.exec_())
+
 def example():
 
     #set upt the window and the plot widget
@@ -494,4 +566,6 @@ if __name__ == '__main__':
     # exampleLinePlot()
     # example()
     # exampleSurfacePlot()
-    exampleVolumePlot()
+    # exampleVolumePlot()
+    exampleDistPlot()
+    # exampleCrystalPlot()

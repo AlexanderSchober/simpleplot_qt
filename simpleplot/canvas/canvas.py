@@ -174,6 +174,7 @@ class CanvasNode(SessionNode):
         self.view = MyGLViewWidget(self)
         self.grid_layout.addWidget(self.view, 1, 1)
         self.plot_widget = self.view
+        self.draw_surface = self.view
         self.artist = Artist3DNode('3D Artist', parent = self, canvas = self)
         self.artist.setup()
 
