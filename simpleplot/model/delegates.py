@@ -36,8 +36,15 @@ class ParameterDelegate(QtWidgets.QStyledItemDelegate):
 
     def setModelData(self, editor, model, index):
         item    = index.model().getNode(index) 
-        value   = item.retrieveData(editor)
-        model.setData(index, value, QtCore.Qt.EditRole)
+
+        if hasattr(item, 'getLive') and not item.getLive():
+            value   = item.retrieveData(editor)
+            model.setData(index, value, QtCore.Qt.EditRole)
+        elif not hasattr(item, 'getLive'):
+            value   = item.retrieveData(editor)
+            model.setData(index, value, QtCore.Qt.EditRole)
+        else:
+            pass
 
     def updateEditorGeometry(self, editor, option, index):
         editor.setGeometry(option.rect)
@@ -71,11 +78,19 @@ class ParameterDelegate(QtWidgets.QStyledItemDelegate):
             super().paint(painter, option, index)
 
     def getGradRect(self, option):
+        '''
+        Get the rectangle for the drawing of the
+        gradient
+        '''
         rect = option.rect
         rect.setWidth(min([rect.width(), 200]))
         return option.rect
 
     def getCheckBoxRect(self, option):
+        '''
+        Get the rectangle for the drawing of the
+        checkbox
+        '''
         check_box_style_option = QtWidgets.QStyleOptionButton()
         check_box_rect = QtWidgets.QApplication.style().subElementRect(
             QtWidgets.QStyle.SE_CheckBoxIndicator, check_box_style_option, None)
@@ -87,6 +102,10 @@ class ParameterDelegate(QtWidgets.QStyledItemDelegate):
         return QtCore.QRect(check_box_point, check_box_rect.size())
 
     def sizeHint(self, option, index):
+        '''
+        Process the sizehint and prepare 
+        for the gradient issue
+        '''
         item    = index.model().getNode(index) 
         size    = super(ParameterDelegate, self).sizeHint(option, index)
         if type(item.data(index.column())) == GradientEditorItem:
@@ -94,34 +113,3 @@ class ParameterDelegate(QtWidgets.QStyledItemDelegate):
             size.setHeight(27)
         return size
 
-if __name__ == '__main__':
-
-    import sys
-    from .models import SessionModel
-    from .node import SessionNode
-    from .parameter_class import ParameterHandler 
-    handler = ParameterHandler()
-    handler.addParameter('parameter_int', 0)
-    # handler.addParameter('parameter_vector',[1,2,3])
-    # handler.addParameter('parameter_string','lol')
-    # handler.addParameter('parameter_combo','1', choices = ['1','2','3','4'])
-    # handler.addParameter('parameter_float',3.3)
-    # handler.addParameter('parameter_color',QtGui.QColor('red'))
-    # handler.addParameter('parameter_color_1',QtGui.QColor('blue'))
-    # handler.addParameter('parameter_font',QtGui.QFont())
-    # handler.addParameter('parameter_font_1',QtGui.QFont())
-
-
-    app = QtWidgets.QApplication(sys.argv)
-    root = SessionNode('main')
-    root.addChild(handler)
-    model = SessionModel(handler)
-    tableView = QtWidgets.QTreeView()
-    tableView.setModel(model)
-
-    delegate = ParameterDelegate()
-    tableView.setItemDelegate(delegate)
-
-    tableView.setWindowTitle("Spin Box Delegate")
-    tableView.show()
-    sys.exit(app.exec_())

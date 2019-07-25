@@ -567,5 +567,5 @@ if __name__ == '__main__':
     # example()
     # exampleSurfacePlot()
     # exampleVolumePlot()
-    exampleDistPlot()
-    # exampleCrystalPlot()
+    # exampleDistPlot()
+    exampleCrystalPlot()

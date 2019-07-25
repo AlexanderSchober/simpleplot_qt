@@ -197,7 +197,7 @@ class ParameterMaster:
         self._parent     = parent
         self._active     = True
         self._value      = None
-        self._active     = True
+        self._live       = True
         self._tags       = []
         if 'tags' in kwargs.keys():
             self._tags = kwargs['tags']
@@ -218,6 +218,12 @@ class ParameterMaster:
         returns the value of the current object
         '''
         return self._value
+
+    def getLive(self):
+        '''
+        return if an item is live
+        '''
+        return self._live
     
 class ParameterVector(ParameterMaster, ParameterNode):
     def __init__(self, name, values, parent, **kwargs):
@@ -316,7 +322,7 @@ class ParameterValue(ParameterMaster, ParameterItem):
             This will be set a the value of the item through setData
 
         parent : parent SessionNode class
-            This will be initialised as the parent in the model
+            This will be initialized as the parent in the model
 
         kwargs : dictionary of parameters
             This will tell the item how to proceed
@@ -357,7 +363,6 @@ class ParameterValue(ParameterMaster, ParameterItem):
 
         index : QModelIndex
             The index of the call
-        
         '''
         return self._constructor.create(parent,index =  index)
 
@@ -410,5 +415,3 @@ class ParameterValue(ParameterMaster, ParameterItem):
         if 'method' in self.kwargs.keys() and method:
             self.kwargs['method']()
        
-
-
