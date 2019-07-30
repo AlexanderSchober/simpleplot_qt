@@ -108,7 +108,7 @@ class ShaderConstructor(ParameterHandler):
             method = self.runShader)
 
         self.addParameter(
-            'Light direction', [20.,0.,-20.],
+            'Light direction', [20.,0.,+20.],
             names = ['x', 'y', 'z'],
             method = self.runShader)
 

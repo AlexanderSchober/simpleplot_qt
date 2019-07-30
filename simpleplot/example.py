@@ -219,7 +219,7 @@ def exampleSurfacePlot():
     #link to the subplots
     ax = multi_canvas.getSubplot(0,0)    
     
-    x = np.linspace(-4*np.pi, 4*np.pi, 100)
+    x = np.linspace(-4*np.pi,4*np.pi, 100)
     xv, yv = np.meshgrid(x, x)
     y = np.sin(x)
     z = np.cos(x)
@@ -235,15 +235,18 @@ def exampleSurfacePlot():
         ]
     Positions = [0,0.25,0.5,0.75,1.]
 
-    #set the ax plot
-    surface = ax.addPlot(
-        'Surface', 
-        x = x,
-        y = x,
-        z = np.cos(xv)+np.sin(yv)-2,
-        Name        = 'key',
-        Colors      = Colors,
-        Positions   = Positions)
+    for j in range(0,4):
+        for i in range(0,4):
+
+            surface = ax.addPlot(
+                'Surface', 
+                x = x + i*4*np.pi*2+1,
+                y = x + j*4*np.pi*2+1,
+                z = np.cos(np.sqrt(xv**2+yv**2)+((j*4)+i)*np.pi/8)*0.0001,
+                Name        = 'key',
+                Colors      = Colors,
+                Positions   = Positions)
+
 
     ax.addPlot(
         'Surface', 
@@ -261,6 +264,66 @@ def exampleSurfacePlot():
     #show widget
     widget.show()
     sys.exit(app.exec_())
+
+def exampleStepPlot():
+    #set upt the window and the plot widget
+    app 	        = QtWidgets.QApplication(sys.argv)
+    widget          = QtWidgets.QWidget()
+    multi_canvas    = MultiCanvasItem(
+        widget = widget,        
+        grid        = [[True]],
+        element_types = [['3D']],
+        x_ratios    = [1],
+        y_ratios    = [1],
+        background  = "b",
+        highlightthickness = 0)
+    
+    #link to the subplots
+    ax = multi_canvas.getSubplot(0,0)    
+    
+    x = np.linspace(-4*np.pi,4*np.pi, 100)
+    xv, yv = np.meshgrid(x, x)
+    y = np.sin(x)
+    z = np.cos(x)
+    y_1 = np.cos(x+0.5)
+    y_2 = np.cos(x)+2*np.sin(x)
+
+    Colors = [
+            [0.,1.,1.],
+            [0.,0.,1.],
+            [0.,1.,0.],
+            [1.,0.,0.],
+            [0.,1.,0.],
+        ]
+    Positions = [0,0.25,0.5,0.75,1.]
+
+    surface = ax.addPlot(
+        'Step', 
+        x = x,
+        y = x,
+        z = -np.cos(xv)-np.sin(yv)-2,
+        Name        = 'key',
+        Colors      = Colors[::-1],
+        Positions   = Positions)
+
+
+    ax.addPlot(
+        'Step', 
+        x = x,
+        y = x,
+        z = -np.cos(xv)-np.sin(yv)+2,
+        Name        = 'key',
+        Colors      = Colors[::-1],
+        Positions   = Positions)
+
+    ax.draw()
+    # histogram = surface.childFromName('Surface').childFromName('Shader').getHistogramItem()
+    # ax.addItem('right', histogram)
+    
+    #show widget
+    widget.show()
+    sys.exit(app.exec_())
+
 
 def exampleVolumePlot():
     #set upt the window and the plot widget
@@ -555,7 +618,6 @@ def example():
     fx.draw()
     bar.setData( x = np.arange(100)/5., y = np.arange(100)/5., upper =  np.cos(xv)+np.sin(yv)+2, lower = np.cos(xv)+np.sin(yv)-2)
 
-
     #show widget
     widget.show()
     sys.exit(app.exec_())
@@ -568,4 +630,5 @@ if __name__ == '__main__':
     # exampleSurfacePlot()
     # exampleVolumePlot()
     # exampleDistPlot()
-    exampleCrystalPlot()
+    # exampleCrystalPlot()
+    exampleStepPlot()

@@ -25,6 +25,7 @@ import numpy as np
 
 from .scatter_plot_handler          import ScatterPlotHandler
 from .surface_plot_handler          import SurfacePlotHandler 
+from .step_plot_handler             import StepPlotHandler
 from .bar_plot_handler              import BarPlotHandler
 from .volume_plot_handler           import VolumePlotHandler
 from .distribution_plot_handler     import DistributionPlotHandler
@@ -41,6 +42,8 @@ def get_main_handler(select):
         return MainHandler(select, ScatterPlotHandler)
     elif select == 'Surface':
         return MainHandler(select, SurfacePlotHandler)
+    elif select == 'Step':
+        return MainHandler(select, StepPlotHandler)
     elif select == 'Bar':
         return MainHandler(select, BarPlotHandler)
     elif select == 'Volume':

@@ -31,7 +31,7 @@ from ...pyqtgraph.pyqtgraph     import functions
 
 from ...model.node   import SessionNode
 
-class BarData(PlotData, SessionNode): 
+class StepData(PlotData, SessionNode): 
     '''
     This will be the main data class purposed
     to be inherited by variations with different
@@ -41,18 +41,16 @@ class BarData(PlotData, SessionNode):
         PlotData.__init__(self, **kwargs) 
         SessionNode.__init__(self,'Data')
 
-        self._axes = ['x','y','upper', 'lower']
-        self._data = [None, None, None, None]
-        self._bounds = [[0,1],[0,1],[0,1],[0,1]]
-        self._buffer = {}
+        self._axes = ['x','y','z']
+        self._data = [None, None, None]
 
     def setData(self, **kwargs):
         '''
         set the local data manually even after
         initialization of the class
         '''
-        elements = [None, None, None, None]
-        changed  = [False, False, False, False]
+        elements = [None]*len(self._axes)
+        changed  = [False, False, False]
 
         for i,value in enumerate(self._axes):
             if value in kwargs.keys():
@@ -60,128 +58,46 @@ class BarData(PlotData, SessionNode):
                     elements[i] = np.array(kwargs[value])
                     changed[self._axes.index(value)] = True
 
-        if elements[self._axes.index('upper')] is None:
-            if not self._data[self._axes.index('upper')] is None:
-                elements[self._axes.index('upper')] = self._data[self._axes.index('upper')]  
+        if elements[self._axes.index('z')] is None:
+            if not self._data[self._axes.index('z')] is None:
+                elements[self._axes.index('z')] = self._data[self._axes.index('z')]  
             else:
-                elements[self._axes.index('upper')] = np.ones((5,5))
-                changed[self._axes.index('upper')] = True
-
-        if elements[self._axes.index('lower')] is None:
-            if not self._data[self._axes.index('lower')] is None:
-                elements[self._axes.index('lower')] = self._data[self._axes.index('lower')]  
-            else:
-                elements[self._axes.index('lower')] = np.zeros(elements[self._axes.index('upper')].shape)
-                changed[self._axes.index('lower')] = True
+                elements[self._axes.index('z')] = np.zeros((1,1))
+                changed[self._axes.index('z')] = True
 
         if elements[self._axes.index('x')] is None:
             if not self._data[self._axes.index('x')] is None:
                 elements[self._axes.index('x')] = self._data[self._axes.index('x')]  
             else:
-                elements[self._axes.index('x')] = np.arange(elements[self._axes.index('upper')].shape[0])
+                elements[self._axes.index('x')] = np.arange(elements[self._axes.index('z')].shape[0])
                 changed[self._axes.index('x')] = True
 
         if elements[self._axes.index('y')] is None:
             if not self._data[self._axes.index('y')] is None:
                 elements[self._axes.index('y')] = self._data[self._axes.index('y')]  
             else:
-                elements[self._axes.index('y')] = np.arange(elements[self._axes.index('upper')].shape[1])
+                elements[self._axes.index('y')] = np.arange(elements[self._axes.index('z')].shape[1])
                 changed[self._axes.index('y')] = True
 
         if self._sanity(elements):
+
             self._data = elements 
-            self._createMesh()
             self._setBounds()
+            self._setHistogram()
 
-    def _createMesh(self,width_x = 0.1, width_y = 0.1):
+            if self.parent().childFromName('Step')._mode == '3D':
+                self.set3D(changed = changed)
+
+    def set3D(self, changed = [True, True, True]):
         '''
-        This creates the mesh elements in
-        a numpy array
+        return a dataset as the data on the 
+        wanted orientation
         '''
-        vertices    = np.zeros((self._data[0].shape[0]*self._data[1].shape[0]*8, 3))
-        faces       = np.zeros((self._data[0].shape[0]*self._data[1].shape[0]*12, 3),  dtype='uint')
-
-        xx, yy          = np.meshgrid(self._data[0], self._data[1])
-        reshaped_x      = xx.reshape(self._data[0].shape[0]*self._data[1].shape[0])
-        reshaped_y      = yy.reshape(self._data[0].shape[0]*self._data[1].shape[0])
-        reshaped_upper  = self._data[2].reshape(self._data[0].shape[0]*self._data[1].shape[0])
-        reshaped_lower  = self._data[3].reshape(self._data[0].shape[0]*self._data[1].shape[0])
-
-        self._change_index_0 = []
-        self._change_index_1 = []
-
-        count = self._data[0].shape[0]*self._data[1].shape[0]
-        vertices    = np.zeros((count*8, 3))
-        faces       = np.zeros((count*12, 3),  dtype='uint')
-
-        for i in range(count):
-            vertices[i*8 + 0] = np.array([reshaped_x[i] - width_x, reshaped_y[i] - width_y, reshaped_lower[i]])
-            vertices[i*8 + 1] = np.array([reshaped_x[i] + width_x, reshaped_y[i] - width_y, reshaped_lower[i]])
-            vertices[i*8 + 2] = np.array([reshaped_x[i] + width_x, reshaped_y[i] + width_y, reshaped_lower[i]])
-            vertices[i*8 + 3] = np.array([reshaped_x[i] - width_x, reshaped_y[i] + width_y, reshaped_lower[i]])
-            vertices[i*8 + 4] = np.array([reshaped_x[i] - width_x, reshaped_y[i] - width_y, reshaped_upper[i]])
-            vertices[i*8 + 5] = np.array([reshaped_x[i] + width_x, reshaped_y[i] - width_y, reshaped_upper[i]])
-            vertices[i*8 + 6] = np.array([reshaped_x[i] + width_x, reshaped_y[i] + width_y, reshaped_upper[i]])
-            vertices[i*8 + 7] = np.array([reshaped_x[i] - width_x, reshaped_y[i] + width_y, reshaped_upper[i]])
-
-            self._change_index_0 += [l for l in range(i*8 + 0, i*8 + 5)]
-            self._change_index_1 += [l for l in range(i*8 + 4, i*8 + 8)]
-
-            faces[i*12 + 0]  = np.array([i*8 + 0, i*8 + 1, i*8 + 4])
-            faces[i*12 + 1]  = np.array([i*8 + 1, i*8 + 4, i*8 + 5])
-            faces[i*12 + 2]  = np.array([i*8 + 1, i*8 + 2, i*8 + 5])
-            faces[i*12 + 3]  = np.array([i*8 + 2, i*8 + 5, i*8 + 6])
-            faces[i*12 + 4]  = np.array([i*8 + 2, i*8 + 3, i*8 + 6])
-            faces[i*12 + 5]  = np.array([i*8 + 3, i*8 + 6, i*8 + 7])
-            faces[i*12 + 6]  = np.array([i*8 + 3, i*8 + 0, i*8 + 7])
-            faces[i*12 + 7]  = np.array([i*8 + 0, i*8 + 7, i*8 + 4])
-            faces[i*12 + 8]  = np.array([i*8 + 0, i*8 + 1, i*8 + 2])
-            faces[i*12 + 9]  = np.array([i*8 + 0, i*8 + 3, i*8 + 2])
-            faces[i*12 + 10] = np.array([i*8 + 4, i*8 + 5, i*8 + 6])
-            faces[i*12 + 11] = np.array([i*8 + 4, i*8 + 7, i*8 + 6])
-
-        self._vertices = vertices
-        self._faces    = faces
-        
-    def getMesh(self, width_x = 0.1, width_y = 0.1):
-        '''
-        Provide the mesh of the data
-        '''
-        xx, yy      = np.meshgrid(self._data[0], self._data[1])
-
-        reshaped_x  = xx.reshape(self._data[0].shape[0]*self._data[1].shape[0])
-        reshaped_y  = yy.reshape(self._data[0].shape[0]*self._data[1].shape[0])
-        reshaped_upper = np.repeat(self._data[2].reshape(self._data[0].shape[0]*self._data[1].shape[0]), 8)
-        reshaped_lower = np.repeat(self._data[3].reshape(self._data[0].shape[0]*self._data[1].shape[0]), 8)
-
-        self._vertices[[j*8+0 for j in range(reshaped_x.shape[0])], 0] = reshaped_x[:] - width_x
-        self._vertices[[j*8+0 for j in range(reshaped_x.shape[0])], 1] = reshaped_y[:] - width_y
-
-        self._vertices[[j*8+1 for j in range(reshaped_x.shape[0])], 0] = reshaped_x[:] + width_x
-        self._vertices[[j*8+1 for j in range(reshaped_x.shape[0])], 1] = reshaped_y[:] - width_y
-
-        self._vertices[[j*8+2 for j in range(reshaped_x.shape[0])], 0] = reshaped_x[:] + width_x
-        self._vertices[[j*8+2 for j in range(reshaped_x.shape[0])], 1] = reshaped_y[:] + width_y
-
-        self._vertices[[j*8+3 for j in range(reshaped_x.shape[0])], 0] = reshaped_x[:] - width_x
-        self._vertices[[j*8+3 for j in range(reshaped_x.shape[0])], 1] = reshaped_y[:] + width_y
-
-        self._vertices[[j*8+4 for j in range(reshaped_x.shape[0])], 0] = reshaped_x[:] - width_x
-        self._vertices[[j*8+4 for j in range(reshaped_x.shape[0])], 1] = reshaped_y[:] - width_y
-
-        self._vertices[[j*8+5 for j in range(reshaped_x.shape[0])], 0] = reshaped_x[:] + width_x
-        self._vertices[[j*8+5 for j in range(reshaped_x.shape[0])], 1] = reshaped_y[:] - width_y
-
-        self._vertices[[j*8+6 for j in range(reshaped_x.shape[0])], 0] = reshaped_x[:] + width_x
-        self._vertices[[j*8+6 for j in range(reshaped_x.shape[0])], 1] = reshaped_y[:] + width_y
-
-        self._vertices[[j*8+7 for j in range(reshaped_x.shape[0])], 0] = reshaped_x[:] - width_x
-        self._vertices[[j*8+7 for j in range(reshaped_x.shape[0])], 1] = reshaped_y[:] + width_y
-
-        self._vertices[self._change_index_0,2] = reshaped_lower[self._change_index_0]
-        self._vertices[self._change_index_1,2] = reshaped_upper[self._change_index_1] 
-
-        return self._vertices, self._faces
+        if changed[0] or changed[1]:
+            self._buildVerticeMap()
+        elif changed[2] and not changed[0] and not changed[1]:
+            self._updateTopography()
+        self._setBoundingBox()
 
     def getData(self):
         '''
@@ -190,11 +106,43 @@ class BarData(PlotData, SessionNode):
         '''
         return self._data
 
+    def getHistogram(self, direction = 'z'):
+        '''
+        Produce the histogram according to the 
+        direction selected
+        '''
+        return self._histogram[self._axes.index(direction)]
+
     def getBounds(self):
         '''
         returns the bounds
         '''
         return self._bounds
+
+    def getProjection(self, direction, x = 0, y = 0, z = 0):
+        '''
+        returns the bounds
+        '''
+        if direction == 'x':
+            return [self._data[0], self._data[2][:,np.argmin(np.abs(self._data[1]-y))]]
+        elif direction == 'y':
+            return [ self._data[2][np.argmin(np.abs(self._data[0]-x)), :], self._data[1]]
+        else:
+            return [[0], [0]]
+
+    def getMesh(self):
+        '''
+        return a dataset as the data on the 
+        wanted orientation
+        '''
+        return [self._vertices, self._faces]
+
+    def getIsocurve(self, level):
+        '''
+        Returns the x,y,z isocurve position fo the given
+        level omn the present data
+        '''
+        return functions.isocurve(self._data[2], level, connected = True)
 
     def getBoundingBox(self):
         '''
@@ -234,22 +182,103 @@ class BarData(PlotData, SessionNode):
         '''
         Check that the data makes sense in 
         '''
-        if not elements[self._axes.index('x')].shape[0] == elements[self._axes.index('upper')].shape[0]:
+        if not elements[self._axes.index('x')].shape[0] == elements[self._axes.index('z')].shape[0]:
             return False
-        if not elements[self._axes.index('y')].shape[0] == elements[self._axes.index('upper')].shape[1]:
+        if not elements[self._axes.index('y')].shape[0] == elements[self._axes.index('z')].shape[1]:
             return False
         return True
+
+    def _setHistogram(self):
+        '''
+        Set the histogram of the data along all 
+        axes
+        '''
+        axis        = [0 for i in range(100)]
+        elements    = [0 for i in range(100)]
+        factor      = (np.amax(self._data[2]) - np.amin(self._data[2]))/(100-1)
+        offset      = np.amin(self._data[2])
+        for i in range(len(axis)):
+            axis[i] = i*factor + offset
+            elements[i] = np.argwhere(
+                (self._data[2] > i*factor + offset)
+                & (self._data[2] < (i+1)*factor + offset)).shape[0]
+            
+        self._histogram = [
+            [self._data[0], np.sum(self._data[2],axis = 0)],
+            [self._data[1], np.sum(self._data[2],axis = 0)],
+            [axis, elements]]
 
     def _setBounds(self):
         '''
         returns the bounds of the set datastructure
         '''
-        bounds = []
+        self._bounds = []
         for element in self._data:
-            bounds.append([np.amin(element), np.amax(element)])
-            
-        self._bounds = [bounds[0], bounds[1], [bounds[3][0] , bounds[2][1]]]
-            
+            self._bounds.append([np.amin(element), np.amax(element)])
+
+    def _buildVerticeMap(self):
+        '''
+        build the vertices and positions locally from
+        the given axes
+        '''
+        vertices    = np.zeros((self._data[0].shape[0]*self._data[1].shape[0]*8, 3))
+        faces       = np.zeros((self._data[0].shape[0]*self._data[1].shape[0]*12, 3),  dtype='uint')
+
+        xx, yy          = np.meshgrid(self._data[0], self._data[1])
+        reshaped_x      = xx.reshape(self._data[0].shape[0]*self._data[1].shape[0])
+        reshaped_y      = yy.reshape(self._data[0].shape[0]*self._data[1].shape[0])
+        reshaped_z      = self._data[2].reshape(self._data[0].shape[0]*self._data[1].shape[0])
+
+        count = self._data[0].shape[0]*self._data[1].shape[0]
+
+        vertices    = np.zeros((count*8, 3))
+        faces       = np.zeros((count*6, 3),  dtype='uint')
+
+        width_x = ((np.amax(self._data[0]) - np.amin(self._data[0])) / (self._data[0].shape[0] - 1))/2
+        width_y = ((np.amax(self._data[1]) - np.amin(self._data[1])) / (self._data[1].shape[0] - 1))/2
+
+        for i in range(count):
+            vertices[i*8 + 0] = np.array([reshaped_x[i] - width_x, reshaped_y[i] - width_y, reshaped_z[i]])
+            vertices[i*8 + 1] = np.array([reshaped_x[i] + width_x, reshaped_y[i] - width_y, reshaped_z[i]])
+            vertices[i*8 + 2] = np.array([reshaped_x[i] + width_x, reshaped_y[i] + width_y, reshaped_z[i]])
+            vertices[i*8 + 3] = np.array([reshaped_x[i] - width_x, reshaped_y[i] + width_y, reshaped_z[i]])
+
+            vertices[i*8 + 4] = np.array([
+                reshaped_x[i] + width_x, 
+                reshaped_y[i] - width_y, 
+                reshaped_z[i+1 if not i%(self._data[0].shape[0]) == self._data[0].shape[0]-1  else i]])
+
+            vertices[i*8 + 5] = np.array([
+                reshaped_x[i] + width_x, 
+                reshaped_y[i] + width_y, 
+                reshaped_z[i+1 if not i%(self._data[0].shape[0]) == self._data[0].shape[0]-1  else i]])
+
+            vertices[i*8 + 6] = np.array([
+                reshaped_x[i] + width_x, 
+                reshaped_y[i] + width_y, 
+                reshaped_z[i+self._data[0].shape[0] if not i+self._data[0].shape[0] > count-1 else i]])
+
+            vertices[i*8 + 7] = np.array([
+                reshaped_x[i] - width_x, 
+                reshaped_y[i] + width_y, 
+                reshaped_z[i+self._data[0].shape[0] if not i+self._data[0].shape[0] > count-1 else i]])
+
+            faces[i*6 + 0]  = np.array([i*8 + 0, i*8 + 1, i*8 + 2])
+            faces[i*6 + 1]  = np.array([i*8 + 2, i*8 + 3, i*8 + 0])
+            faces[i*6 + 2]  = np.array([i*8 + 1, i*8 + 4, i*8 + 5])
+            faces[i*6 + 3]  = np.array([i*8 + 5, i*8 + 2, i*8 + 1])
+            faces[i*6 + 4]  = np.array([i*8 + 2, i*8 + 6, i*8 + 7])
+            faces[i*6 + 5]  = np.array([i*8 + 7, i*8 + 3, i*8 + 2])
+
+        self._vertices = vertices
+        self._faces    = faces
+
+    def _updateTopography(self):
+        '''
+        Update the topography of the surface
+        '''
+        self._buildVerticeMap()
+        
     def _setBoundingBox(self):
         '''
         Update the topography of the surface

@@ -21,16 +21,18 @@
 #
 # *****************************************************************************
 
-from PyQt5      import QtGui
-from copy       import deepcopy
-import numpy    as np
+from PyQt5 import QtGui
+from copy import deepcopy
+import numpy as np
 
 from ...pyqtgraph                   import pyqtgraph as pg
 from ...pyqtgraph.pyqtgraph         import opengl as gl
+
 from ..plot_geometries.shaders      import ShaderConstructor
 from ...model.parameter_class       import ParameterHandler 
+from ..plot_geometries.shaders      import ShaderConstructor
 
-class BarPlot(ParameterHandler): 
+class StepPlot(ParameterHandler): 
     '''
     This class will be the scatter plots. 
     '''
@@ -41,11 +43,22 @@ class BarPlot(ParameterHandler):
         changed to z in case of a 3D representation while the 
         y axis will be set to 0. This seems more
         natural.
+
+        Parameters
+        -----------
+        x : 1D numpy array
+            the x data
+        y : 1D numpy array
+            the y data
+        z : 1D numpy array
+            the z data
+        error: dict of float arrays
+            The error of each point
         '''
-        ParameterHandler.__init__(self, 'BarPlot')
+        ParameterHandler.__init__(self, 'Step')
         self.addChild(ShaderConstructor())
         self.initialize(**kwargs)
-        self._mode = '3D'
+        self._mode = '2D'
 
     def initialize(self, **kwargs):
         '''
@@ -54,23 +67,26 @@ class BarPlot(ParameterHandler):
         '''
         self.addParameter(
             'Visible', True, 
-            tags   = ['3D'],
+            tags     = ['2D', '3D'],
             method = self.refresh)
         self.addParameter(
-            'Draw smooth', False, 
-            tags   = ['3D'],
+            'Draw faces', True, 
+            tags     = ['3D'],
+            method = self.refresh)
+        self.addParameter(
+            'Draw edges', False, 
+            tags     = ['3D'],
+            method = self.refresh)
+        self.addParameter(
+            'Draw smooth', True, 
+            tags     = ['3D'],
             method = self.refresh)
         self.addParameter(
             'OpenGl mode', 'opaque',
             choices = ['translucent', 'opaque', 'additive'],
-            tags    = ['3D'],
-            method  = self.refresh)
-        self.addParameter(
-            'Width', [0.5,0.5],
-            names   = ['x','y'],
-            tags    = ['3D'],
-            method  = self.refresh)
-
+            tags   = ['3D'],
+            method = self.refresh)
+        
     def refresh(self):
         '''
         Set the data of the image and then let the 
@@ -79,21 +95,26 @@ class BarPlot(ParameterHandler):
         '''
         if hasattr(self, 'draw_items'):
             if self['Visible']:
-
+                surface = None
+                for draw_item in self.draw_items:
+                    if isinstance(draw_item, pg.ImageItem) or isinstance(draw_item, gl.GLMeshItem):
+                        surface = draw_item
+                            
                 if self._mode == '2D':
-                    self.removeItems()
-                    self.draw()
+                    surface.setImage(self.parent()._plot_data.getData()[2])
+                    self.childFromName('Shader').runShader()
                     
                 elif self._mode == '3D':
+                    surface.opts['drawEdges']   = self['Draw edges']
+                    surface.opts['drawFaces']   = self['Draw faces']
+                    surface.opts['smooth']      = self['Draw smooth']
 
-                    vertices, faces = self.parent()._plot_data.getMesh(*self['Width'])
+                    data = self.parent()._plot_data.getMesh()
                     kwargs = {}
-                    kwargs['vertexes']  = vertices
-                    kwargs['faces']     = faces
-                    kwargs['smooth']    = True
-                    kwargs['drawEdges'] = False
-                    self.draw_items[0].setMeshData(**kwargs)
-                    self.draw_items[0].setGLOptions(self['OpenGl mode'])
+                    kwargs['vertexes']  = data[0]
+                    kwargs['faces']     = data[1]
+                    surface.setMeshData(**kwargs)
+                    surface.setGLOptions(self['OpenGl mode'])
                     self.childFromName('Shader').runShader()
 
             else:
@@ -109,7 +130,7 @@ class BarPlot(ParameterHandler):
                 self.draw()
             elif self['Visible'] and self._mode == '3D':
                 self.drawGL()
-
+        
     def setColor(self):
         '''
         The preference implementation requires the ability to set
@@ -117,11 +138,13 @@ class BarPlot(ParameterHandler):
         here allow the setting of colors either through the 
         color map or through shaders.
         '''
-        if self._mode == '2D':
-            self.removeItems()
-            self.draw()
+        if self._mode == '2D' and hasattr(self, 'draw_items'):
+            color_map = pg.ColorMap(
+                self.childFromName('Shader')._positions,
+                np.array(self.childFromName('Shader')._colors, dtype=np.uint)*255)
+            self.draw_items[0].setLookupTable(color_map.getLookupTable(0.0, 1.0, alpha = False))
 
-        elif self._mode == '3D':
+        elif self._mode == '3D' and hasattr(self, 'draw_items'):
             self.draw_items[0].setShader(self.childFromName('Shader').getShader('height'))
 
     def draw(self, target_surface = None):
@@ -132,27 +155,14 @@ class BarPlot(ParameterHandler):
         if not target_surface == None:
             self.default_target = target_surface
             self.setCurrentTags(['2D'])
-            
+
         if self['Visible']:
             self.draw_items = []
-            data        = self.parent()._plot_data.getData()
-            bounds      = self.parent()._plot_data.getBounds()
-            step        = (bounds[0][1] - bounds[0][0]) / data[0].shape[0]
-            segment     = step / data[1].shape[0]
-            arrangement = np.array([ -step/2. + l * segment for l in range(data[1].shape[0])])
-
-            positions   = self.childFromName('Shader')._positions
-            colors      = np.array(self.childFromName('Shader')._colors, dtype=np.uint)*255
-            color_map   = pg.ColorMap(positions,colors)
-            mapping     = color_map.map((data[2] -  bounds[2][0]) / (bounds[2][1] - bounds[2][0]))
-
-            for i in range(data[0].shape[0]):
-                y = data[0][i] + arrangement
-                z = data[2][i,:]
-
-                brushes = [pg.mkBrush(mapping[i,j]) for j in range(data[1].shape[0])]
-                self.draw_items.append(pg.BarGraphItem(x = y, height = z, width = segment, brushes = brushes))
-                self.default_target.view.addItem(self.draw_items[-1])
+            self.draw_items.append(pg.ImageItem())
+            self.draw_items[-1].setImage(self.parent()._plot_data.getData()[2])
+            self.draw_items[-1].setZValue(-100)
+            self.default_target.draw_surface.addItem(self.draw_items[-1])
+            self.childFromName('Shader').runShader()
 
     def drawGL(self, target_view = None):
         '''
@@ -165,27 +175,24 @@ class BarPlot(ParameterHandler):
 
         if self['Visible']:
             self.draw_items = []
-            vertices, faces = self.parent()._plot_data.getMesh(*self['Width'])
-        
+            mesh = self.parent()._plot_data.getMesh()
             kwargs = {}
-            kwargs['vertexes']  = vertices
-            kwargs['faces']     = faces
-            kwargs['smooth']    = True
-            kwargs['drawEdges'] = False
+            kwargs['vertexes']  = mesh[0]
+            kwargs['faces']     = mesh[1]
+            kwargs['smooth']    = self['Draw smooth']
+            kwargs['drawFaces'] = self['Draw faces']
+            kwargs['drawEdges'] = self['Draw edges']
+
             self.draw_items.append(gl.GLMeshItem(**kwargs))
-            self.draw_items[-1].setTransform(self.parent().transformer.getTransform())
+            self.draw_items[-1].setGLOptions(self['OpenGl mode'])
             self.default_target.view.addItem(self.draw_items[-1])
+            self.draw_items[-1].setTransform(self.parent().transformer.getTransform())
             self.childFromName('Shader').runShader()
 
     def removeItems(self):
         '''
+        Remove the objects.
         '''
-        for curve in self.draw_items:
-            self.default_target.draw_surface.removeItem(curve)
-
-    def processRay(self, ray):
-        '''
-        try to process the ray intersection
-        '''
-        pass
-        
+        if hasattr(self, 'draw_items'):
+            for curve in self.draw_items:
+                self.default_target.draw_surface.removeItem(curve)
