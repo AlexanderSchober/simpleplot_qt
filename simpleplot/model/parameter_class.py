@@ -26,6 +26,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import collections.abc
 import numpy as np
 
+from .node import SessionNode
 from .parameter_node import ParameterNode
 from .parameter_node import ParameterItem
 
@@ -40,7 +41,7 @@ from .widget_constructors import gradientConstructor
 
 from ..simpleplot_widgets.SimplePlotGradientEditorItem import GradientEditorItem
 
-class ParameterHandler(ParameterNode):
+class ParameterHandler(SessionNode):
     '''
     The need for type management of parameters and 
     other things asks for a class object rather 

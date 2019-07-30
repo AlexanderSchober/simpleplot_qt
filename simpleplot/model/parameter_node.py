@@ -18,8 +18,10 @@ class ParameterNode(SessionNode):
     def flags(self, index):
         if index.column() == 0:
             return QtCore.Qt.ItemIsEnabled 
-        else:
+        elif index.column() == 1:
             return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
+        else:
+            return QtCore.Qt.NoItemFlags
 
 class ParameterItem(SessionNode):
     def __init__(self, name, parent, value, method):
@@ -41,5 +43,7 @@ class ParameterItem(SessionNode):
     def flags(self, index):
         if index.column() == 0:
             return QtCore.Qt.ItemIsEnabled 
-        else:
+        elif index.column() == 1:
             return QtCore.Qt.ItemIsEnabled  | QtCore.Qt.ItemIsEditable
+        else:
+            return QtCore.Qt.NoItemFlags

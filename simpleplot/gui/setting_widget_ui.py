@@ -28,6 +28,7 @@ class Ui_settings_widget(object):
         self.verticalLayout_2.setSpacing(6)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.canvas_tree_view = QtWidgets.QTreeView(self.canvas_tab)
+        self.canvas_tree_view.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
         self.canvas_tree_view.setObjectName("canvas_tree_view")
         self.verticalLayout_2.addWidget(self.canvas_tree_view)
         self.tabWidget.addTab(self.canvas_tab, "")
@@ -66,6 +67,7 @@ class Ui_settings_widget(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.plot_tree_view.sizePolicy().hasHeightForWidth())
         self.plot_tree_view.setSizePolicy(sizePolicy)
+        self.plot_tree_view.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
         self.plot_tree_view.setObjectName("plot_tree_view")
         self.verticalLayout_4.addWidget(self.plot_tree_view)
         self.splitter = QtWidgets.QSplitter(self.widget)
@@ -104,7 +106,7 @@ class Ui_settings_widget(object):
         self.verticalLayout.addWidget(self.tabWidget)
 
         self.retranslateUi(settings_widget)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(settings_widget)
 
     def retranslateUi(self, settings_widget):
