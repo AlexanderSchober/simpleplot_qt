@@ -137,4 +137,18 @@ class SessionNode(QtGui.QStandardItem):
         with open(path, 'w') as f:
             json.dump(output, f)
 
-        
+    def load(self, input_dict):
+        '''
+        reads the input dictionary
+        '''
+        for child in self._children:
+            if child._name in input_dict.keys():
+                child.load(input_dict[child._name])
+
+    def loadFromFile(self, path):
+        '''
+        saves the tree to a json format
+        '''
+        with open(path, 'r') as f:
+            input_dict = json.load(f)
+        self.load(input_dict)

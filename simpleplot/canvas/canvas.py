@@ -205,6 +205,21 @@ class CanvasNode(SessionNode):
     def mouseDrag(self,event):
         self.mouse.drag(event)
 
+    def generateDefaultConfiguration(self):
+        '''
+        Saves the configuration to file 
+        while the path depends on the type
+        '''
+        path  = os.path.sep.join(
+            os.path.dirname(__file__).split(os.path.sep)[:-1]
+            + ['ressources']
+            + ['settings']
+            + ['canvas']
+            + ['default']
+            + [self.handler['Type']+'_canvas.json'])
+
+        self.saveToFile(path)
+
     def saveConfiguration(self):
         '''
         Saves the configuration to file 
@@ -219,3 +234,33 @@ class CanvasNode(SessionNode):
             + [self.handler['Type']+'_canvas.json'])
 
         self.saveToFile(path)
+
+    def loadDefaultConfiguration(self):
+        '''
+        Saves the configuration to file 
+        while the path depends on the type
+        '''
+        path  = os.path.sep.join(
+            os.path.dirname(__file__).split(os.path.sep)[:-1]
+            + ['ressources']
+            + ['settings']
+            + ['canvas']
+            + ['default']
+            + [self.handler['Type']+'_canvas.json'])
+
+        self.loadFromFile(path)
+
+    def loadUserConfiguration(self):
+        '''
+        Saves the configuration to file 
+        while the path depends on the type
+        '''
+        path  = os.path.sep.join(
+            os.path.dirname(__file__).split(os.path.sep)[:-1]
+            + ['ressources']
+            + ['settings']
+            + ['canvas']
+            + ['user_defined']
+            + [self.handler['Type']+'_canvas.json'])
+
+        self.loadFromFile(path)

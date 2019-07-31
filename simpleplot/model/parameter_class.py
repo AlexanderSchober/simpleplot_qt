@@ -197,7 +197,7 @@ class ParameterHandler(ParameterNode):
             output[key] = self.items[key].getSaveFormated()
         return output
 
-    def load(self, value_dict):
+    def load(self, input_dict):
         '''
         This function allows the loading of previously 
         saved items. and the respective values
@@ -210,7 +210,10 @@ class ParameterHandler(ParameterNode):
             special items such as gradients special loaders will be written
             within the itmes. 
         '''
-        pass
+        for key in self.items.keys():
+            if key in input_dict.keys():
+                self.items[key].load(input_dict[key])
+        self.runAll()
 
 class ParameterMaster:
     '''
@@ -269,7 +272,28 @@ class ParameterMaster:
         elif type(value) == bool:
             return [name, 'bool', value]
         elif type(value) == GradientEditorItem:
-            return [name, 'bool', value.saveState]
+            return [name, 'gradient', value.saveState]
+
+    def getValueFormat(self, value_array):
+        '''
+
+        '''
+        if value_array[1] == 'int':
+            return value_array[2]
+        elif value_array[1] == 'float':
+            return value_array[2]
+        elif value_array[1] == 'str':
+            return value_array[2]
+        elif value_array[1] == 'color':
+            return QtGui.QColor(*value_array[2])
+        elif value_array[1] == 'font':
+            return QtGui.QFont(value_array[2])
+        elif value_array[1] == 'bool':
+            return value_array[2]
+        elif value_array[1] == 'gradient':
+            item = GradientEditorItem()
+            item.restoreState(value_array[2])
+            return item
 
 class ParameterVector(ParameterMaster, ParameterNode):
     def __init__(self, name, values, parent, **kwargs):
@@ -369,6 +393,14 @@ class ParameterVector(ParameterMaster, ParameterNode):
         
         return output
 
+    def load(self, value_dict):
+        '''
+        This is the load routine
+        '''
+        for element in self._vector_elements:
+            if element._name in value_dict.keys():
+                element.load(value_dict[element._name])
+
 class ParameterValue(ParameterMaster, ParameterItem):
     def __init__(self, name, value, parent, **kwargs): 
         '''
@@ -457,7 +489,7 @@ class ParameterValue(ParameterMaster, ParameterItem):
             self.kwargs['method']()
         return self._constructor.retrieveData(editor)
 
-    def updateValue(self, value, method = True):
+    def updateValue(self,value,method = True):
         '''
         Update the value of the item manually and 
         decide wether to call or not the method 
@@ -489,3 +521,11 @@ class ParameterValue(ParameterMaster, ParameterItem):
         output : list of elements 
         '''
         return self.getFormated(self._name, self.getValue())
+
+    def load(self,value_array):
+        '''
+        This is the load routine
+        '''
+        self.updateValue(
+            self.getValueFormat(value_array),
+            method=False)
