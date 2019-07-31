@@ -447,7 +447,7 @@ class ShaderConstructor(ParameterHandler):
 
         for i in range(len(self._colors)):
             temp_0 = (
-                """uniform float color_0[3];"""
+                """uniform float color_0[4];"""
                 )
             temp_0 = temp_0.replace('color_0', 'color_'+str(i))
             start_text += str(temp_0)
@@ -471,7 +471,7 @@ class ShaderConstructor(ParameterHandler):
                     color.x = (color_1[0]-color_0[0])*z_local + color_0[0];
                     color.y = (color_1[1]-color_0[1])*z_local + color_0[1];
                     color.z = (color_1[2]-color_0[2])*z_local + color_0[2];
-                    color.w = 1.0; 
+                    color.w = (color_1[3]-color_0[3])*z_local + color_0[3]; 
                 }
                 """)
             
