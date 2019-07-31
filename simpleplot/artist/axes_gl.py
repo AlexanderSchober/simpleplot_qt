@@ -140,7 +140,7 @@ class Axes3D(SessionNode):
             'Length', [-5., 5.],
             names  = ['min', 'max'],
             method = self.changeLength)
-
+            
     def processAllParameters(self):
         '''
         Will run through the items and set all the 

@@ -1,5 +1,6 @@
 #import general
 from PyQt5 import QtWidgets, QtGui, QtCore
+import json
 
 class SessionNode(QtGui.QStandardItem):
     
@@ -117,3 +118,23 @@ class SessionNode(QtGui.QStandardItem):
             return self._model.createIndex(self.row(),0,self)
         else:
             return QtCore.QModelIndex()
+
+    def save(self):
+        '''
+        returns the formated dictionary with the children
+        '''
+        output = {}
+        for child in self._children:
+            output[child._name] = child.save()
+
+        return output
+
+    def saveToFile(self, path):
+        '''
+        saves the tree to a json format
+        '''
+        output = self.save()
+        with open(path, 'w') as f:
+            json.dump(output, f)
+
+        

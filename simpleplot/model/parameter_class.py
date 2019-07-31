@@ -186,6 +186,32 @@ class ParameterHandler(ParameterNode):
             if 'method' in self.items[key].kwargs.keys():
                 self.items[key].kwargs['method']()
 
+    def save(self):
+        '''
+        This will generate a dictionary of values that will
+        be returned to the method asking for it. Note that this
+        dictionary can be read by the load functions. 
+        '''
+        output = {}
+        for key in self.items.keys():
+            output[key] = self.items[key].getSaveFormated()
+        return output
+
+    def load(self, value_dict):
+        '''
+        This function allows the loading of previously 
+        saved items. and the respective values
+
+        Parameters:
+        - - - - - - - - - - - 
+        value_dict : dict of values to set in the items
+            The dictionary should be formated in a way that the 
+            different values can be set in the items. Note that for 
+            special items such as gradients special loaders will be written
+            within the itmes. 
+        '''
+        pass
+
 class ParameterMaster:
     '''
     This class is meant to be inherited and 
@@ -194,6 +220,7 @@ class ParameterMaster:
     '''
     def __init__(self, name, parent, **kwargs):
         self._base_name  = name
+        self._name       = None
         self._parent     = parent
         self._active     = True
         self._value      = None
@@ -224,7 +251,26 @@ class ParameterMaster:
         return if an item is live
         '''
         return self._live
-    
+        
+    def getFormated(self,name, value):
+        '''
+
+        '''
+        if type(value) == int or isinstance(value, np.integer):
+            return [name, 'int', value]
+        elif type(value) == float or isinstance(value, np.floating):
+            return [name, 'float', value]
+        elif type(value) == str:
+            return [name, 'str', value]
+        elif type(value) == QtGui.QColor:
+            return [name, 'color', value.getRgb()]
+        elif type(value) == QtGui.QFont:
+            return [name, 'font', value.styleName()]
+        elif type(value) == bool:
+            return [name, 'bool', value]
+        elif type(value) == GradientEditorItem:
+            return [name, 'bool', value.saveState]
+
 class ParameterVector(ParameterMaster, ParameterNode):
     def __init__(self, name, values, parent, **kwargs):
         '''
@@ -305,6 +351,23 @@ class ParameterVector(ParameterMaster, ParameterNode):
 
         if 'method' in self.kwargs.keys() and method:
             self.kwargs['method']()
+
+    def getSaveFormated(self):
+        '''
+        return the current value but as 
+        a comprehensive string in case the value is 
+        a gradient or a color for example
+
+        Returns:
+        - - - - - - - - - - - 
+        output : list of elements 
+        '''
+        output = {}
+
+        for element in self._vector_elements:
+            output[element._name] = element.getFormated(element._name, element.getValue())
+        
+        return output
 
 class ParameterValue(ParameterMaster, ParameterItem):
     def __init__(self, name, value, parent, **kwargs): 
@@ -414,4 +477,15 @@ class ParameterValue(ParameterMaster, ParameterItem):
 
         if 'method' in self.kwargs.keys() and method:
             self.kwargs['method']()
-       
+
+    def getSaveFormated(self):
+        '''
+        return the current value but as 
+        a comprehensive string in case the value is 
+        a gradient or a color for example
+
+        Returns:
+        - - - - - - - - - - - 
+        output : list of elements 
+        '''
+        return self.getFormated(self._name, self.getValue())

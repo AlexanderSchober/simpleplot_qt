@@ -320,6 +320,8 @@ def exampleStepPlot():
     # histogram = surface.childFromName('Surface').childFromName('Shader').getHistogramItem()
     # ax.addItem('right', histogram)
     
+    multi_canvas.canvas_nodes[0][0][0].saveConfiguration()
+
     #show widget
     widget.show()
     sys.exit(app.exec_())

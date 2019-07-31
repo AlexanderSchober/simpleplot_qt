@@ -26,6 +26,7 @@ from PyQt5      import QtWidgets, QtGui, QtCore
 from OpenGL     import GL
 from copy       import deepcopy
 import numpy    as np
+import os
 
 from ..pyqtgraph.pyqtgraph.graphicsItems.ViewBox import ViewBox
 
@@ -203,3 +204,18 @@ class CanvasNode(SessionNode):
         self.mouse.release(event)
     def mouseDrag(self,event):
         self.mouse.drag(event)
+
+    def saveConfiguration(self):
+        '''
+        Saves the configuration to file 
+        while the path depends on the type
+        '''
+        path  = os.path.sep.join(
+            os.path.dirname(__file__).split(os.path.sep)[:-1]
+            + ['ressources']
+            + ['settings']
+            + ['canvas']
+            + ['user_defined']
+            + [self.handler['Type']+'_canvas.json'])
+
+        self.saveToFile(path)
