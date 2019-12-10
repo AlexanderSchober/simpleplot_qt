@@ -29,7 +29,7 @@ from ..plot_geometries.points   import Point
 from ..plot_geometries.shaders  import ShaderConstructor
 from ...pyqtgraph.pyqtgraph     import functions
 
-from ...model.node   import SessionNode
+from ...models.session_node   import SessionNode
 
 class VolumeData(PlotData, SessionNode): 
     '''

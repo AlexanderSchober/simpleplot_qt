@@ -31,7 +31,7 @@ from .volume_plot_handler           import VolumePlotHandler
 from .distribution_plot_handler     import DistributionPlotHandler
 from .plot_items.vector_field_plot  import VectorFieldPlot
 from .crystal_plot_handler          import CrystalPlotHandler
-from ..model.node                   import SessionNode
+from ..models.session_node          import SessionNode
 
 def get_main_handler(select):
     '''

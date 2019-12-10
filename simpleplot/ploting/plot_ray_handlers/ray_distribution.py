@@ -26,7 +26,7 @@ import numpy as np
 from ...pyqtgraph.pyqtgraph     import opengl as gl
 from ...pyqtgraph.pyqtgraph.opengl   import GLMeshItem
 from ...pyqtgraph.pyqtgraph.opengl.MeshData     import MeshData
-from ...model.parameter_class   import ParameterHandler 
+from ...models.parameter_class   import ParameterHandler 
 
 from ..plot_geometries.shaders      import ShaderConstructor
 

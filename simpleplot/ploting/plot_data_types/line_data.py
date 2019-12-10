@@ -24,7 +24,7 @@
 import numpy as np
 from .plot_data import PlotData
 
-from ...model.node   import SessionNode
+from ...models.session_node   import SessionNode
 
 class LineData(PlotData, SessionNode): 
     '''

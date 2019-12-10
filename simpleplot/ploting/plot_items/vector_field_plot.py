@@ -34,7 +34,7 @@ from ..plot_geometries.surfaces   import QuadSurface
 from ..plot_geometries.points     import Point
 from ..plot_geometries.shaders    import ShaderConstructor
 
-from ...model.node   import SessionNode
+from ...models.session_node   import SessionNode
 
 class VectorFieldPlot(SessionNode): 
     '''

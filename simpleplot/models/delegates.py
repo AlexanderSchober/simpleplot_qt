@@ -32,16 +32,16 @@ class ParameterDelegate(QtWidgets.QStyledItemDelegate):
 
     def setEditorData(self, editor, index):
         item  = index.model().getNode(index) 
-        item.setEditorData(editor)
+        item.setEditorData(editor, index)
 
     def setModelData(self, editor, model, index):
         item    = index.model().getNode(index) 
 
         if hasattr(item, 'getLive') and not item.getLive():
-            value   = item.retrieveData(editor)
+            value   = item.retrieveData(editor, index)
             model.setData(index, value, QtCore.Qt.EditRole)
         elif not hasattr(item, 'getLive'):
-            value   = item.retrieveData(editor)
+            value   = item.retrieveData(editor,index)
             model.setData(index, value, QtCore.Qt.EditRole)
         else:
             pass

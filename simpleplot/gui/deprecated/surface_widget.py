@@ -23,7 +23,7 @@
 
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from ..model.modal_items import QColorDialog
+from ..models.modal_items import QColorDialog
 
 from .surface_widget_ui import Ui_SurfaceWidget
 from ..pyqtgraph.pyqtgraph import GradientWidget

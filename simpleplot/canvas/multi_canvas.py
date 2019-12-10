@@ -25,11 +25,11 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 #import personal dependencies
-from .canvas                    import CanvasNode
-from ..model.models             import SessionModel
-from ..gui.mode_select          import ModeSelect
-from ..model.node               import SessionNode
-from ..model.parameter_class    import ParameterHandler 
+from .canvas                     import CanvasNode
+from ..models.plot_model         import PlotModel
+from ..gui.mode_select           import ModeSelect
+from ..models.session_node       import SessionNode
+from ..models.parameter_class    import ParameterHandler 
 
 class MultiCanvasItem(QtWidgets.QGridLayout):
     
@@ -143,7 +143,7 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
                         Type            = '3D',
                         **kwargs),i,j]
 
-        self._model = SessionModel(
+        self._model = PlotModel(
             self._rootNode, self, 
             max([4,len(self.x_ratios), 
             len(self.y_ratios)])+2)

@@ -25,7 +25,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from .scatter_widget_ui import Ui_ScatterWidget
-from ..model.modal_items import QColorDialog
+from ..models.modal_items import QColorDialog
 
 class ScatterWidget(Ui_ScatterWidget):
     

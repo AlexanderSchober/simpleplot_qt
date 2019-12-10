@@ -30,7 +30,7 @@ from ...simpleplot_widgets.SimpleHistogramLUTWidget import HistogramLUTWidget
 from ...simpleplot_widgets.SimplePlotGradientEditorItem import GradientEditorItem
 
 from OpenGL import GL
-from ...model.parameter_class       import ParameterHandler 
+from ...models.parameter_class       import ParameterHandler 
 
 class ShaderConstructor(ParameterHandler):
     '''

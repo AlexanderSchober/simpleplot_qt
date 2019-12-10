@@ -31,11 +31,11 @@ import os
 from ..pyqtgraph.pyqtgraph.graphicsItems.ViewBox import ViewBox
 
 #personal imports
-from ..artist.artist         import Artist2DNode, Artist3DNode
-from ..model.node            import SessionNode
-from ..model.parameter_class import ParameterHandler 
-from ..model.models          import SessionModel
-from ..io.mouse              import Mouse
+from ..artist.artist          import Artist2DNode, Artist3DNode
+from ..models.session_node    import SessionNode
+from ..models.parameter_class import ParameterHandler 
+from ..models.plot_model      import PlotModel
+from ..io.mouse               import Mouse
 
 from ..simpleplot_widgets.SimplePlotGLViewWidget    import MyGLViewWidget
 from ..simpleplot_widgets.SimplePlotWidget          import SimplePlotWidget
@@ -96,7 +96,7 @@ class CanvasNode(SessionNode):
             method = self._setVerticalSpacing)
 
         self._plot_root  = SessionNode('Root', None) 
-        self._plot_model = SessionModel(self._plot_root, self.multi_canvas)
+        self._plot_model = PlotModel(self._plot_root, self.multi_canvas)
 
     def _hideCanvas(self):
         '''

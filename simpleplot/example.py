@@ -1,10 +1,64 @@
-
+#  -*- coding: utf-8 -*-
+# *****************************************************************************
+# Copyright (c) 2017 by the NSE analysis contributors (see AUTHORS)
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# Module authors:
+#   Alexander Schober <alex.schober@mac.com>
+#
+# *****************************************************************************
 
 from .canvas.multi_canvas import MultiCanvasItem
+from .gui_main.main_window import MainWindow
+from .models.project_node import ProjectNode
+
 #import general
 from PyQt5 import QtWidgets, QtGui, QtCore
 import sys
 import numpy as np
+
+def startPlayGround():
+    #set upt the window and the plot widget
+    app = QtWidgets.QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    target = ProjectNode(name = "hey")
+    window._sidebar._tree_view.model().insertRows(
+        0,1,[target], 
+        window._sidebar._tree_view.model().root())
+    import_window = window._sidebar.addDataTxt(target.childFromName("Datasets"))
+    import_window.io_input_in.setText("/home/alexander/Google Drive/Work/2014:2017 Lipp (PhD)/software/R-DATA/Demo/DemoRawImport")
+    import_window.scan_folder_in()
+
+    import_window.list_dictionary[
+        "type"].dictionary["items"][0][0].setCheckState(
+            QtCore.Qt.Unchecked)
+    import_window._dimension_changed(
+        import_window.list_dictionary['type'].dictionary['model'].index(0,0))
+
+    import_window.list_dictionary[
+        "type"].dictionary["items"][2][0].setCheckState(
+            QtCore.Qt.Unchecked)
+    import_window._dimension_changed(
+        import_window.list_dictionary['type'].dictionary['model'].index(2,0))
+
+    import_window._process_export()
+    import_window.close()
+
+    sys.exit(app.exec_())
 
 def exampleLinePlot():
     #set upt the window and the plot widget
@@ -625,6 +679,7 @@ def example():
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
+    startPlayGround()
     # exampleMultiLinePlot()
     # exampleProjectionPlot()
     # exampleLinePlot()
@@ -633,4 +688,4 @@ if __name__ == '__main__':
     # exampleVolumePlot()
     # exampleDistPlot()
     # exampleCrystalPlot()
-    exampleStepPlot()
+    # exampleStepPlot()

@@ -23,7 +23,7 @@
 # *****************************************************************************
 
 import numpy as np
-from ...model.parameter_class   import ParameterHandler 
+from ...models.parameter_class   import ParameterHandler 
 from ...pyqtgraph.pyqtgraph     import Transform3D
 
 class Transformer(ParameterHandler): 

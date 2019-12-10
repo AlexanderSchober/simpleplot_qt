@@ -23,7 +23,7 @@
 
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from ..model.modal_items import QColorDialog
+from ..models.modal_items import QColorDialog
 
 from .volume_widget_ui import Ui_VolumeWidget
 from ..pyqtgraph.pyqtgraph import GradientWidget

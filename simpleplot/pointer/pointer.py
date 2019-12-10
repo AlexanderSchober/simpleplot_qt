@@ -28,8 +28,8 @@ from ..pyqtgraph import pyqtgraph as pg
 from .pointer_objects import *
 from .pointer_pos import * 
 
-from ..model.parameter_class import ParameterHandler
-from ..model.node import SessionNode
+from ..models.parameter_class import ParameterHandler
+from ..models.session_node import SessionNode
 
 class Pointer(SessionNode):
     '''

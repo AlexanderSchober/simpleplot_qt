@@ -30,7 +30,7 @@ from .axes              import Axes
 from .axes_gl           import Axes3D
 from .legend            import Legend
 from .grid_gl           import GridGl
-from ..model.node       import SessionNode
+from ..models.session_node import SessionNode
 
 from ..ploting.main_handler import get_main_handler
 from ..pyqtgraph import pyqtgraph as pg

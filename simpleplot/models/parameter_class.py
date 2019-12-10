@@ -26,7 +26,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import collections.abc
 import numpy as np
 
-from .node import SessionNode
+from .session_node import SessionNode
 from .parameter_node import ParameterNode
 from .parameter_node import ParameterItem
 
@@ -37,7 +37,7 @@ from .widget_constructors import comboBoxConstructor
 from .widget_constructors import colorWidgetConstructor
 from .widget_constructors import fontWidgetConstructor
 from .widget_constructors import checkBoxConstructor
-from .widget_constructors import gradientConstructor
+from .widget_constructors import gradientConstructor 
 
 from ..simpleplot_widgets.SimplePlotGradientEditorItem import GradientEditorItem
 
@@ -462,7 +462,7 @@ class ParameterValue(ParameterMaster, ParameterItem):
         '''
         return self._constructor.create(parent,index =  index)
 
-    def setEditorData(self, editor):
+    def setEditorData(self, editor, index):
         '''
         Set the data of the editor. This method is
         propagated to our _contructor loaded with the
@@ -475,7 +475,7 @@ class ParameterValue(ParameterMaster, ParameterItem):
         '''
         self._constructor.setEditorData(editor)
 
-    def retrieveData(self, editor):
+    def retrieveData(self, editor, index):
         '''
         Get the data of the editor. This method is
         propagated to our _contructor loaded with the

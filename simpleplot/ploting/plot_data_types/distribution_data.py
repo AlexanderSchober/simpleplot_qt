@@ -28,7 +28,7 @@ from ..plot_geometries.surfaces import QuadSurface
 from ..plot_geometries.points   import Point
 from ...pyqtgraph.pyqtgraph     import functions
 from ...pyqtgraph.pyqtgraph.opengl.MeshData import MeshData
-from ...model.node   import SessionNode
+from ...models.session_node   import SessionNode
 
 class DistributionData(PlotData, SessionNode): 
     '''

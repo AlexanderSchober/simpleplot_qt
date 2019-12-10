@@ -113,8 +113,9 @@ class doubleSpinBoxConstructor:
 
 class lineEditConstructor:
 
-    def __init__(self, parent = None): 
+    def __init__(self, parent = None, keyword = None): 
         self.manager = parent
+        self.keyword = keyword
 
     def create(self,parent, value = None, index = None):
         self._index = QtCore.QModelIndex(index)
@@ -125,7 +126,11 @@ class lineEditConstructor:
     def updateInternals(self, value):
         '''
         '''
-        self.manager._value = value
+        if not self.keyword == None:
+            self.manager.kwargs[self.keyword] = value
+        else:
+            self.manager._value = value
+
         self.manager._model.dataChanged.emit(
             self.manager.index(),
             self.manager.index())
@@ -136,7 +141,10 @@ class lineEditConstructor:
         self.manager.parent().setString()
 
     def setEditorData(self, editor):
-        editor.setText(self.manager._value)
+        if not self.keyword == None:
+            editor.setText(self.manager.kwargs[self.keyword])
+        else:
+            editor.setText(self.manager._value)
 
     def retrieveData(self, editor):
         return editor.text()
@@ -231,20 +239,34 @@ class checkBoxConstructor:
 
 class comboBoxConstructor:
 
-    def __init__(self, parent = None): 
+    def __init__(self, parent = None, keyword = None, choice_keyword = None): 
+        '''
+        '''
         self.manager = parent
+        self.keyword = keyword
+        self.choice_keyword = choice_keyword
 
     def create(self,parent, value = None, index = None):
+        '''
+        '''
         self._index = QtCore.QModelIndex(index)
         editor = QtWidgets.QComboBox(parent)
-        editor.addItems(self.manager.kwargs['choices'])
+
+        if not self.choice_keyword == None:
+            editor.addItems(self.manager.kwargs[self.choice_keyword])
+        else:
+            editor.addItems(self.manager.kwargs['choices'])
         
         return editor
 
     def updateInternals(self, value):
         '''
         '''
-        self.manager._value = value
+        if not self.keyword == None:
+            self.manager.kwargs[self.keyword] = value
+        else:
+            self.manager._value = value
+
         self.manager._model.dataChanged.emit(
             self.manager.index(),
             self.manager.index())
@@ -255,8 +277,25 @@ class comboBoxConstructor:
         self.manager.parent().setString()
 
     def setEditorData(self, editor):
-        editor.setCurrentIndex(
-            self.manager.kwargs['choices'].index(self.manager._value))
+        if not self.keyword == None:
+            if not self.choice_keyword == None:
+                editor.setCurrentIndex(
+                    self.manager.kwargs[self.choice_keyword].index(
+                        self.manager.kwargs[self.keyword]))
+            else:
+                editor.setCurrentIndex(
+                    self.manager.kwargs['choices'].index(
+                        self.manager.kwargs[self.keyword]))
+        else:
+            if not self.choice_keyword == None:
+                editor.setCurrentIndex(
+                    self.manager.kwargs[self.choice_keyword].index(
+                        self.manager._value))
+            else:
+                editor.setCurrentIndex(
+                    self.manager.kwargs['choices'].index(
+                        self.manager._value))
+
         editor.currentTextChanged.connect(self.updateInternals)
 
     def retrieveData(self, editor):

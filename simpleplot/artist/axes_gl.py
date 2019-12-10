@@ -30,8 +30,8 @@ import sys
 from .custome_axis_item import GLAxisItem
 from .custome_tick_item import GLTickItem
 from .custome_label_item import GLLabelItem
-from ..model.node import SessionNode
-from ..model.parameter_class import ParameterHandler 
+from ..models.session_node import SessionNode
+from ..models.parameter_class import ParameterHandler 
 
 class Axes3D(SessionNode): 
     '''

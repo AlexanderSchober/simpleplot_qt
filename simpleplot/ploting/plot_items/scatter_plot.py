@@ -32,7 +32,7 @@ from ..custom_pg_items.SimplePlotDataItem import SimplePlotDataItem
 from ..custom_pg_items.SimpleErrorBarItem import SimpleErrorBarItem
 from ..custom_pg_items.GLScatterPlotItem  import GLScatterPlotItem
 
-from ...model.parameter_class       import ParameterHandler 
+from ...models.parameter_class       import ParameterHandler 
 from ..plot_geometries.transformer  import Transformer
 
 class ScatterPlot(ParameterHandler): 

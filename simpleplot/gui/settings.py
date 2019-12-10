@@ -27,7 +27,7 @@ from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 from .setting_widget_ui import Ui_settings_widget
-from ..model.delegates  import ParameterDelegate
+from ..models.delegates  import ParameterDelegate
 from .export_dialog     import ExportDialog
 
 import sys

@@ -27,8 +27,8 @@ from ..pyqtgraph import pyqtgraph as pg
 import numpy as np
 import sys,os
 
-from ..model.node import SessionNode
-from ..model.parameter_class import ParameterHandler 
+from ..models.session_node import SessionNode
+from ..models.parameter_class import ParameterHandler 
 
 class Axes(SessionNode): 
     '''

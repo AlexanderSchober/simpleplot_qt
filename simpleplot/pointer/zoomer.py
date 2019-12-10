@@ -26,8 +26,8 @@ from ..pyqtgraph import pyqtgraph as pg
 from ..pyqtgraph.pyqtgraph import functions as fn
 from PyQt5 import QtGui,QtCore
 
-from ..model.parameter_node import ParameterNode
-from ..model.parameter_class import ParameterHandler 
+from ..models.parameter_node import ParameterNode
+from ..models.parameter_class import ParameterHandler 
 
 import numpy as np
 

@@ -1,4 +1,4 @@
-from .node import SessionNode
+from .session_node import SessionNode
 from PyQt5 import QtWidgets, QtGui, QtCore
  
 class ParameterNode(SessionNode):
