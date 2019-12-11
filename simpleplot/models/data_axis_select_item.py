@@ -26,11 +26,11 @@ from .session_node import SessionNode
 
 from .widget_constructors import comboBoxConstructor
 
-class DataAxisItem(SessionNode):
+class DataAxisSelectItem(SessionNode):
     '''
     '''
-    def __init__(self, name, unit, choices, axis_value, axis_choices, parent = None):
-        super(DataAxisItem, self).__init__(name, parent)
+    def __init__(self, name, unit, choices, axis_choices, parent = None):
+        super(DataAxisSelectItem, self).__init__(name, parent)
 
         self._value = None
         
@@ -38,8 +38,9 @@ class DataAxisItem(SessionNode):
         self.kwargs['name'] = name
         self.kwargs['value'] = str(choices[0])
         self.kwargs['choices'] = [str(e) for e in choices]
-        self.kwargs['axis_value'] = 'None'
-        self.kwargs['axis_choices'] = ['None']
+        self.kwargs['axis_value'] = axis_choices[0]
+        self.kwargs['axis_choices'] = axis_choices
+        self.kwargs['unit'] = unit
 
         self._constructor_choice = comboBoxConstructor(
             self, keyword = 'value', choice_keyword = 'choices')
@@ -52,9 +53,9 @@ class DataAxisItem(SessionNode):
         if column == 0:
             return self.kwargs['name']
         if column == 1:
-            return self.kwargs['value']
-        if column == 2:
             return self.kwargs['axis_value']
+        if column == 2:
+            return self.kwargs['value']
         if column == 3:
             return self.kwargs['unit']
 
@@ -64,9 +65,9 @@ class DataAxisItem(SessionNode):
         if column == 0:
             self.kwargs['name'] = value
         if column == 1:
-            self.kwargs['value'] = value
-        if column == 1:
             self.kwargs['axis_value'] = value
+        if column == 2:
+            self.kwargs['value'] = value
         if column == 3:
             self.kwargs['unit'] = value
 
@@ -86,25 +87,25 @@ class DataAxisItem(SessionNode):
     def createWidget(self, parent, index):
         '''
         '''
-        if index.column() == 1:
+        if index.column() == 2:
             return self._constructor_choice.create(
                 parent,index = index)
-        if index.column() == 2:
+        if index.column() == 1:
             return self._constructor_axis.create(
                 parent,index = index)
 
     def setEditorData(self, editor, index):
         '''
         '''
-        if index.column() == 1:
-            self._constructor_choice.setEditorData(editor)
         if index.column() == 2:
+            self._constructor_choice.setEditorData(editor)
+        if index.column() == 1:
             self._constructor_axis.setEditorData(editor)
 
     def retrieveData(self, editor, index):
         '''
         '''
-        if index.column() == 1:
-            return self._constructor_choice.retrieveData(editor)
         if index.column() == 2:
+            return self._constructor_choice.retrieveData(editor)
+        if index.column() == 1:
             return self._constructor_axis.retrieveData(editor)

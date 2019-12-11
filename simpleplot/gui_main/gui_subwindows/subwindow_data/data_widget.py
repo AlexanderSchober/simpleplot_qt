@@ -122,9 +122,11 @@ class DataWidget(QtWidgets.QWidget):
             +str(self._data_table.verticalHeader().logicalIndexAt(pos))
             +" ...")
 
+        target = None
         for widget in QtWidgets.QApplication.topLevelWidgets():
             if widget.__class__.__name__ == "MainWindow":
                 target = widget._sidebar
+        if target == None: return
 
         plot_action.triggered.connect(
             target.launchLinkCreator)
@@ -142,9 +144,11 @@ class DataWidget(QtWidgets.QWidget):
             +str(self._data_table.verticalHeader().logicalIndexAt(pos))
             +" ...")
 
+        target = None
         for widget in QtWidgets.QApplication.topLevelWidgets():
             if widget.__class__.__name__ == "MainWindow":
                 target = widget._sidebar
+        if target == None: return
 
         plot_action.triggered.connect(
             target.launchLinkCreator)

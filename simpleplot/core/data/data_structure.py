@@ -202,7 +202,7 @@ class DataStructure:
         if self.add_meta_auto and not len(self.metaDataObjects) < 1 :
             self.DataObjects[-1].meta_address.append(self.metaDataObjects[-1].meta_id)
             self.metaDataObjects[-1].links.append(self.id)
-            
+
         self.id += 1
 
     def addMetadataObject(self,dictionary):
@@ -918,7 +918,6 @@ class Axes:
         self.generate(data_structure)
 
     def __str__(self):
-
         '''
         Here we will mainly run through the objects 
         and try to first built the axes with the 
@@ -982,7 +981,6 @@ class Axes:
         set the values of an axis ...
         '''
         self.axes[idx] = axis
-
 
     def get_position(self, val, idx):
         '''
