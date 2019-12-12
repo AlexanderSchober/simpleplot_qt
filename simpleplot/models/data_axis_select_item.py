@@ -55,7 +55,10 @@ class DataAxisSelectItem(SessionNode):
         if column == 1:
             return self.kwargs['axis_value']
         if column == 2:
-            return self.kwargs['value']
+            if self.data(1) == "Fixed":
+                return "variable"
+            else:
+                return self.kwargs['value']
         if column == 3:
             return self.kwargs['unit']
 
@@ -80,7 +83,10 @@ class DataAxisSelectItem(SessionNode):
         elif column == 1:
             return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
         elif column == 2:
-            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
+            if self.data(1) == "Fixed":
+                return QtCore.Qt.ItemIsEnabled
+            else:
+                return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
         elif column == 3:
             return QtCore.Qt.ItemIsEnabled
 

@@ -25,6 +25,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from ...models.data_axis_select_item import DataAxisSelectItem
 from ...models.data_axis_model import DataAxisModel
+from ...models.project_node import DataLinkItem
 from ...models.delegates import ParameterDelegate
 
 from ...models.project_node import DataItem
@@ -51,6 +52,11 @@ class DataLinkCreator(QtWidgets.QDialog):
             ["x", "y", "z", "Fixed"],
             ["x", "y", "z", "I", "Fixed"]
         ]
+        self._plot_choices = [
+            ["Scatter"],
+            ["Surface", "Bar", "Step"],
+            ["Volume", "Distribution"]
+        ]
 
         self._populateProjects()
         self._populateDataPlot()
@@ -69,6 +75,8 @@ class DataLinkCreator(QtWidgets.QDialog):
         self._subplot_drop = QtWidgets.QComboBox()
         self._selector = QtWidgets.QTabBar()
         self._axes_select = QtWidgets.QTableView()
+        self._plot_type = QtWidgets.QComboBox()
+        self._generate = QtWidgets.QPushButton("Generate")
 
         self._selector.addTab("2D")
         self._selector.addTab("3D")
@@ -83,6 +91,7 @@ class DataLinkCreator(QtWidgets.QDialog):
         layout.addWidget(QtWidgets.QLabel("Plot target:"), 2,0,1,1)
         layout.addWidget(QtWidgets.QLabel("Subplot target:"), 3,0,1,1)
         layout.addWidget(QtWidgets.QLabel("Select dimensionality:"), 4,0,1,1)
+        layout.addWidget(QtWidgets.QLabel("Select target type:"), 6,0,1,1)
 
         layout.addWidget(self._project_drop, 0,1,1,1)
         layout.addWidget(self._data_drop, 1,1,1,1)
@@ -90,10 +99,13 @@ class DataLinkCreator(QtWidgets.QDialog):
         layout.addWidget(self._subplot_drop, 3,1,1,1)
         layout.addWidget(self._selector, 4,1,1,1)
         layout.addWidget(self._axes_select, 5,0,1,3)
+        layout.addWidget(self._plot_type, 6,1,1,1)
+        layout.addWidget(self._generate, 7,1,1,1)
 
         self._project_drop.currentTextChanged.connect(self._populateDataPlot)
         self._plot_drop.currentTextChanged.connect(self._populateSubplot)
         self._selector.currentChanged.connect(self._setupModel)
+        self._generate.clicked.connect(self.generate)
 
     def _populateProjects(self):
         '''
@@ -170,8 +182,6 @@ class DataLinkCreator(QtWidgets.QDialog):
                 target = widget
         if target == None: return
 
-        root_pointer = target._model.root()
-
         if self._plot_drop.currentText() == "": return
         
         self._subplots  = [
@@ -198,7 +208,6 @@ class DataLinkCreator(QtWidgets.QDialog):
         if axes == None: return
         if len(target.DataObjects) == 0: return 
         
-
         for i in range(axes.dim):
             item = DataAxisSelectItem(
                 axes.names[i],
@@ -221,3 +230,33 @@ class DataLinkCreator(QtWidgets.QDialog):
         self._model.referenceModel()
         self._axes_select.setModel(self._model)
 
+        self._plot_type.clear()
+        self._plot_type.addItems(self._plot_choices[self._selector.currentIndex()])
+
+    def generate(self):
+        '''
+        Gather all the informations provided in th e
+        individual fields and generate the data injector
+        on the side of the data and the plot item on the
+        side of the plot. Then link them,6
+        '''
+        subplot = self._subplots[self._subplot_drop.currentIndex()]
+        plot_item = subplot.artist.addPlot(self._plot_type.currentText())
+        data_item = self._data[self._data_drop.currentIndex()]
+        data_link_item = DataLinkItem()
+        data_injector = data_link_item.data_injector
+
+        target = None
+        for widget in QtWidgets.QApplication.topLevelWidgets():
+            if widget.__class__.__name__ == "MainWindow":
+                target = widget
+        if target == None: return
+
+        target_model = target._model
+        target_model.insertRows(
+            data_item.childCount(), 1,
+            [data_link_item], data_item
+        )
+
+        data_injector.setDataSource(data_item.data)
+        data_injector.addPlotTarget(plot_item)

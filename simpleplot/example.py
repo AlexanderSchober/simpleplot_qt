@@ -28,6 +28,7 @@ from .models.project_node import ProjectNode
 #import general
 from PyQt5 import QtWidgets, QtGui, QtCore
 import sys
+import os
 import numpy as np
 
 def startPlayGround():
@@ -40,7 +41,9 @@ def startPlayGround():
         0,1,[target], 
         window._sidebar._tree_view.model().root())
     import_window = window._sidebar.addDataTxt(target.childFromName("Datasets"))
-    import_window.io_input_in.setText("/home/alexander/Google Drive/Work/2014:2017 Lipp (PhD)/software/R-DATA/Demo/DemoRawImport")
+    import_window.io_input_in.setText(r"/Users/alexanderschober/Desktop/DemoRawImport")
+    
+    # import_window.io_input_in.setText("/home/alexander/Google Drive/Work/2014:2017 Lipp (PhD)/software/R-DATA/Demo/DemoRawImport")
     import_window.scan_folder_in()
 
     import_window.list_dictionary[

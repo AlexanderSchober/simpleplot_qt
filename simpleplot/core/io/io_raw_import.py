@@ -85,7 +85,7 @@ class IORawHandler:
         look for files. 
         '''
         self.raw_file_list = file_methods.get_files_in_folder(
-            self.directory_path, 
+            os.path.realpath(self.directory_path), 
             extension = '.txt')
 
         self.file_list_mask = [True for i in self.raw_file_list]
@@ -125,17 +125,24 @@ class IORawHandler:
         self.dimension_list = []
 
         try:
-            self.common_str = file_methods.get_common_substrings(self.file_list)
+            self.common_str = file_methods.get_common_substrings(
+                self.file_list)
         except: 
             pass
 
+        self.dimension_list = self._process_dimensions(
+            self.common_str, 
+            previous = self.dimension_list )
         try:
             self.dimension_list = self._process_dimensions(
                 self.common_str, 
                 previous = self.dimension_list )
+            
         except: 
             pass
 
+        print("Common str", self.common_str)
+        print("Dimension_list", self.dimension_list)
         self.build_string()
 
     def build_string(self):
@@ -222,15 +229,15 @@ class IORawHandler:
                         values[-1] = float(values[-1])
                     except:
                         pass
-
+                
+                try:
+                    sorted_val = sorted(values)
+                except:
+                    sorted_val = values
+                    
                 dimension_list.append([
-                    name,
-                    unit,
-                    pre_split,
-                    post_split,
-                    True, 
-                    values,
-                    sorted(values)])
+                    name,unit, pre_split, post_split,
+                    True,values,sorted_val])
 
         return dimension_list
 

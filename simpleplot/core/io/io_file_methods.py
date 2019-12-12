@@ -33,21 +33,13 @@ def get_files_in_folder(path, extension = None):
     goes through the folder and sends back a 
     list of absolute paths. 
     '''
+    path = os.path.normpath(path)
 
-    #first get the absolute path
-    path = os.path.abspath(path)
-
-    #then 
     if os.path.isdir(path):
-
         if extension == None:
-
             return glob.glob(path+'/')
-
         else:
-
             return glob.glob(path+'/*'+extension)
-
     else: 
         return False
 
@@ -58,40 +50,31 @@ def get_common_substrings(path_list):
     goes through the folder and sends back a 
     list of absolute paths. 
     '''
-
-    #first get the absolute path
     base_length = 3
     position    = 0
     substrings  = []
     run         = True
-    path_list   = [element.split(os.path.sep)[-1].split('.')[0] for element in path_list]
+    path_list   = [
+        element.split(os.path.sep)[-1].split('.')[0] 
+        for element in path_list]
     temp_result = ''
 
-    #run
     while run:
-        
         #are we geting out of the string length
         if position + base_length == len(path_list[0]):
             run = False
             return substrings
-
         #get comparison string
         string_element = path_list[0][position:position+base_length]
-
         #check if it exists in all 
         if substring_in_list(string_element, path_list):
-
             #set temporary result
             temp_result = str(string_element)
-
             #increase the length
             base_length += 1
 
         else:
-
             if not temp_result == '':
-
-                #we found a result and overstepped
                 substrings.append(temp_result)
                 position        += base_length
                 base_length     = 3

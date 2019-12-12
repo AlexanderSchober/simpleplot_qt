@@ -27,7 +27,30 @@ import numpy as np
 
 class DataInjector:
     '''
-
+    This class is responsible for genrating the adequate numpy 
+    arrays to combine a multi dimensional dataset into a 
+    the axes and the data structure.
     '''
     def __init__(self):
-        pass
+
+        self._data_source = None
+        self._axes_instructions = []
+        self._plot_targets = []
+        
+    def setDataSource(self, source):
+        '''
+        replace the source of the data
+        '''
+        self._data_source = source
+
+    def addPlotTarget(self, target):
+        '''
+        Add a plot target to the list
+        '''
+        self._plot_targets.append(target)
+
+    def removePlotTarget(self, target):
+        '''
+        Add a plot target to the list
+        '''
+        self._plot_targets.remove(target)

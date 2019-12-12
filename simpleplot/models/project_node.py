@@ -26,6 +26,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 from ..core.data.data_structure import DataStructure
 from ..core.data.data_injector import DataInjector
+
 from ..canvas.multi_canvas import MultiCanvasItem
 from ..gui_main.gui_subwindows.subwindow_data.data_widget import DataWidget
  
@@ -79,6 +80,25 @@ class DataItem(SessionNode):
         self.descriptor = "data item"
         self.data_item = DataStructure()
         self.data_widget = DataWidget(self.data_item)
+ 
+    def data(self, column):
+        if column is 0: return self._name
+ 
+    def setData(self, column, value):
+        if  column is 0: self._name = value
+        
+    def flags(self, index):
+        column = index.column()
+
+        if column is 0: return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
+
+        else: return QtCore.Qt.ItemIsEnabled
+
+class DataLinkItem(SessionNode):
+    def __init__(self, name = 'Data link', parent = None):
+        SessionNode.__init__(self, name, parent)
+        self.descriptor = "data link item"
+        self.data_injector = DataInjector()
  
     def data(self, column):
         if column is 0: return self._name

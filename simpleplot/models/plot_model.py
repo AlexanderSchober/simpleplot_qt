@@ -148,7 +148,6 @@ class PlotModel(QtCore.QAbstractItemModel):
 
     """INPUTS: int, int, QModelIndex"""
     def insertRows(self, position, rows, items, parentNode):
-
         success = False
         self.beginInsertRows(
             parentNode.index(), position, 
@@ -162,7 +161,6 @@ class PlotModel(QtCore.QAbstractItemModel):
         self.referenceModel()
 
         return success
-    
 
     # """INPUTS: int, int, QModelIndex"""
     def removeRows(self, position, rows, parentNode):
