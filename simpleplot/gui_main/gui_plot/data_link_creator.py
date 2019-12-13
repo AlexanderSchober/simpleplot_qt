@@ -98,7 +98,7 @@ class DataLinkCreator(QtWidgets.QDialog):
         layout.addWidget(self._plot_drop, 2,1,1,1)
         layout.addWidget(self._subplot_drop, 3,1,1,1)
         layout.addWidget(self._selector, 4,1,1,1)
-        layout.addWidget(self._axes_select, 5,0,1,3)
+        layout.addWidget(self._axes_select, 5,0,1,2)
         layout.addWidget(self._plot_type, 6,1,1,1)
         layout.addWidget(self._generate, 7,1,1,1)
 

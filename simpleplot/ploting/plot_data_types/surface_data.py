@@ -49,7 +49,6 @@ class SurfaceData(PlotData, SessionNode):
         set the local data manually even after
         initialization of the class
         '''
-        print(kwargs)
         elements = [None]*len(self._axes)
         changed  = [False, False, False]
 

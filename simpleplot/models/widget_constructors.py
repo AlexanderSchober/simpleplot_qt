@@ -24,6 +24,8 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from ..simpleplot_widgets.SimplePlotGradientWidget import GradientWidget
 from ..simpleplot_widgets.SimplePlotGradientEditorItem import GradientEditorItem
+from ..simpleplot_widgets.scientificspin import ScientificDoubleSpinBox
+from ..pyqtgraph.pyqtgraph.widgets.SpinBox import SpinBox
 from functools import partial
 
 class spinBoxConstructor:
@@ -73,7 +75,7 @@ class doubleSpinBoxConstructor:
 
     def create(self,parent, value = None, index = None):
         self._index = QtCore.QModelIndex(index)
-        item = QtWidgets.QDoubleSpinBox(parent)
+        item = SpinBox(parent)
 
         if 'min' in self.manager.kwargs.keys():
             item.setMinimum(self.manager.kwargs['min'])

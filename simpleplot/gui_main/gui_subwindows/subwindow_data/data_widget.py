@@ -42,9 +42,12 @@ class DataWidget(QtWidgets.QWidget):
         This will build the layout of the current widget 
         by placing the two main components
         '''
+        self._tool_bar = QtWidgets.QToolBar()
         self._splitter = QtWidgets.QSplitter()
         self._parameter_list = QtWidgets.QTableView()
         self._data_table = QtWidgets.QTableView()
+
+        self._setupToolBar()
 
         self._axis_model = DataAxisModel()
         self._axis_delegate = ParameterDelegate()
@@ -63,12 +66,56 @@ class DataWidget(QtWidgets.QWidget):
         self._data_table.verticalHeader().setContextMenuPolicy(
             QtCore.Qt.CustomContextMenu)
 
-        self._main_layout = QtWidgets.QHBoxLayout(self)
+        self._main_layout = QtWidgets.QVBoxLayout(self)
         self._splitter.addWidget(self._parameter_list)
         self._splitter.addWidget(self._data_table)
+        self._main_layout.addWidget(self._tool_bar)
         self._main_layout.addWidget(self._splitter)
 
         self._axis_model.dataChanged.connect(self.updateDataView)
+
+    def _setupToolBar(self):
+        '''
+        set up the tool bar for the data widget
+        '''
+
+        tool_button = QtWidgets.QToolButton()
+        tool_button.setText("File")
+        tool_button.setStyleSheet('QToolButton::menu-indicator { image: none; }')
+        tool_button.setPopupMode(QtWidgets.QToolButton.InstantPopup)
+
+        file_menu = QtWidgets.QMenu(tool_button)
+        item = file_menu.addAction("Load")
+        item.triggered.connect(self._load)
+        item = file_menu.addAction("Save")
+        item.triggered.connect(self._save)
+        item = file_menu.addAction("Save as ...")
+        item.triggered.connect(self._saveAs)
+        tool_button.setMenu(file_menu)
+
+        self._tool_bar.addWidget(tool_button)
+
+        tool_button = QtWidgets.QToolButton()
+        tool_button.setText("Plot")
+        tool_button.setPopupMode(QtWidgets.QToolButton.InstantPopup)
+        tool_button.clicked.connect(self._plot)
+        self._tool_bar.addWidget(tool_button)
+
+        tool_button = QtWidgets.QToolButton()
+        tool_button.setText("Analyse")
+        tool_button.setStyleSheet('QToolButton::menu-indicator { image: none; }')
+        tool_button.setPopupMode(QtWidgets.QToolButton.InstantPopup)
+
+        analysis_menu = QtWidgets.QMenu(tool_button)
+        item = analysis_menu.addAction("PCA")
+        item.triggered.connect(self._load)
+        item = analysis_menu.addAction("NMF")
+        item.triggered.connect(self._save)
+        item = analysis_menu.addAction("Fitting")
+        item.triggered.connect(self._saveAs)
+        tool_button.setMenu(analysis_menu)
+
+        self._tool_bar.addWidget(tool_button)
 
     def _connectMethods(self):
         '''
@@ -154,3 +201,30 @@ class DataWidget(QtWidgets.QWidget):
             target.launchLinkCreator)
 
         menu.exec_(global_pos)
+
+    def _plot(self):
+        '''
+        The user clicked the row header item
+        ''' 
+        target = None
+        for widget in QtWidgets.QApplication.topLevelWidgets():
+            if widget.__class__.__name__ == "MainWindow":
+                target = widget._sidebar
+        if target == None: return
+
+        target.launchLinkCreator()
+
+    def _load(self):
+        '''
+        The user clicked the row header item
+        ''' 
+
+    def _save(self):
+        '''
+        The user clicked the row header item
+        ''' 
+
+    def _saveAs(self):
+        '''
+        The user clicked the row header item
+        ''' 

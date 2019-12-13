@@ -31,3 +31,4 @@ class MainWindowData(MainwindowMain):
     '''
     def __init__(self, *args, **kwargs):
         super(MainWindowData, self).__init__(*args, **kwargs)
+        
