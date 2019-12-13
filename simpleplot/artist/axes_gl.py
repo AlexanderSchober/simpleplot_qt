@@ -76,33 +76,33 @@ class Axes3D(SessionNode):
             # self.canvas.view.addItem(self.label_list[-1])
 
         self.x_direction.addParameter(
-            'Auto',  True,
+            'Auto',  False,
             method = self.refreshAuto)
         self.y_direction.addParameter(
-            'Auto',  True,
+            'Auto',  False,
             method = self.refreshAuto)
         self.z_direction.addParameter(
-            'Auto',  True,
+            'Auto',  False,
             method = self.refreshAuto)
 
         self.x_direction.addParameter(
-            'Axis',  True,
+            'Axis',  False,
             method = self.setAxes)
         self.y_direction.addParameter(
-            'Axis',  True,
+            'Axis',  False,
             method = self.setAxes)
         self.z_direction.addParameter(
-            'Axis',  True,
+            'Axis',  False,
             method = self.setAxes)
 
         self.x_direction.addParameter(
-            'Ticks',  True,
+            'Ticks',  False,
             method = self.setTicks)
         self.y_direction.addParameter(
-            'Ticks',  True,
+            'Ticks',  False,
             method = self.setTicks)
         self.z_direction.addParameter(
-            'Ticks',  True,
+            'Ticks',  False,
             method = self.setTicks)
 
         # self.x_direction.addParameter(

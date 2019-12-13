@@ -40,7 +40,7 @@ def get_files_in_folder(path, extension = None):
             return glob.glob(path+'/')
         else:
             return glob.glob(path+'/*'+extension)
-    else: 
+    else:
         return False
 
 def get_common_substrings(path_list):
@@ -141,7 +141,6 @@ def getRuntimeDir(Parent = False):
     return RunPath
 
 def isWindows():
-    
     if os.name == 'nt':
         return True
     
@@ -149,7 +148,6 @@ def isWindows():
         return False
 
 def isLinux():
-    
     if os.name == 'posix' and not sys.platform == 'darwin':
         return True
     

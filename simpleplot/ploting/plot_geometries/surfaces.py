@@ -102,7 +102,7 @@ class QuadSurface(Surface):
         then create the faces array.      
 
         It is supposed that the points are given in an
-        ordered manner forming rectangular strucutres. 
+        ordered manner forming rectangular structures. 
         '''
         Surface.__init__(self, **kwargs)
 
@@ -137,7 +137,6 @@ class QuadSurface(Surface):
             ]
             self.generated = True
             
-        #process the normal vector to process topography
         self.normal_vector = getNormal(self.border_points)
         
     def trace(self):
@@ -202,7 +201,8 @@ class QuadSurface(Surface):
         else:
             for j in range(self.resolution_y):
                 for i in range(self.resolution_x):
-                    translate = Translation(self.normal_vector * self.topography[i,j])
+                    translate = Translation(
+                        self.normal_vector * self.topography[i,j])
                     translate.apply([self.points[j * self.resolution_x + i]]) 
 
 
@@ -210,17 +210,9 @@ class Disk(QuadSurface):
     
     def __init__(self, dimension = 1, **kwargs):
         '''
-        ##############################################
         This is a wrapper class that will indeed 
         call the parent class made up of Quadsurface
         that inherits from surfaces.    
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         QuadSurface.__init__(self, height = dimension, width = dimension, **kwargs)
         self.type_name = 'Disk'
@@ -231,17 +223,9 @@ class Square(QuadSurface):
     
     def __init__(self, dimension = 1, **kwargs):
         '''
-        ##############################################
         This is a wrapper class that will indeed 
         call the parent class made up of Quadsurface
         that inherits from surfaces.    
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         QuadSurface.__init__(self, height = dimension, width = dimension, **kwargs)
         self.type_name = 'Square'
@@ -250,17 +234,9 @@ class Rectangle(QuadSurface):
     
     def __init__(self, height = 1, width = 1, **kwargs):
         '''
-        ##############################################
         This is a wrapper class that will indeed 
         call the parent class made up of Quadsurface
         that inherits from surfaces.     
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         QuadSurface.__init__(self, height = height, width = width, **kwargs)
         self.type_name = 'Rectangle'
@@ -269,17 +245,9 @@ class TriSurface(Surface):
 
     def __init__(self):
         '''
-        ##############################################
         This class is supposed to manage the quadratic 
         surfaces. It will initialise the positions and
-        then create the faces array.      
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
+        then create the faces array. 
         '''
         Surface.__init__(self)
         self.type_name = 'TriSurface'

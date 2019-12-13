@@ -49,6 +49,7 @@ class SurfaceData(PlotData, SessionNode):
         set the local data manually even after
         initialization of the class
         '''
+        print(kwargs)
         elements = [None]*len(self._axes)
         changed  = [False, False, False]
 
@@ -62,7 +63,7 @@ class SurfaceData(PlotData, SessionNode):
             if not self._data[self._axes.index('z')] is None:
                 elements[self._axes.index('z')] = self._data[self._axes.index('z')]  
             else:
-                elements[self._axes.index('z')] = np.zeros((1,1))
+                elements[self._axes.index('z')] = np.random.rand(5,5)
                 changed[self._axes.index('z')] = True
 
         if elements[self._axes.index('x')] is None:

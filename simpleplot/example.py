@@ -387,7 +387,7 @@ def exampleStepPlot():
         'Step', 
         x = x,
         y = x,
-        z = -np.cos(xv)-np.sin(yv)-2,
+        z = (-np.cos(xv)-np.sin(yv)-2),
         Name        = 'key',
         Colors      = Colors[::-1],
         Positions   = Positions)
