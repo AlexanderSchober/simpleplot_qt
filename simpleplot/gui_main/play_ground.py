@@ -42,6 +42,9 @@ class Playground(QtWidgets.QMdiArea):
         Create the plot subwindow and return it for 
         the caller to register it into the model
         '''
+        if not item.canvas_widget.parent() == None:
+            item.canvas_widget.parent().close()
+
         child = SubwindowPlot(self)
         child.setWidget(item.canvas_widget)
         child.show()
@@ -51,6 +54,9 @@ class Playground(QtWidgets.QMdiArea):
         Create the plot subwindow and return it for 
         the caller to register it into the model
         '''
+        if not item.data_widget.parent() == None:
+            item.data_widget.parent().close()
+
         child = SubwindowData(self)
         item.data_widget.setupModels()
         child.setWidget(item.data_widget)

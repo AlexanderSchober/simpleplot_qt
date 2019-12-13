@@ -95,7 +95,7 @@ class DataWidget(QtWidgets.QWidget):
                 self._data_pointer.axes.units[i],
                 self._data_pointer.axes.axes[i]))
             
-        self._axis_model.insertRows(0, 1, axis_items)
+        self._axis_model.insertRows(0, len(axis_items), axis_items)
         self.updateDataView()
 
     def updateDataView(self):

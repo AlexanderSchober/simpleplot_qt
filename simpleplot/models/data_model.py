@@ -65,9 +65,7 @@ class DataModel(QtCore.QAbstractTableModel):
         data pointer element.
         '''
         self.beginResetModel()
-
         self._data_index = list(index)
-
         self._data_object_data = self._data_pointer[self._data_index]
         if len(self._data_object_data.shape) == 1:
             self._col_count = 1

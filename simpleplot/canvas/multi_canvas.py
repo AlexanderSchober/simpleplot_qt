@@ -74,6 +74,8 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         self._configureGrid()
         self._layoutManager()
 
+        self._model.referenceModel()
+
     def _setUp(self):
         '''
         set up the pyqt part of the elements
@@ -197,13 +199,17 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         '''
         for i in range(len(self.handler['x_ratios'])):
             try:
-                self.setColumnStretch(i,self.handler['x_ratios'][i] if not zeros else 0)
+                self.setColumnStretch(
+                    i,self.handler['x_ratios'][i] 
+                    if not zeros else 0)
             except:
                 pass
         
         for j in range(len(self.handler['y_ratios'])):
             try:
-                self.setRowStretch(j,self.handler['y_ratios'][j] if not zeros else 0)
+                self.setRowStretch(
+                    j,self.handler['y_ratios'][j] 
+                    if not zeros else 0)
             except:
                 if self.Verbose:
                     print('Could not set the row weight for: ',j)

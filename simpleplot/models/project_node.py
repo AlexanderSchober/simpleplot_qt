@@ -70,7 +70,7 @@ class DatasetsNode(SessionNode):
         return QtCore.Qt.ItemIsEnabled
 
     def addDataItem(self):
-        temp = DataItem()
+        temp = DataItem(name = 'Dataset ' + str(self.childCount()))
         self.model().insertRows(self.childCount(), 1, [temp], self)
         return temp
 
@@ -114,7 +114,7 @@ class DataLinkItem(SessionNode):
         else: return QtCore.Qt.ItemIsEnabled
 
 class AnalysisNode(SessionNode):
-    def __init__(self, name = 'Anslysis', parent = None):
+    def __init__(self, name = 'Analysis', parent = None):
         SessionNode.__init__(self, name, parent)
         self.descriptor = "analysis"
  

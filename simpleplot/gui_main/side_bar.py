@@ -48,7 +48,11 @@ class Sidebar(QtWidgets.QWidget):
         self._tree_view.setModel(model)
         self._tree_view.setContextMenuPolicy(
             QtCore.Qt.CustomContextMenu)
-        
+        self._tree_view.expanded.connect(partial(
+            self._tree_view.resizeColumnToContents,0))
+        self._tree_view.collapsed.connect(partial(
+            self._tree_view.resizeColumnToContents,0))
+
         sidebar_layout = QtWidgets.QVBoxLayout(self)
         bottom_layout = QtWidgets.QHBoxLayout()
         bottom_layout.addWidget(self._add_button)
@@ -250,6 +254,8 @@ class Sidebar(QtWidgets.QWidget):
 
                 show_data_MDI.triggered.connect(partial(
                     self.parent().parent()._playground.addData, item))
+                show_data_Window.triggered.connect(partial(
+                    self.parent().parent().displayData, item))
 
                 temp_menu.popup(self._tree_view.viewport().mapToGlobal(point))
 
@@ -286,5 +292,7 @@ class Sidebar(QtWidgets.QWidget):
 
                 show_plot_MDI.triggered.connect(partial(
                     self.parent().parent()._playground.addPlot, item))
+                show_plot_Window.triggered.connect(partial(
+                    self.parent().parent().displayPlot, item))
 
                 temp_menu.popup(self._tree_view.viewport().mapToGlobal(point))

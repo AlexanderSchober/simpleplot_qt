@@ -97,7 +97,7 @@ class IORawHandler:
     def evaluate_ignore(self):
         '''
         This routine will evaluate which files the
-        user wnats to truely keep in the end. 
+        user wants to truly keep in the end. 
         '''
         self.file_list = []
 
@@ -109,7 +109,7 @@ class IORawHandler:
         '''
         This routine will allow the user to set the 
         import directory and the routine will then 
-        lookf for files. 
+        look for files. 
         '''
         self.file_list_mask[index] = val
         self.evaluate_ignore()
@@ -140,9 +140,7 @@ class IORawHandler:
             
         except: 
             pass
-
-        print("Common str", self.common_str)
-        print("Dimension_list", self.dimension_list)
+        
         self.build_string()
 
     def build_string(self):
@@ -353,6 +351,7 @@ class IORawWorker:
             data_structure.axes.units[i] = future_axes_units[i]
             data_structure.axes.axes[i] = list(future_axes_values[i])
 
+        data_structure.axes.collapseAllAxes(data_structure)
         print(data_structure)
 
         #send it all out to the writer

@@ -48,15 +48,13 @@ class DataLinkCreator(QtWidgets.QDialog):
         self._data = []
         self._plots = []
         self._dim_choices = [
+            ["x", "Fixed"],
             ["x", "y", "Fixed"],
-            ["x", "y", "z", "Fixed"],
-            ["x", "y", "z", "I", "Fixed"]
-        ]
+            ["x", "y", "z", "Fixed"]]
         self._plot_choices = [
             ["Scatter"],
             ["Surface", "Bar", "Step"],
-            ["Volume", "Distribution"]
-        ]
+            ["Volume", "Distribution"]]
 
         self._populateProjects()
         self._populateDataPlot()
@@ -208,24 +206,29 @@ class DataLinkCreator(QtWidgets.QDialog):
         if axes == None: return
         if len(target.DataObjects) == 0: return 
         
+        index = 0
         for i in range(axes.dim):
             item = DataAxisSelectItem(
                 axes.names[i],
                 axes.units[i],
                 axes.axes[i],
-                self._dim_choices[self._selector.currentIndex()]
+                self._dim_choices[self._selector.currentIndex()],
+                self._dim_choices[self._selector.currentIndex()][index] if index < len(self._dim_choices[self._selector.currentIndex()]) - 1 else 'Fixed'
             )
             self._model._root_item.addChild(item)
+            index += 1
 
         data_dummy = target.DataObjects[0]
         for i in range(len(data_dummy.data.shape)):
             item = DataAxisSelectItem(
                 "Data axis n. "+str(i),
                 "-",
-                ["None"],
-                self._dim_choices[self._selector.currentIndex()]
+                data_dummy.axes if len(data_dummy.data.shape) == 1 else data_dummy.axes[i],
+                self._dim_choices[self._selector.currentIndex()], 
+                self._dim_choices[self._selector.currentIndex()][index] if index < len(self._dim_choices[self._selector.currentIndex()]) - 1 else 'Fixed'
             )
             self._model._root_item.addChild(item)
+            index += 1
 
         self._model.referenceModel()
         self._axes_select.setModel(self._model)
@@ -235,7 +238,7 @@ class DataLinkCreator(QtWidgets.QDialog):
 
     def generate(self):
         '''
-        Gather all the informations provided in th e
+        Gather all the information provided in th e
         individual fields and generate the data injector
         on the side of the data and the plot item on the
         side of the plot. Then link them,6
@@ -258,5 +261,15 @@ class DataLinkCreator(QtWidgets.QDialog):
             [data_link_item], data_item
         )
 
-        data_injector.setDataSource(data_item.data)
+        data_injector.setDataSource(data_item.data_item)
         data_injector.addPlotTarget(plot_item)
+
+        behavior = []
+        for child in self._model._root_item._children:
+            behavior.append([
+                child.data(0),
+                child.data(1),
+                child.dataIndex(2)
+            ])
+        data_injector.setBehavior(behavior, self._dim_choices[self._selector.currentIndex()][:-1])
+

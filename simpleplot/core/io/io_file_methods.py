@@ -55,22 +55,19 @@ def get_common_substrings(path_list):
     substrings  = []
     run         = True
     path_list   = [
-        element.split(os.path.sep)[-1].split('.')[0] 
+        element.split(os.path.sep)[-1]
         for element in path_list]
-    temp_result = ''
 
+    temp_result = ''
     while run:
-        #are we geting out of the string length
         if position + base_length == len(path_list[0]):
             run = False
             return substrings
-        #get comparison string
+
         string_element = path_list[0][position:position+base_length]
-        #check if it exists in all 
+        
         if substring_in_list(string_element, path_list):
-            #set temporary result
             temp_result = str(string_element)
-            #increase the length
             base_length += 1
 
         else:
@@ -88,12 +85,8 @@ def substring_in_list(substring, path_list):
     Check if a substring is contained within all 
     the given path elements.
     '''
-
-    #first get the absolute path
     for element in path_list:
-
         if not substring in element:
-
             return False
 
     return True
@@ -178,4 +171,3 @@ def getFileNames(Before, After):
             Element.replace('\\', os.path.sep)
 
     return Paths
-    

@@ -29,6 +29,9 @@ from .side_bar import Sidebar
 from ..models.project_class import ProjectHandler
 from ..models.plot_model import PlotModel
 
+from .gui_subwindows.subwindow_data.mainwindow_data import MainWindowData
+from .gui_subwindows.subwindow_plot.mainwindow_plot import MainWindowPlot
+
 class MainWindow(QtWidgets.QMainWindow):
     '''
     This will be the gui anchor point of the 
@@ -51,4 +54,29 @@ class MainWindow(QtWidgets.QMainWindow):
         self._main_widget.addWidget(self._playground)
 
         self.setCentralWidget(self._main_widget)
+
+    def displayData(self, item):
+        '''
+        Display data as an external window
+        '''
+        if not item.data_widget.parent() == None:
+            item.data_widget.parent().close()
+
+        window = MainWindowData(parent = self)
+        item.data_widget.setupModels()
+        window.setCentralWidget(item.data_widget)
+        window.setWindowTitle(item._name)
+        window.show()
+
+    def displayPlot(self, item):
+        '''
+        Display plot as an external window
+        '''
+        if not item.canvas_widget.parent() == None:
+            item.canvas_widget.parent().close()
+
+        window = MainWindowPlot(parent = self)
+        window.setCentralWidget(item.canvas_widget)
+        window.setWindowTitle(item._name)
+        window.show()
 

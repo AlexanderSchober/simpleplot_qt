@@ -120,7 +120,8 @@ class DataStructure:
         Input: 
         - index (int/slice array) position if the elements
         '''
-        #process input
+        if len(index) == 0 : return False
+
         if isinstance(index,int):
             id_array = self.axes.get_id_for_index([index])
         else:
@@ -303,6 +304,7 @@ class DataStructure:
         generate the axes according to the loaded data.
         A pointer to the array listing the data is 
         '''
+        if not self.axes is None: return
         if self.sanityCheck():
             self.axes = Axes(self)
         else:
@@ -959,7 +961,7 @@ class Axes:
         This function will simply evaluate the length
         of the axes.
         '''
-        self.axes_len    = [len(self.idx[i]) for i in range(self.dim)]
+        self.axes_len = [len(self.idx[i]) for i in range(self.dim)]
         for i in range(self.dim):
             if len(self.axes[i]) == 0:
                 self.axes[i] = [j for j in range(len(self.idx[i]))]
@@ -994,6 +996,13 @@ class Axes:
         '''
         return self.axes[idx].index(val)
 
+    def collapseAllAxes(self, data_structure):
+        '''
+
+        '''
+        for i in range(self.dim):
+            self.collapse_axis(i, data_structure)
+
     def collapse_axis(self, idx, data_structure):
         '''
         In this method we will look at an axis and the
@@ -1013,7 +1022,8 @@ class Axes:
             
         #fix the objects and their axes
         for i, DataObject in enumerate(data_structure.DataObjects):
-            DataObject.index[idx] = transfer[i]
+            DataObject.index[idx] = new_axis.index(
+                self.axes[idx][DataObject.index[idx]])
             new_idx[DataObject.index[idx]].append(DataObject.id)
 
         #now inject the new axes into the current  definition

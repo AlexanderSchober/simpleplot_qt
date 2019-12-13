@@ -29,7 +29,7 @@ from .widget_constructors import comboBoxConstructor
 class DataAxisSelectItem(SessionNode):
     '''
     '''
-    def __init__(self, name, unit, choices, axis_choices, parent = None):
+    def __init__(self, name, unit, choices, axis_choices, axis_val, parent = None):
         super(DataAxisSelectItem, self).__init__(name, parent)
 
         self._value = None
@@ -38,7 +38,7 @@ class DataAxisSelectItem(SessionNode):
         self.kwargs['name'] = name
         self.kwargs['value'] = str(choices[0])
         self.kwargs['choices'] = [str(e) for e in choices]
-        self.kwargs['axis_value'] = axis_choices[0]
+        self.kwargs['axis_value'] = axis_val
         self.kwargs['axis_choices'] = axis_choices
         self.kwargs['unit'] = unit
 
@@ -56,11 +56,19 @@ class DataAxisSelectItem(SessionNode):
             return self.kwargs['axis_value']
         if column == 2:
             if self.data(1) == "Fixed":
-                return "variable"
-            else:
                 return self.kwargs['value']
+            else:
+                return "variable"
         if column == 3:
             return self.kwargs['unit']
+
+    def dataIndex(self, column):
+        '''
+        '''
+        if column == 1:
+            return self.kwargs['axis_choices'].index(self.kwargs['axis_value'])
+        if column == 2:
+            return self.kwargs['choices'].index(self.kwargs['value'])
 
     def setData(self, column, value):
         '''
@@ -69,10 +77,24 @@ class DataAxisSelectItem(SessionNode):
             self.kwargs['name'] = value
         if column == 1:
             self.kwargs['axis_value'] = value
+            self._checkSiblings(value)
         if column == 2:
             self.kwargs['value'] = value
         if column == 3:
             self.kwargs['unit'] = value
+
+    def _checkSiblings(self, value:str):
+        '''
+        This will avoid duplication of axis definition
+        '''
+        if value == 'Fixed': return
+
+        for child in self.parent()._children:
+            if not child == self and child.data(1) == value:
+                child.setData(1, 'Fixed')
+                self._model.dataChanged.emit(
+                    QtCore.QModelIndex(),
+                    QtCore.QModelIndex())
 
     def flags(self, index):
         '''
@@ -84,9 +106,9 @@ class DataAxisSelectItem(SessionNode):
             return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
         elif column == 2:
             if self.data(1) == "Fixed":
-                return QtCore.Qt.ItemIsEnabled
-            else:
                 return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
+            else:
+                return QtCore.Qt.ItemIsEnabled 
         elif column == 3:
             return QtCore.Qt.ItemIsEnabled
 
@@ -112,6 +134,10 @@ class DataAxisSelectItem(SessionNode):
         '''
         '''
         if index.column() == 2:
+            self._model.dataChanged.emit(
+                QtCore.QModelIndex(),QtCore.QModelIndex())
             return self._constructor_choice.retrieveData(editor)
         if index.column() == 1:
+            self._model.dataChanged.emit(
+                QtCore.QModelIndex(),QtCore.QModelIndex())
             return self._constructor_axis.retrieveData(editor)

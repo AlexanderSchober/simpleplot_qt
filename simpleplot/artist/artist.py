@@ -75,6 +75,7 @@ class Artist():
         active_handlers = [child._name for child in self.canvas._plot_root._children]
         output = self.canvas._plot_root._children[active_handlers.index(name_type)].addChild(*args, **kwargs)
         self.canvas._plot_model.referenceModel()
+        self.draw()
 
         return output
 
@@ -430,7 +431,3 @@ class Artist3DNode(SessionNode, Artist):
                         hits[idx][0][1],
                         hits[idx][0][2]))
         
-
-
-
-

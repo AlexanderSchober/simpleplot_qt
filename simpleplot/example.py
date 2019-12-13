@@ -23,7 +23,9 @@
 
 from .canvas.multi_canvas import MultiCanvasItem
 from .gui_main.main_window import MainWindow
+
 from .models.project_node import ProjectNode
+from .models.project_node import PlotItem
 
 #import general
 from PyQt5 import QtWidgets, QtGui, QtCore
@@ -40,10 +42,31 @@ def startPlayGround():
     window._sidebar._tree_view.model().insertRows(
         0,1,[target], 
         window._sidebar._tree_view.model().root())
+
+    #set the import
+    # import_window = window._sidebar.addDataTxt(target.childFromName("Datasets"))
+
+    # # import_window.io_input_in.setText(r"/Users/alexanderschober/Desktop/DemoRawImport")
+
+    # import_window.io_input_in.setText(r"/home/alexander/Google Drive/Work/2014:2017 Lipp (PhD)/software/R-DATA/Demo/DemoRawImport")
+    # import_window.scan_folder_in()
+
+    # import_window.list_dictionary[
+    #     "type"].dictionary["items"][0][0].setCheckState(
+    #         QtCore.Qt.Unchecked)
+    # import_window._dimension_changed(
+    #     import_window.list_dictionary['type'].dictionary['model'].index(0,0))
+
+    # import_window.list_dictionary[
+    #     "type"].dictionary["items"][2][0].setCheckState(
+    #         QtCore.Qt.Unchecked)
+    # import_window._dimension_changed(
+    #     import_window.list_dictionary['type'].dictionary['model'].index(2,0))
+    # import_window._process_export()
+    # import_window.close()
+
     import_window = window._sidebar.addDataTxt(target.childFromName("Datasets"))
-    import_window.io_input_in.setText(r"/Users/alexanderschober/Desktop/DemoRawImport")
-    
-    # import_window.io_input_in.setText("/home/alexander/Google Drive/Work/2014:2017 Lipp (PhD)/software/R-DATA/Demo/DemoRawImport")
+    import_window.io_input_in.setText(r"/home/alexander/test")
     import_window.scan_folder_in()
 
     import_window.list_dictionary[
@@ -53,14 +76,20 @@ def startPlayGround():
         import_window.list_dictionary['type'].dictionary['model'].index(0,0))
 
     import_window.list_dictionary[
-        "type"].dictionary["items"][2][0].setCheckState(
+        "type"].dictionary["items"][3][0].setCheckState(
             QtCore.Qt.Unchecked)
     import_window._dimension_changed(
-        import_window.list_dictionary['type'].dictionary['model'].index(2,0))
-
+        import_window.list_dictionary['type'].dictionary['model'].index(3,0))
     import_window._process_export()
     import_window.close()
 
+    #set the plot
+    plot = PlotItem(
+        grid = [[True, True], [True, True]], 
+        element_types = [["2D","2D"],["2D","3D"]], 
+        x_ratios = [1,1],
+        y_ratios = [1,1])
+    window._sidebar.createPlotItem(target.childFromName("Plots"), plot)
     sys.exit(app.exec_())
 
 def exampleLinePlot():
