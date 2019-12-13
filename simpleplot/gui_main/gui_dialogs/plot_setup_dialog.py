@@ -42,6 +42,8 @@ class PlotSetupDialog(QtWidgets.QDialog):
         """
         This is the widget setup for this part
         """
+        self.setWindowTitle("Define plot size")
+        
         self._main_layout = QtWidgets.QVBoxLayout(self)
 
         #initialise things

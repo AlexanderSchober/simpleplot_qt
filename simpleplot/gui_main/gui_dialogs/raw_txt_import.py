@@ -51,6 +51,8 @@ class RawTxtImport(QtWidgets.QDialog):
         Set up the items of the UI This was taken 
         over from a rewrite of R-Data
         """
+        self.setWindowTitle("Import dataset from single files")
+        
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Preferred, 
             QtWidgets.QSizePolicy.Preferred)

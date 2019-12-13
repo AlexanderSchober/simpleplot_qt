@@ -66,14 +66,21 @@ class Artist():
         selected items. if not a new instance will be
         generated and then fed into the handler system
         '''
-        active_handlers = [child._name for child in self.canvas._plot_root._children]
+        active_handlers = [
+            child._name for child in 
+            self.canvas._plot_root._children]
 
         if not name_type in active_handlers:
             new_child = get_main_handler(name_type)
             self.canvas._plot_root.addChild(new_child)
 
-        active_handlers = [child._name for child in self.canvas._plot_root._children]
-        output = self.canvas._plot_root._children[active_handlers.index(name_type)].addChild(*args, **kwargs)
+        active_handlers = [
+            child._name for child in 
+            self.canvas._plot_root._children]
+
+        output = self.canvas._plot_root._children[
+            active_handlers.index(name_type)].addChild(*args, **kwargs)
+
         self.canvas._plot_model.referenceModel()
         self.draw()
 
@@ -115,21 +122,14 @@ class Artist():
             elif self.artist_type == '3D':
                 item.drawGL(self.canvas)
 
-    def removePlot(self,name_type, name = '', idx = None):
+    def removePlot(self,plot_item):
         '''
         Remove an item from the handlers
         '''
-        # active_handlers = [handler.name for handler in self.plot_handlers]
+        self._plot_model.removeRows(
+            plot_item.parent()._children.index(plot_item),
+            1, plot_item.parent())
 
-        # if idx == None and name == '':
-        #     print("You can't remove nothing ...")
-
-        # else:
-        #     self.plot_handlers[active_handlers.index(name_type)].removeItem(
-        #         name    = name, 
-        #         idx     = idx,
-        #         target  = self.canvas )
-            
     def dispatchPlotDataChange(self, index):
         '''
 

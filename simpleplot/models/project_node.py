@@ -148,7 +148,13 @@ class PlotItem(SessionNode):
         self.canvas_widget = QtWidgets.QWidget()
         self.canvas_item = MultiCanvasItem(widget=self.canvas_widget, **kwargs)
 
-        self._window = None
+        target = None
+        for widget in QtWidgets.QApplication.topLevelWidgets():
+            if widget.__class__.__name__ == "MainWindow":
+                target = widget._sidebar
+        if not target == None: 
+            self.canvas_item.add_plot_requested.connect(
+                target.launchLinkCreator)
  
     def data(self, column):
         if column is 0: return self._name

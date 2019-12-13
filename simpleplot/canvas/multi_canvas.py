@@ -27,12 +27,15 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 #import personal dependencies
 from .canvas                     import CanvasNode
 from ..models.plot_model         import PlotModel
-from ..gui.mode_select           import ModeSelect
+from ..gui_main.gui_plot.mode_select import ModeSelect
 from ..models.session_node       import SessionNode
 from ..models.parameter_class    import ParameterHandler 
 
 class MultiCanvasItem(QtWidgets.QGridLayout):
     
+    add_plot_requested = QtCore.pyqtSignal(list)
+    del_plot_requested = QtCore.pyqtSignal(list)
+
     def __init__(
         self,widget = None,grid = [[True]],element_types  = None,
         x_ratios = [1],y_ratios = [1],no_title = False,**kwargs):
@@ -271,3 +274,23 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         link[1].append(self.link_list[-1])
         
         return ID
+
+    def addPlot(self, subplot_num):
+        '''
+        This is simply a transfer for convenience
+        when a subplot registers the request
+        for a new plot
+        '''
+        print("add_request")
+        self.add_plot_requested.emit([
+            self._rootNode._children[subplot_num]])
+
+    def removePlot(self, subplot_num, plot_item):
+        '''
+        This is simply a transfer for convenience
+        when a subplot registers the request
+        for a new plot
+        '''
+        self.add_plot_requested.emit([
+            self._rootNode._children[subplot_num],
+            plot_item])

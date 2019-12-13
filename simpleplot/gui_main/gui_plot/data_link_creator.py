@@ -67,6 +67,8 @@ class DataLinkCreator(QtWidgets.QDialog):
         will generate the GUI to be placed
         onto the main window. 
         '''
+        self.setWindowTitle("Create new plot from data")
+
         self._project_drop = QtWidgets.QComboBox()
         self._data_drop = QtWidgets.QComboBox()
         self._plot_drop = QtWidgets.QComboBox()
