@@ -70,7 +70,7 @@ class DataModel(QtCore.QAbstractTableModel):
         if len(self._data_object_data.shape) == 1:
             self._col_count = 1
             self._row_count = self._data_object_data.shape[0]
-        elif len(data.shape) == 2:
+        elif len(self._data_object_data.shape) == 2:
             self._col_count = self._data_object_data.shape[1]
             self._row_count = self._data_object_data.shape[0]
 

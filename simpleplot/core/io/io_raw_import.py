@@ -29,7 +29,7 @@ import numpy as np
 
 class IORawHandler:
     '''
-    This class will be initialised and then kept
+    This class will be initialized and then kept
     as a manager of input output such as loading
     files from a directory and so on. 
     '''
@@ -377,6 +377,7 @@ class IORawWorker:
 
         # text_file.close()
         
+        
     def _reader(self, path):
         '''
         This method will generate a string with the 
@@ -400,65 +401,7 @@ class IORawWorker:
 
         return x,y
             
-    def _axisWriter(self, future_axes_values, future_axes_names, future_axes_units):
-        '''
-        This method will generate a string with the 
-        input being a list of strings that are
-        common to all files...
-        '''
-        ##############################################
-        #set up
-        output = ""
-        output += "#################   AXIS   ###################\n"
-        ##############################################
-        # write the axis informations
-        for i in range(len(future_axes_names)):
 
-            temp_list = list(
-                ["**"
-                + future_axes_names[i]
-                + '**'
-                + future_axes_units[i]+"**"]
-                + future_axes_values[i])
-
-            output += self._listToString(temp_list) + "\n"
-
-        return output
-
-    def _dataWriter(self,future_axes_pos,future_data_array):
-        '''
-        This method will generate a string with the 
-        input being a list of strings that are
-        common to all files...
-        '''
-        #set up
-        output = ""
-        output += "#################   DATA   ###################\n"
-
-        # write the data identifier information
-        output += self._listToString(future_axes_pos) + "\n"
-
-        #grab the array length
-        lengths = [len(item[0]) for item in future_data_array]
-
-        # set the loop over the longest element
-        for i in range(max(lengths)):
-
-            #set the temporary list
-            temp_list = []
-
-            #loop over all
-            for j in range(len(future_data_array)):
-                try: 
-                    temp_list.append(future_data_array[j][0][i])
-                    temp_list.append(future_data_array[j][1][i])
-                except:
-                    temp_list.append("None")
-                    temp_list.append("None")
-
-            output += self._listToString(temp_list)+ "\n"
-
-        return output
 
     def _metaWriter(self):
         '''

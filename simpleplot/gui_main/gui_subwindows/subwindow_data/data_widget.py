@@ -22,11 +22,17 @@
 # *****************************************************************************
 
 from PyQt5 import QtWidgets, QtGui, QtCore
+import os
 
 from ....models.data_axis_model import DataAxisModel 
 from ....models.data_axis_item  import DataAxisItem
 from ....models.delegates       import ParameterDelegate
 from ....models.data_model      import DataModel
+
+from ....core.io.io_data_save   import IODataSave
+from ....core.io.io_data_import import IODataLoad
+
+from ...gui_dialogs.data_save_dialog import SaveDataDialog
 
 class DataWidget(QtWidgets.QWidget):
     '''
@@ -218,6 +224,13 @@ class DataWidget(QtWidgets.QWidget):
         '''
         The user clicked the row header item
         ''' 
+        path = QtWidgets.QFileDialog.getOpenFileName(
+            parent = self, filter = "Text (*.txt);;Hdf5 (*.h5)")
+        
+        if not path[0] == "":
+            self._data_pointer.reset()
+            loader = IODataLoad(self._data_pointer, path[0])
+            loader.load(path[1].split("(*.")[1].split(")")[0])
 
     def _save(self):
         '''
@@ -228,3 +241,9 @@ class DataWidget(QtWidgets.QWidget):
         '''
         The user clicked the row header item
         ''' 
+        name = QtWidgets.QFileDialog.getSaveFileName(
+            self, 'Save File',"example", "Text (*.txt);;Hdf5 (*.h5)")
+
+        if not name[0] == "":
+            worker = IOSaveLoad(self._data_pointer, name[0])
+            worker.save(name[1].split("(*.")[1].split(")")[0])

@@ -28,6 +28,7 @@ from functools import partial
 from .gui_dialogs.raw_txt_import    import RawTxtImport
 from .gui_dialogs.plot_setup_dialog import PlotSetupDialog
 from .gui_plot.data_link_creator    import DataLinkCreator
+from ..core.io.io_data_import       import IODataLoad
 
 class Sidebar(QtWidgets.QWidget):
     '''
@@ -134,8 +135,35 @@ class Sidebar(QtWidgets.QWidget):
         project with the name determined 
         from the dialog
         '''
+        path = QtWidgets.QFileDialog.getOpenFileName(
+            parent = self, filter = "Numpy binary (*.npy) ;; Numpy text (*.txt)")
+        
+        if not path[0] == "":
+            data_item = item.addDataItem()
+            loader = IODataLoad(
+                data_item.data_item, 
+                path[0])
+            shape = loader.previewFromNumpy()
+            loader.loadFromNumpy([
+                True if not i == len(shape) - 1 
+                else False for i in range(len(shape))])
 
-    def addDataProc(self, item):
+    def addDataProcTxt(self, item):
+        '''
+        Tell the current main Session node
+        of the current model to add a new
+        project with the name determined 
+        from the dialog
+        '''
+        path = QtWidgets.QFileDialog.getOpenFileName(
+            parent = self, filter = "Text (*.txt)")
+        
+        if not path[0] == "":
+            data_item = item.addDataItem()
+            loader = IODataLoad(data_item.data_item, path[0])
+            loader.load(path[1].split("(*.")[1].split(")")[0])
+
+    def addDataProcHDF(self, item):
         '''
         Tell the current main Session node
         of the current model to add a new
@@ -195,12 +223,15 @@ class Sidebar(QtWidgets.QWidget):
                 temp_data_menu = QtWidgets.QMenu("Add Data", parent = temp_menu)
                 temp_menu.addMenu(temp_data_menu)
 
-                add_data_txt = temp_data_menu.addAction(
-                    "Add from text files ...")
-                add_data_npy = temp_data_menu.addAction(
+                add_data_raw_txt = temp_data_menu.addAction(
+                    "Add from raw text files ...")
+                add_data_raw_npy = temp_data_menu.addAction(
                     "Add from npy file ...")
-                add_data_proc = temp_data_menu.addAction(
-                    "Add from processed format")
+                temp_data_menu.addSeparator()
+                add_data_proc_txt = temp_data_menu.addAction(
+                    "Add from processed text file ...")
+                add_data_proc_hdf = temp_data_menu.addAction(
+                    "Add from processed Hdf5 file ...")
 
                 add_analysis = temp_menu.addAction(
                     "Add Analysis to current project")
@@ -211,12 +242,14 @@ class Sidebar(QtWidgets.QWidget):
                 analysis_item = item.childFromName("analysis")
                 plot_item = item.childFromName("plot")
 
-                add_data_txt.triggered.connect(
+                add_data_raw_txt.triggered.connect(
                     partial(self.addDataTxt, data_item))
-                add_data_npy.triggered.connect(
+                add_data_raw_npy.triggered.connect(
                     partial(self.addDataNpy, data_item))
-                add_data_proc.triggered.connect(
-                    partial(self.addDataProc, data_item))
+                add_data_proc_txt.triggered.connect(
+                    partial(self.addDataProcTxt, data_item))
+                add_data_proc_hdf.triggered.connect(
+                    partial(self.addDataProcHDF, data_item))
 
                 add_analysis.triggered.connect(
                     partial(self.addAnalysis, analysis_item))
@@ -229,16 +262,24 @@ class Sidebar(QtWidgets.QWidget):
 
                 temp_menu = QtWidgets.QMenu(self._add_button)
 
-                add_data_txt = temp_menu.addAction(
-                    "Add from text files ...")
-                add_data_npy = temp_menu.addAction(
+                add_data_raw_txt = temp_menu.addAction(
+                    "Add from raw text files ...")
+                add_data_raw_npy = temp_menu.addAction(
                     "Add from npy file ...")
-                add_data_proc = temp_menu.addAction(
-                    "Add from processed format")
+                temp_menu.addSeparator()
+                add_data_proc_txt = temp_menu.addAction(
+                    "Add from processed text file ...")
+                add_data_proc_hdf = temp_menu.addAction(
+                    "Add from processed Hdf5 file ...")
                 
-                add_data_txt.triggered.connect(partial(self.addDataTxt, item))
-                add_data_npy.triggered.connect(partial(self.addDataNpy, item))
-                add_data_proc.triggered.connect(partial(self.addDataProc, item))
+                add_data_raw_txt.triggered.connect(
+                    partial(self.addDataTxt, item))
+                add_data_raw_npy.triggered.connect(
+                    partial(self.addDataNpy, item))
+                add_data_proc_txt.triggered.connect(
+                    partial(self.addDataProcTxt, item))
+                add_data_proc_hdf.triggered.connect(
+                    partial(self.addDataProcHDF, item))
 
                 temp_menu.popup(self._tree_view.viewport().mapToGlobal(point))
 

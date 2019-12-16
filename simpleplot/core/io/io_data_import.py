@@ -23,69 +23,116 @@
 
 
 from ..io import io_file_methods as file_methods 
-
+import itertools
 import os
 import datetime
 import numpy as np
 
-class IOImportHandler:
-    '''
-    The io import handler will manage the main
-    import organization. 
-    ———————
-    Input: 
-    - parent manager structure
-    '''
-    def __init__(self, parent = None):
-        self.parent = parent
-
-    def setFolder(self, path):
-        self.folder = path 
-
-    def readDataFile(self, path, data_struc):  
-        worker = IODataWorker(path, data_struc)  
-        worker.run()
-
-    def readSampleFile(self, path, meas_struc):  
-        worker = IOMeasWorker(path, meas_struc) 
-        worker.run()
-
-class IODataWorker:
+class IODataLoad:
     '''
     '''
-    def __init__(self, path, data_struc):
+    def __init__(self, target, path:str):
         '''
+        define the local elements and proceed with the 
+        saving procedure.
         '''
-        self.path = path
-        self.data_struc = data_struc
+        self._target = target
+        self._path = path
 
-    def run(self):
+    def load(self, file_format:str):
         '''
+        The save entry point
         '''
-        line_idx = self._getLines()
+        if file_format == "txt":
+            self._loadFromTxt()
+        elif file_format == "hdf5":
+            self._loadFromHdf5()
 
-        self._dataReader(line_idx[2])
-        self._axisReader(line_idx[1], line_idx[2])
+    def previewFromNumpy(self):
+        '''
+        This will in fact load the file through 
+        the numpy channel.
+        '''
+        extension = self._path.split(".")[-1]
 
-        print(self.data_struc)
+        if extension == 'npy' or extension == 'npz':
+            data = np.load(self._path)
+        elif extension == 'txt':
+            data = np.loadtxt(self._path)
 
-    def _getLines(self):
+        return data.shape
+
+    def loadFromNumpy(self, data_axes):
+        '''
+        This will in fact load the file through 
+        the numpy channel.
+        '''
+        extension = self._path.split(".")[-1]
+
+        if extension == 'npy' or extension == 'npz':
+            data = np.load(self._path)
+        elif extension == 'txt':
+            data = np.loadtxt(self._path)
+
+        loop_elements = [
+            [ l for l in range(i)] 
+            for i in data.shape]
+
+        get_index = []
+        for i, element in enumerate(data_axes):
+            if not element:
+                get_index.append(slice(len(loop_elements[i])))
+            else:
+                get_index.append(None)
+
+        loop_elements = itertools.compress(loop_elements, data_axes)
+        for e in itertools.product(*loop_elements):
+            print(e)
+            local_index = list(get_index)
+            idx = 0
+            for i, element in enumerate(data_axes):
+                if element:
+                    local_index[i] = e[idx]
+                    idx += 1
+            print(local_index)
+            self._target.addDataObject(
+                data.__getitem__(tuple(local_index)), e)
+        
+        self._target.validate()
+
+    def _loadFromTxt(self):
+        '''
+        load from txt files
+        '''
+        with open(self._path, 'r') as f:
+            lines = f.readlines()
+            line_idx = self._getLines(lines)
+
+            self._dimAnalyser(lines, line_idx[1], line_idx[2])
+            self._subdimAnalyser(lines, line_idx[2], line_idx[3])
+            self._subaxisReader(lines, line_idx[2], line_idx[3])
+
+            self._dataReader(lines,line_idx[3])
+            self._axisReader(lines,line_idx[1], line_idx[2])
+
+    def _getLines(self, lines):
         '''
         This routine will determine the lines at
         which individual data is written down. 
         '''
-        with open(self.path, 'r') as f:
-            for i, line in enumerate(f.readlines()):
-                if 'METADATA' in line:
-                    line_meta = i
-                elif 'DATA' in line:
-                    line_data = i
-                elif 'AXIS' in line:
-                    line_axis = i
+        for i, line in enumerate(lines[:100]):
+            if ' METADATA ' in line[:50]:
+                line_meta = i
+            elif ' DATA ' in line[:50]:
+                line_data = i
+            elif ' AXIS ' in line[:50]:
+                line_axis = i
+            elif ' SUBAXIS ' in line[:50]:
+                line_subaxis = i
 
-        return [line_meta, line_axis, line_data]
+        return [line_meta, line_axis, line_subaxis, line_data]
  
-    def _axisReader(self, start_line, end_line):
+    def _dimAnalyser(self,lines, start_line, end_line):
         '''
         This routine will read through the axis
         information and try to set it in the 
@@ -93,99 +140,61 @@ class IODataWorker:
         already validated for this effect to be 
         meaningfull.
         '''
-        with open(self.path, 'r') as f:
-            axes_str = f.readlines()[start_line+1:end_line]
+        self._dims = []
+        for idx, axis_str in enumerate(lines[start_line+1:end_line]):
+            self._dims.append(
+                len(axis_str.strip('\n').split('**')[3].split(',')))
 
-            for idx, axis_str in enumerate(axes_str):
-                self.data_struc.axes.set_name(idx, name = axis_str.strip('\n').split('**')[1])
-                self.data_struc.axes.set_unit(idx, unit = axis_str.strip('\n').split('**')[2])
-                self.data_struc.axes.set_axis(idx, axis = [float(e) for e in axis_str.strip('\n').split('**')[3].split(',')[1:]])
-
-    def _dataReader(self, start_line):
+    def _subdimAnalyser(self, lines, start_line, end_line):
         '''
+        '''
+        self._subdims = []
+        for idx, axis_str in enumerate(lines[start_line+1:end_line]):
+            self._subdims.append(
+                len(axis_str.strip('\n').split('**')[2].split(',')))
 
+    def _axisReader(self,lines, start_line, end_line):
+        '''
+        '''
+        for idx, axis_str in enumerate(lines[start_line+1:end_line]):
+            self._target.axes.set_name(
+                idx, name = axis_str.strip('\n').split('**')[1])
+            self._target.axes.set_unit(
+                idx, unit = axis_str.strip('\n').split('**')[2])
+            self._target.axes.set_axis(
+                idx, axis = [
+                    float(e) for e in 
+                    axis_str.strip('\n').split('**')[3].split(',')])
+
+    def _subaxisReader(self,lines, start_line, end_line):
+        '''
+        '''
+        self._subaxis = []
+        for idx, axis_str in enumerate(lines[start_line+1:end_line]):
+            self._subaxis.append([
+                float(e) for e in 
+                axis_str.strip('\n').split('**')[2].split(',')])
+
+    def _dataReader(self, lines, start_line):
+        '''
         This routine will read in the data and then 
         send it immediately to the datastructures.
         '''
+        loop_elements = [
+            [ l for l in range(i)] 
+            for i in self._dims]
 
-        with open(self.path, 'r') as f:
-            for i, line in enumerate(f):
-                if i == start_line + 1:
+        line_num = start_line + 1
+        for e in itertools.product(*loop_elements):
+            self._target.addDataObject(
+                np.asarray(
+                    lines[line_num].strip('\n').split(',')).reshape(
+                        tuple(self._subdims)),
+                e, axes = np.asarray(self._subaxis) 
+                if len(self._subaxis)>1 
+                else np.asarray(self._subaxis[0])
+            )
+            line_num += 1
 
-                    #determine the indices
-                    indexes = self._processIndex(line)
-
-                    #grab the dimensionality and prepare
-                    data_array = [[[],[]] for k in range(len(indexes))]
-
-                if i > start_line + 1:
-
-                    elements = line.split(',')
-
-                    for j in range(len(indexes)):
-                        data_array[j][0].append(float(elements[2*j]))
-                        data_array[j][1].append(float(elements[2*j+1]))
-
-        for j in range(len(indexes)): 
-            self.data_struc.add_data_object(np.asarray(data_array[j]), indexes[j])
-
-        self.data_struc.validate()
-
-    def _processIndex(self, line):
-        '''
-        This routine will go through the string and 
-        populate the index array
-        ———————
-        Input: 
-        - line is a string containing all the indexes
-        '''
-        characters = [' ', '\n','\t']
-        temp_str = str(line)
-
-        for character in characters:
-            temp_str = temp_str.strip(character)
-
-        temp_array = [e.strip('[').strip(']') for e in temp_str.split('],[')]
-
-        idx_array = []
-        for element in temp_array:
-            idx_array.append([int(e) for e in element.split(',')])
-    
-        return idx_array
-
-    def _metaReader(self):
-        '''
-
-        '''
-        meta_data = None
-    
-        return meta_data
-
-class IOMeasWorker:
-    '''
-    
-    ———————
-    Input: 
-    - parent manager structure
-    '''
-    def __init__(self, path, meas_struc):
-        '''
-
-        '''
-        self.path = path
-        self.meas_structure = meas_struc
-
-    def run(self):
-        '''
-
-        '''
-        pass
- 
-    def _sampleReader(self):
-        '''
-
-        '''
-        axis = None
-
-        return axis
+        self._target.validate()
 

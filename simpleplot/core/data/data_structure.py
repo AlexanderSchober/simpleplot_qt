@@ -42,6 +42,13 @@ class DataStructure:
         class to link automatically the DataObject
         to the last created metadat instance. 
         '''
+        self.reset()
+
+    def reset(self):
+        '''
+        Reset the whole structure in case someone wants
+        to reuse it to load new data
+        '''
         #start local variables
         self.id                 = 0
         self.meta_id            = 0
@@ -61,6 +68,8 @@ class DataStructure:
         self.metadata_class = Metadata(0)
         self.metadata = self.metadata_class.metadata
 
+        #save path
+        self._save_path = None
 
     def __str__(self):
         '''
@@ -910,7 +919,7 @@ class Axes:
         self.dim = len(data_structure.DataObjects[0].index)
 
         #set the local variable
-        self.names       = [None for i in range(self.dim)]
+        self.names       = ["Axis "+str(i) for i in range(self.dim)]
         self.units       = [None for i in range(self.dim)]
         self.types       = [None for i in range(self.dim)]
         self.axes        = [[] for i in range(self.dim)]
