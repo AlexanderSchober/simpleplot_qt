@@ -32,8 +32,6 @@ from ..custom_pg_items.SimplePlotDataItem import SimplePlotDataItem
 from ..custom_pg_items.SimpleErrorBarItem import SimpleErrorBarItem
 
 from ...models.parameter_class       import ParameterHandler 
-
-
 from ..custom_pg_items.GLLinePlotItem import GLLinePlotItem
 
 class LinePlot(ParameterHandler): 
@@ -75,7 +73,7 @@ class LinePlot(ParameterHandler):
             The parameters passed on by the user that 
             will override the predefined values
         '''
-        style  = kwargs['Style'] if 'Style' in kwargs.keys() else []
+        style  = kwargs['Style'] if 'Style' in kwargs.keys() else ['-']
         color  = QtGui.QColor(kwargs['Color']) if 'Color' in kwargs.keys() else QtGui.QColor('blue')
 
         self.addParameter(
