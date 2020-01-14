@@ -94,6 +94,9 @@ class Transformer(ParameterHandler):
 
         self._transform.setToIdentity()
 
+        if self.parent() is None:
+            return
+
         for child in self.parent()._children:
             if not  hasattr(child, 'draw_items'):
                 continue
@@ -109,6 +112,9 @@ class Transformer(ParameterHandler):
         '''
         Transform items again
         '''
+        if self.parent() is None:
+            return
+
         for child in self.parent()._children:
             if not  hasattr(child, 'draw_items'):
                 continue
@@ -133,6 +139,11 @@ class Transformer(ParameterHandler):
             position[0], 
             position[1], 
             position[2])
+        
+        self._position = position
+
+        if self.parent() is None:
+            return
 
         for child in self.parent()._children:
             if  hasattr(child, 'draw_items'):
@@ -142,8 +153,6 @@ class Transformer(ParameterHandler):
                             self.translateItem(item)
                     else:
                         self.translateItem(draw_item)
-
-        self._position = position
 
         if hasattr(self.parent(), '_ray_handler'):
              self.parent()._ray_handler.reset()
@@ -176,6 +185,11 @@ class Transformer(ParameterHandler):
             scale[1], 
             scale[2])
 
+        self._scale = scale
+
+        if self.parent() is None:
+            return
+
         for child in self.parent()._children:
             if  hasattr(child, 'draw_items'):
                 for draw_item in child.draw_items:
@@ -184,8 +198,6 @@ class Transformer(ParameterHandler):
                             self.scaleItem(item)
                     else:
                         self.scaleItem(draw_item)
-
-        self._scale = scale
 
         if hasattr(self.parent(), '_ray_handler'):
              self.parent()._ray_handler.reset()
@@ -234,6 +246,12 @@ class Transformer(ParameterHandler):
             self._position[1], 
             self._position[2])
 
+        self._rotate_angle = angles
+        self._rotate_axis  = axes
+
+        if self.parent() is None:
+            return
+
         for child in self.parent()._children:
             if  hasattr(child, 'draw_items'):
                 for draw_item in child.draw_items:
@@ -242,9 +260,6 @@ class Transformer(ParameterHandler):
                             self.rotateItem(item)
                     else:
                         self.rotateItem(draw_item)
-
-        self._rotate_angle = angles
-        self._rotate_axis  = axes
 
         if hasattr(self.parent(), '_ray_handler'):
              self.parent()._ray_handler.reset()

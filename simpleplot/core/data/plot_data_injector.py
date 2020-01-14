@@ -25,7 +25,7 @@
 #import general components
 import numpy as np
 
-class DataInjector:
+class PlotDataInjector:
     '''
     This class is responsible for genrating the adequate numpy 
     arrays to combine a multi dimensional dataset into a 
@@ -33,12 +33,12 @@ class DataInjector:
     '''
     def __init__(self):
 
-        self._data_source = None
+        self._data_source       = None
         self._axes_instructions = []
-        self._plot_targets = []
+        self._plot_targets      = []
 
-        self._behavior_list = None
-        self._target_dim = None
+        self._behavior_list     = None
+        self._target_dim        = None
         
     def setDataSource(self, source):
         '''
@@ -116,8 +116,10 @@ class DataInjector:
         data_slice = self._data_source.returnAsNumpy().__getitem__(
             tuple(retrieval_index))
 
-        right = ("->" + "ijk")[:-(3-len(self._target_dim))]
-        left = "".join([['i','j','k'][e] for e in axis_index])
+        right = ("->" + "ijklmnopqrst")[:-(12-len(self._target_dim))]
+        left = "".join([
+            ['i','j','k','l','m','n','o','p','q','r','s','t'][e] 
+            for e in axis_index])
         data = np.einsum(left+right, data_slice)
 
         keywords = ['x','y','z','data']

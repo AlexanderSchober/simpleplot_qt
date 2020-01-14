@@ -617,7 +617,7 @@ class DataStructure:
         self.clean_metadata()
         equivalence = self.axes.clean_axes()
         self.clean_data(equivalence)
-        self.create_map()
+        self.createMap()
 
     def sum_metadata(self,DataObject):
         '''

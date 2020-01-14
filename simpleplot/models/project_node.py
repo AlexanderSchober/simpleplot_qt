@@ -25,10 +25,13 @@ from .session_node import SessionNode
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from ..core.data.data_structure import DataStructure
-from ..core.data.data_injector import DataInjector
+from ..core.data.plot_data_injector import PlotDataInjector
+from ..core.data.fit_data_injector import FitDataInjector
+from ..core.fit.fit_handler import FitHandler
 
 from ..canvas.multi_canvas import MultiCanvasItem
 from ..gui_main.gui_subwindows.subwindow_data.data_widget import DataWidget
+from ..gui_main.gui_subwindows.subwindow_analysis.fit_widget import FitWidget
  
 class ProjectNode(SessionNode):
     def __init__(self, name = 'New Project', parent = None, parameters = {}, method = None):
@@ -94,12 +97,31 @@ class DataItem(SessionNode):
 
         else: return QtCore.Qt.ItemIsEnabled
 
-class DataLinkItem(SessionNode):
-    def __init__(self, name = 'Data link', parent = None):
+class PlotLinkItem(SessionNode):
+    def __init__(self, name = 'Plot link', parent = None):
         SessionNode.__init__(self, name, parent)
-        self.descriptor = "data link item"
-        self.data_injector = DataInjector()
+        self.descriptor = "plot link item"
+        self.data_injector = PlotDataInjector()
  
+    def data(self, column):
+        if column is 0: return self._name
+ 
+    def setData(self, column, value):
+        if  column is 0: self._name = value
+        
+    def flags(self, index):
+        column = index.column()
+
+        if column is 0: return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
+
+        else: return QtCore.Qt.ItemIsEnabled
+
+class FitLinkItem(SessionNode):
+    def __init__(self, name = 'Fit link', parent = None):
+        SessionNode.__init__(self, name, parent)
+        self.descriptor = "fit link item"
+        self.data_injector = FitDataInjector()
+
     def data(self, column):
         if column is 0: return self._name
  
@@ -126,6 +148,31 @@ class AnalysisNode(SessionNode):
      
     def flags(self, index):
         return QtCore.Qt.ItemIsEnabled
+
+    def addFitItem(self):
+        temp = FitItem(name = 'Fit ' + str(self.childCount()))
+        self.model().insertRows(self.childCount(), 1, [temp], self)
+        return temp
+
+class FitItem(SessionNode):
+    def __init__(self, link_item = None, name = 'fit item', parent = None):
+        SessionNode.__init__(self, name, parent)
+        self.descriptor = "fit item"
+        self.handler  = FitHandler(link_item, gui = True)
+        self.fit_widget = FitWidget(handler = self.handler)
+        
+    def data(self, column):
+        if column is 0: return self._name
+ 
+    def setData(self, column, value):
+        if  column is 0: self._name = value
+        
+    def flags(self, index):
+        column = index.column()
+
+        if column is 0: return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
+
+        else: return QtCore.Qt.ItemIsEnabled
 
 class PlotNode(SessionNode):
     def __init__(self, name = 'Plots', parent = None):

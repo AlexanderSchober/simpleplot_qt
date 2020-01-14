@@ -118,7 +118,7 @@ class DataWidget(QtWidgets.QWidget):
         item = analysis_menu.addAction("NMF")
         item.triggered.connect(self._save)
         item = analysis_menu.addAction("Fitting")
-        item.triggered.connect(self._saveAs)
+        item.triggered.connect(self._fit)
         tool_button.setMenu(analysis_menu)
 
         self._tool_bar.addWidget(tool_button)
@@ -239,11 +239,23 @@ class DataWidget(QtWidgets.QWidget):
 
     def _saveAs(self):
         '''
-        The user clicked the row header item
+        The user has requested to save the data
         ''' 
         name = QtWidgets.QFileDialog.getSaveFileName(
             self, 'Save File',"example", "Text (*.txt);;Hdf5 (*.h5)")
 
         if not name[0] == "":
-            worker = IOSaveLoad(self._data_pointer, name[0])
+            worker = IODataSave(self._data_pointer, name[0])
             worker.save(name[1].split("(*.")[1].split(")")[0])
+
+    def _fit(self):
+        '''
+        The user has requested to fit the data
+        ''' 
+        target = None
+        for widget in QtWidgets.QApplication.topLevelWidgets():
+            if widget.__class__.__name__ == "MainWindow":
+                target = widget._sidebar
+        if target == None: return
+
+        target.launchFitCreator()

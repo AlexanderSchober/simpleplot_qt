@@ -31,8 +31,6 @@ from .plot_items.iso_curve_plot     import IsoCurvePlot
 from .plot_ray_handlers.ray_surface import SurfaceRayHandler
 from .plot_items.SimpleItemSample   import SimpleItemSample
 
-from .plot_geometries.transformer   import Transformer
-
 class SurfacePlotHandler(PlotHandler):
 
     def __init__(self, **kwargs):

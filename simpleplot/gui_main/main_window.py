@@ -31,6 +31,8 @@ from ..models.plot_model import PlotModel
 
 from .gui_subwindows.subwindow_data.mainwindow_data import MainWindowData
 from .gui_subwindows.subwindow_plot.mainwindow_plot import MainWindowPlot
+from .gui_subwindows.subwindow_analysis.mainwindow_fit import MainWindowFit
+from .gui_subwindows.subwindow_analysis.mainwindow_pca import MainWindowPCA
 
 class MainWindow(QtWidgets.QMainWindow):
     '''
@@ -80,3 +82,27 @@ class MainWindow(QtWidgets.QMainWindow):
         window.setWindowTitle(item._name)
         window.show()
 
+    def displayFit(self, item):
+        '''
+        Display data as an external window
+        '''
+        if not item.fit_widget.parent() == None:
+            item.fit_widget.parent().close()
+
+        window = MainWindowFit(parent = self)
+        item.fit_widget.setupModels()
+        window.setCentralWidget(item.fit_widget)
+        window.setWindowTitle(item._name)
+        window.show()
+
+    def displayPCA(self, item):
+        '''
+        Display plot as an external window
+        '''
+        if not item.canvas_widget.parent() == None:
+            item.canvas_widget.parent().close()
+
+        window = MainWindowPCA(parent = self)
+        window.setCentralWidget(item.canvas_widget)
+        window.setWindowTitle(item._name)
+        window.show()

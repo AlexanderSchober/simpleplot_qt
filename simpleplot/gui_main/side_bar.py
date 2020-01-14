@@ -28,6 +28,7 @@ from functools import partial
 from .gui_dialogs.raw_txt_import    import RawTxtImport
 from .gui_dialogs.plot_setup_dialog import PlotSetupDialog
 from .gui_plot.data_link_creator    import DataLinkCreator
+from .gui_dialogs.fit_link_creator  import FitLinkCreator
 from ..core.io.io_data_import       import IODataLoad
 
 class Sidebar(QtWidgets.QWidget):
@@ -150,10 +151,6 @@ class Sidebar(QtWidgets.QWidget):
 
     def addDataProcTxt(self, item):
         '''
-        Tell the current main Session node
-        of the current model to add a new
-        project with the name determined 
-        from the dialog
         '''
         path = QtWidgets.QFileDialog.getOpenFileName(
             parent = self, filter = "Text (*.txt)")
@@ -165,27 +162,20 @@ class Sidebar(QtWidgets.QWidget):
 
     def addDataProcHDF(self, item):
         '''
-        Tell the current main Session node
-        of the current model to add a new
-        project with the name determined 
-        from the dialog
+        '''
+
+    def addFit(self, item):
+        '''
         '''
 
 
-    def addAnalysis(self, item):
+
+    def addPCA(self, item):
         '''
-        Tell the current main Session node
-        of the current model to add a new
-        project with the name determined 
-        from the dialog
         '''
 
     def addPlot(self, item):
         '''
-        Tell the current main Session node
-        of the current model to add a new
-        project with the name determined 
-        from the dialog
         '''
         dialog = PlotSetupDialog()
         dialog.accepted.connect(partial(self.createPlotItem, item))
@@ -205,6 +195,15 @@ class Sidebar(QtWidgets.QWidget):
         the data instance
         '''
         dialog = DataLinkCreator()
+        dialog.exec()
+
+    def launchFitCreator(self):
+        '''
+        This will be the access point to the link creator 
+        dialog that can be launched either by the plot or by
+        the data instance
+        '''
+        dialog = FitLinkCreator()
         dialog.exec()
 
     def contextMenuRequested(self, point):
@@ -297,6 +296,23 @@ class Sidebar(QtWidgets.QWidget):
                     self.parent().parent()._playground.addData, item))
                 show_data_Window.triggered.connect(partial(
                     self.parent().parent().displayData, item))
+
+                temp_menu.popup(self._tree_view.viewport().mapToGlobal(point))
+
+            elif item.descriptor == "fit item":
+                temp_menu = QtWidgets.QMenu(self._add_button)
+
+                change_name  = temp_menu.addAction(
+                    "Rename")
+                show_data_MDI  = temp_menu.addAction(
+                    "Show on Mdi surface")
+                show_data_Window  = temp_menu.addAction(
+                    "Show on external window")
+
+                show_data_MDI.triggered.connect(partial(
+                    self.parent().parent()._playground.addFit, item))
+                show_data_Window.triggered.connect(partial(
+                    self.parent().parent().displayFit, item))
 
                 temp_menu.popup(self._tree_view.viewport().mapToGlobal(point))
 

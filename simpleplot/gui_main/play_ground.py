@@ -61,3 +61,15 @@ class Playground(QtWidgets.QMdiArea):
         item.data_widget.setupModels()
         child.setWidget(item.data_widget)
         child.show()
+
+    def addFit(self, item):
+        '''
+        Create the plot subwindow and return it for 
+        the caller to register it into the model
+        '''
+        if not item.fit_widget.parent() == None:
+            item.fit_widget.parent().close()
+
+        child = SubwindowData(self)
+        child.setWidget(item.fit_widget)
+        child.show()

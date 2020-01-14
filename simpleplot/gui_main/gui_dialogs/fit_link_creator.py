@@ -25,13 +25,13 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from ...models.data_axis_select_item import DataAxisSelectItem
 from ...models.data_axis_model import DataAxisModel
-from ...models.project_node import PlotLinkItem
+from ...models.project_node import FitLinkItem
 from ...models.delegates import ParameterDelegate
 
 from ...models.project_node import DataItem
-from ...models.project_node import PlotItem
+from ...models.project_node import FitItem
 
-class DataLinkCreator(QtWidgets.QDialog):
+class FitLinkCreator(QtWidgets.QDialog):
     '''
     This class will be create an interface between 
     data and the visual representations. This is 
@@ -40,24 +40,16 @@ class DataLinkCreator(QtWidgets.QDialog):
     charateristics
     '''
     def __init__(self, parent = None):
-        super(DataLinkCreator, self).__init__(parent = parent)
+        super(FitLinkCreator, self).__init__(parent = parent)
 
         self._setupGui()
 
-        self._projects = []
-        self._data = []
-        self._plots = []
-        self._dim_choices = [
-            ["x", "Fixed"],
-            ["x", "y", "Fixed"],
-            ["x", "y", "z", "Fixed"]]
-        self._plot_choices = [
-            ["Scatter"],
-            ["Surface", "Bar", "Step"],
-            ["Volume", "Distribution"]]
+        self._projects  = []
+        self._data      = []
+        self._dim_choices = []
 
         self._populateProjects()
-        self._populateDataPlot()
+        self._populateData()
 
         self._setupModel()
 
@@ -67,20 +59,16 @@ class DataLinkCreator(QtWidgets.QDialog):
         will generate the GUI to be placed
         onto the main window. 
         '''
-        self.setWindowTitle("Create new plot from data")
+        self.setWindowTitle("Create new fit from data")
 
-        self._project_drop = QtWidgets.QComboBox()
-        self._data_drop = QtWidgets.QComboBox()
-        self._plot_drop = QtWidgets.QComboBox()
-        self._subplot_drop = QtWidgets.QComboBox()
-        self._selector = QtWidgets.QTabBar()
-        self._axes_select = QtWidgets.QTableView()
-        self._plot_type = QtWidgets.QComboBox()
-        self._generate = QtWidgets.QPushButton("Generate")
+        self._project_drop  = QtWidgets.QComboBox()
+        self._data_drop     = QtWidgets.QComboBox()
+        self._selector      = QtWidgets.QTabBar()
+        self._axes_select   = QtWidgets.QTableView()
+        self._generate      = QtWidgets.QPushButton("Generate")
 
         self._selector.addTab("2D")
         self._selector.addTab("3D")
-        self._selector.addTab("4D")
         self._selector.setCurrentIndex(0)
 
         self._axes_select.setItemDelegate(ParameterDelegate())
@@ -88,22 +76,15 @@ class DataLinkCreator(QtWidgets.QDialog):
         layout = QtWidgets.QGridLayout(self)
         layout.addWidget(QtWidgets.QLabel("Project source:"), 0,0,1,1)
         layout.addWidget(QtWidgets.QLabel("Data source:"), 1,0,1,1)
-        layout.addWidget(QtWidgets.QLabel("Plot target:"), 2,0,1,1)
-        layout.addWidget(QtWidgets.QLabel("Subplot target:"), 3,0,1,1)
         layout.addWidget(QtWidgets.QLabel("Select dimensionality:"), 4,0,1,1)
-        layout.addWidget(QtWidgets.QLabel("Select target type:"), 6,0,1,1)
 
         layout.addWidget(self._project_drop, 0,1,1,1)
         layout.addWidget(self._data_drop, 1,1,1,1)
-        layout.addWidget(self._plot_drop, 2,1,1,1)
-        layout.addWidget(self._subplot_drop, 3,1,1,1)
         layout.addWidget(self._selector, 4,1,1,1)
         layout.addWidget(self._axes_select, 5,0,1,2)
-        layout.addWidget(self._plot_type, 6,1,1,1)
         layout.addWidget(self._generate, 7,1,1,1)
 
-        self._project_drop.currentTextChanged.connect(self._populateDataPlot)
-        self._plot_drop.currentTextChanged.connect(self._populateSubplot)
+        self._project_drop.currentTextChanged.connect(self._populateData)
         self._selector.currentChanged.connect(self._setupModel)
         self._generate.clicked.connect(self.generate)
 
@@ -130,13 +111,12 @@ class DataLinkCreator(QtWidgets.QDialog):
         if len(self._projects) > 0:
             self._project_drop.setCurrentIndex(0)
 
-    def _populateDataPlot(self):
+    def _populateData(self):
         '''
         The data and subplot comboboxes 
         can be populated immediately
         '''
         self._data_drop.clear()
-        self._plot_drop.clear()
 
         target = None
         for widget in QtWidgets.QApplication.topLevelWidgets():
@@ -147,52 +127,17 @@ class DataLinkCreator(QtWidgets.QDialog):
         root_pointer = target._model.root()
 
         self._data = []
-        self._plots = []
         for i in range(root_pointer.childCount()):
             if root_pointer.child(i).descriptor == 'project' and root_pointer.child(i)._name == self._project_drop.currentText():
 
                 data_root = root_pointer.child(i).childFromName('Datasets')
                 self._data = data_root._children
 
-                plot_root = root_pointer.child(i).childFromName('Plots')
-                self._plots = plot_root._children
-
         self._data_drop.addItems(
             [item._name for item in self._data])
-        self._plot_drop.addItems(
-            [item._name for item in self._plots])
 
         if len(self._data) > 0:
             self._data_drop.setCurrentIndex(0)
-        if len(self._plots) > 0:
-            self._plot_drop.setCurrentIndex(0)
-
-        self._populateSubplot()
-
-    def _populateSubplot(self):
-        '''
-        The data and subplot comboboxes 
-        can be populated immediately
-        '''
-        self._subplot_drop.clear()
-
-        target = None
-        for widget in QtWidgets.QApplication.topLevelWidgets():
-            if widget.__class__.__name__ == "MainWindow":
-                target = widget
-        if target == None: return
-
-        if self._plot_drop.currentText() == "": return
-        
-        self._subplots  = [
-            item for item in 
-            self._plots[self._plot_drop.currentIndex()].canvas_item._rootNode._children[:-1]]
-
-        self._subplot_drop.addItems(
-            [item._name for item in self._subplots])
-
-        if len(self._data) > 0:
-            self._subplot_drop.setCurrentIndex(0)
 
     def _setupModel(self):
         '''
@@ -207,6 +152,11 @@ class DataLinkCreator(QtWidgets.QDialog):
         axes = target.axes
         if axes == None: return
         if len(target.DataObjects) == 0: return 
+        data_dummy = target.DataObjects[0]
+
+        self._dim_choices = [
+            ['x'] + ['Variable ' + str(i) for i in range(target.axes.dim+len(data_dummy.data.shape)-1)] + ['Fixed'],
+            ['x', 'y'] + ['Variable ' + str(i) for i in range(target.axes.dim+len(data_dummy.data.shape)-2)] + ['Fixed']]
         
         index = 0
         for i in range(axes.dim):
@@ -220,7 +170,6 @@ class DataLinkCreator(QtWidgets.QDialog):
             self._model._root_item.addChild(item)
             index += 1
 
-        data_dummy = target.DataObjects[0]
         for i in range(len(data_dummy.data.shape)):
             item = DataAxisSelectItem(
                 "Data axis n. "+str(i),
@@ -235,9 +184,6 @@ class DataLinkCreator(QtWidgets.QDialog):
         self._model.referenceModel()
         self._axes_select.setModel(self._model)
 
-        self._plot_type.clear()
-        self._plot_type.addItems(self._plot_choices[self._selector.currentIndex()])
-
     def generate(self):
         '''
         Gather all the information provided in th e
@@ -245,11 +191,24 @@ class DataLinkCreator(QtWidgets.QDialog):
         on the side of the data and the plot item on the
         side of the plot. Then link them,6
         '''
-        subplot = self._subplots[self._subplot_drop.currentIndex()]
-        plot_item = subplot.artist.addPlot(self._plot_type.currentText())
-        data_item = self._data[self._data_drop.currentIndex()]
-        data_link_item = PlotLinkItem()
-        data_injector = data_link_item.data_injector
+        project_item    = self._projects[self._project_drop.currentIndex()]
+        data_item       = self._data[self._data_drop.currentIndex()]
+        data_link_item  = FitLinkItem()
+        data_injector   = data_link_item.data_injector
+        data_injector.setDataSource(data_item.data_item)
+
+        behavior = []
+        for child in self._model._root_item._children:
+            behavior.append([
+                child.data(0),
+                child.data(1),
+                child.dataIndex(2)
+            ])
+        data_injector.setBehavior(
+            behavior, 
+            self._dim_choices[self._selector.currentIndex()][:-1])
+
+        new_fit_item    = FitItem(link_item = data_injector) 
 
         target = None
         for widget in QtWidgets.QApplication.topLevelWidgets():
@@ -262,16 +221,10 @@ class DataLinkCreator(QtWidgets.QDialog):
             data_item.childCount(), 1,
             [data_link_item], data_item
         )
-
-        data_injector.setDataSource(data_item.data_item)
-        data_injector.addPlotTarget(plot_item)
-
-        behavior = []
-        for child in self._model._root_item._children:
-            behavior.append([
-                child.data(0),
-                child.data(1),
-                child.dataIndex(2)
-            ])
-        data_injector.setBehavior(behavior, self._dim_choices[self._selector.currentIndex()][:-1])
-
+        target_model.insertRows(
+            project_item.childFromName("Analysis").childCount(), 
+            1, [new_fit_item], 
+            project_item.childFromName("Analysis")
+        )
+        
+        data_injector.addFitTarget(new_fit_item)

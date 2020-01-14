@@ -65,23 +65,23 @@ def startPlayGround():
     # import_window._process_export()
     # import_window.close()
 
-    import_window = window._sidebar.addDataTxt(target.childFromName("Datasets"))
-    import_window.io_input_in.setText(r"/home/alexander/test")
-    import_window.scan_folder_in()
+    # import_window = window._sidebar.addDataTxt(target.childFromName("Datasets"))
+    # import_window.io_input_in.setText(r"/home/alexander/test")
+    # import_window.scan_folder_in()
 
-    import_window.list_dictionary[
-        "type"].dictionary["items"][0][0].setCheckState(
-            QtCore.Qt.Unchecked)
-    import_window._dimension_changed(
-        import_window.list_dictionary['type'].dictionary['model'].index(0,0))
+    # import_window.list_dictionary[
+    #     "type"].dictionary["items"][0][0].setCheckState(
+    #         QtCore.Qt.Unchecked)
+    # import_window._dimension_changed(
+    #     import_window.list_dictionary['type'].dictionary['model'].index(0,0))
 
-    import_window.list_dictionary[
-        "type"].dictionary["items"][3][0].setCheckState(
-            QtCore.Qt.Unchecked)
-    import_window._dimension_changed(
-        import_window.list_dictionary['type'].dictionary['model'].index(3,0))
-    import_window._process_export()
-    import_window.close()
+    # import_window.list_dictionary[
+    #     "type"].dictionary["items"][3][0].setCheckState(
+    #         QtCore.Qt.Unchecked)
+    # import_window._dimension_changed(
+    #     import_window.list_dictionary['type'].dictionary['model'].index(3,0))
+    # import_window._process_export()
+    # import_window.close()
 
     #set the plot
     plot = PlotItem(

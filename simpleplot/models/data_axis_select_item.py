@@ -90,7 +90,7 @@ class DataAxisSelectItem(SessionNode):
         if value == 'Fixed': return
 
         for child in self.parent()._children:
-            if not child == self and child.data(1) == value:
+            if not child == self and child.data(1) == value and not child.data(1) == 'Variable':
                 child.setData(1, 'Fixed')
                 self._model.dataChanged.emit(
                     QtCore.QModelIndex(),
