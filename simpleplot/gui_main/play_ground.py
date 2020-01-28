@@ -22,9 +22,6 @@
 # *****************************************************************************
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-
-from .gui_subwindows.subwindow_plot.subwindow_plot import SubwindowPlot
-from .gui_subwindows.subwindow_data.subwindow_data import SubwindowData
 from .gui_subwindows.subwindow_main import SubwindowMain
 
 class Playground(QtWidgets.QMdiArea):
@@ -37,39 +34,15 @@ class Playground(QtWidgets.QMdiArea):
         child = SubwindowMain(self)
         child.setHidden(True)
 
-    def addPlot(self, item):
+    def displaySubwindow(self, item):
         '''
         Create the plot subwindow and return it for 
         the caller to register it into the model
         '''
-        if not item.canvas_widget.parent() == None:
-            item.canvas_widget.parent().close()
+        if not item.display_widget.parent() == None:
+            item.display_widget.parent().close()
 
-        child = SubwindowPlot(self)
-        child.setWidget(item.canvas_widget)
-        child.show()
-
-    def addData(self, item):
-        '''
-        Create the plot subwindow and return it for 
-        the caller to register it into the model
-        '''
-        if not item.data_widget.parent() == None:
-            item.data_widget.parent().close()
-
-        child = SubwindowData(self)
-        item.data_widget.setupModels()
-        child.setWidget(item.data_widget)
-        child.show()
-
-    def addFit(self, item):
-        '''
-        Create the plot subwindow and return it for 
-        the caller to register it into the model
-        '''
-        if not item.fit_widget.parent() == None:
-            item.fit_widget.parent().close()
-
-        child = SubwindowData(self)
-        child.setWidget(item.fit_widget)
+        child = SubwindowMain(self)
+        item.display_widget.setup()
+        child.setWidget(item.display_widget)
         child.show()

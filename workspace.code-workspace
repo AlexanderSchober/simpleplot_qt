@@ -2,17 +2,17 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"path": "/home/alexander/Dropbox/FZJ-Projects/2018-Projects/2018-09-20-NSE_Software/NSE_Soft"
-		},
-		{
-			"path": "/home/alexander/Dropbox/FZJ-Projects/2018-Projects/2018-10-08-R-Data-2"
 		}
 	],
 	"settings": {
 		"cSpell.words": [
 			"asarray"
-		]
+		],
+		"files.associations": {
+			"qwidget": "cpp",
+			"qlineedit": "cpp",
+			"qlistwidget": "cpp",
+			"*.ipp": "cpp"
+		}
 	}
 }

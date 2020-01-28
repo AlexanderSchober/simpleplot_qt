@@ -164,6 +164,12 @@ class FitHandler(QtCore.QObject, FunctionLibrary):
                 element[self.current_ray].clone(
                     self.fit_worker.func_dict[key][2][i])
                 
+    def setCurrentRay(self, ray):
+        '''
+        Allow external interface to set the ray
+        '''
+        self.current_ray = list(ray)
+
 if __name__ == "__main__":
     pass
 

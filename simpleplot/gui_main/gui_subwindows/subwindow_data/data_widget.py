@@ -132,7 +132,7 @@ class DataWidget(QtWidgets.QWidget):
         self._data_table.verticalHeader().customContextMenuRequested.connect(
             self._rowHeaderClicked)
 
-    def setupModels(self):
+    def setup(self):
         '''
         set up the models
         '''

@@ -29,10 +29,7 @@ from .side_bar import Sidebar
 from ..models.project_class import ProjectHandler
 from ..models.plot_model import PlotModel
 
-from .gui_subwindows.subwindow_data.mainwindow_data import MainWindowData
-from .gui_subwindows.subwindow_plot.mainwindow_plot import MainWindowPlot
-from .gui_subwindows.subwindow_analysis.mainwindow_fit import MainWindowFit
-from .gui_subwindows.subwindow_analysis.mainwindow_pca import MainWindowPCA
+from .gui_subwindows.mainwindow_main import MainwindowMain
 
 class MainWindow(QtWidgets.QMainWindow):
     '''
@@ -57,52 +54,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.setCentralWidget(self._main_widget)
 
-    def displayData(self, item):
+    def displaySubwindow(self, item):
         '''
         Display data as an external window
         '''
-        if not item.data_widget.parent() == None:
-            item.data_widget.parent().close()
+        if not item.display_widget.parent() == None:
+            item.display_widget.parent().close()
 
-        window = MainWindowData(parent = self)
-        item.data_widget.setupModels()
-        window.setCentralWidget(item.data_widget)
-        window.setWindowTitle(item._name)
-        window.show()
-
-    def displayPlot(self, item):
-        '''
-        Display plot as an external window
-        '''
-        if not item.canvas_widget.parent() == None:
-            item.canvas_widget.parent().close()
-
-        window = MainWindowPlot(parent = self)
-        window.setCentralWidget(item.canvas_widget)
-        window.setWindowTitle(item._name)
-        window.show()
-
-    def displayFit(self, item):
-        '''
-        Display data as an external window
-        '''
-        if not item.fit_widget.parent() == None:
-            item.fit_widget.parent().close()
-
-        window = MainWindowFit(parent = self)
-        item.fit_widget.setupModels()
-        window.setCentralWidget(item.fit_widget)
-        window.setWindowTitle(item._name)
-        window.show()
-
-    def displayPCA(self, item):
-        '''
-        Display plot as an external window
-        '''
-        if not item.canvas_widget.parent() == None:
-            item.canvas_widget.parent().close()
-
-        window = MainWindowPCA(parent = self)
-        window.setCentralWidget(item.canvas_widget)
+        window = MainwindowMain(parent = self)
+        item.display_widget.setup()
+        window.setCentralWidget(item.display_widget)
         window.setWindowTitle(item._name)
         window.show()

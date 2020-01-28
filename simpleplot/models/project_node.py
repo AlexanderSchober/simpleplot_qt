@@ -82,7 +82,7 @@ class DataItem(SessionNode):
         SessionNode.__init__(self, name, parent)
         self.descriptor = "data item"
         self.data_item = DataStructure()
-        self.data_widget = DataWidget(self.data_item)
+        self.display_widget = DataWidget(self.data_item)
  
     def data(self, column):
         if column is 0: return self._name
@@ -159,7 +159,7 @@ class FitItem(SessionNode):
         SessionNode.__init__(self, name, parent)
         self.descriptor = "fit item"
         self.handler  = FitHandler(link_item, gui = True)
-        self.fit_widget = FitWidget(handler = self.handler)
+        self.display_widget = FitWidget(handler = self.handler)
         
     def data(self, column):
         if column is 0: return self._name
@@ -192,8 +192,8 @@ class PlotItem(SessionNode):
     def __init__(self, name = 'Plot', parent = None, **kwargs):
         SessionNode.__init__(self, name, parent)
         self.descriptor = "plot item"
-        self.canvas_widget = QtWidgets.QWidget()
-        self.canvas_item = MultiCanvasItem(widget=self.canvas_widget, **kwargs)
+        self.display_widget = QtWidgets.QWidget()
+        self.canvas_item = MultiCanvasItem(widget=self.display_widget, **kwargs)
 
         target = None
         for widget in QtWidgets.QApplication.topLevelWidgets():

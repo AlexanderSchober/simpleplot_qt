@@ -79,6 +79,13 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
 
         self._model.referenceModel()
 
+
+    def setup(self):
+        '''
+        set up the models
+        '''
+        pass
+    
     def _setUp(self):
         '''
         set up the pyqt part of the elements

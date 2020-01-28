@@ -22,6 +22,7 @@
 # *****************************************************************************
 
 from PyQt5 import QtWidgets, QtGui, QtCore
+from functools import partial
 import os
 
 class FitWidget(QtWidgets.QWidget):
@@ -34,7 +35,10 @@ class FitWidget(QtWidgets.QWidget):
 
         self._setupLayout()
         self._initialize()
+        self._setFunctionModel()
+        self._setNavigator()
         self._connectMethods()
+        
 
     def _setupLayout(self):
         '''
@@ -42,6 +46,107 @@ class FitWidget(QtWidgets.QWidget):
         by placing the two main components
         '''
         self.setupUi()
+
+    def _setNavigator(self):
+        '''
+        Here we are setting once and for all the navigator
+        for the fitting 
+        '''
+        for i in range(len(self._handler.current_ray)):
+            temp_widget = QtWidgets.QWidget()
+            temp_layout = QtWidgets.QHBoxLayout(temp_widget)
+            temp_layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+            
+            temp_m  = QtWidgets.QPushButton("-")
+            temp_mm = QtWidgets.QPushButton("--")
+            temp_p  = QtWidgets.QPushButton("+")
+            temp_pp = QtWidgets.QPushButton("++")
+
+            temp_drop = QtWidgets.QComboBox()
+            temp_drop.addItems([
+                str(e) for e in self._handler._data_link.getVariableAxes()[i]])
+            temp_drop.setObjectName("drop_item")
+            
+            temp_layout.addWidget(temp_mm)
+            temp_layout.addWidget(temp_m)
+            temp_layout.addWidget(temp_drop)
+            temp_layout.addWidget(temp_p)
+            temp_layout.addWidget(temp_pp)
+
+            temp_item = QtWidgets.QListWidgetItem()
+            temp_item.setSizeHint(temp_widget.sizeHint())
+            self._navigator_list.addItem(temp_item)
+            self._navigator_list.setItemWidget(temp_item,temp_widget)
+
+            temp_m.clicked.connect(partial(self._move,i,-1))
+            temp_mm.clicked.connect(partial(self._move,i,-10))
+            temp_p.clicked.connect(partial(self._move,i,1))
+            temp_pp.clicked.connect(partial(self._move,i,10))
+            temp_drop.currentIndexChanged.connect(self._refreshIndex)
+            
+
+    def _move(self, index, amount):
+        '''
+        
+        '''
+        placeholder_widget = self._navigator_list.itemWidget(
+            self._navigator_list.item(index))
+        widget = placeholder_widget.findChild(
+            QtWidgets.QComboBox, "drop_item"
+        )
+
+        count = widget.count()
+        current_idx = widget.currentIndex()
+        
+        out = 0
+        if current_idx + amount >= count:
+            out = count -1
+        elif current_idx + amount < 0:
+            out = 0
+        else:
+            out = current_idx + amount
+
+        widget.setCurrentIndex(out)
+
+    def _refreshIndex(self):
+        '''
+        This will read all the elements from the navigator
+        and feed them to the fit handler
+        '''
+        ray = []
+        for i in range(self._navigator_list.count()):
+            placeholder_widget = self._navigator_list.itemWidget(
+                self._navigator_list.item(i))
+            widget = placeholder_widget.findChild(
+                QtWidgets.QComboBox, "drop_item"
+            )
+            ray.append(widget.currentIndex())
+
+        self._handler.setCurrentRay(ray)
+
+    def _setFunctionModel(self):
+        '''
+        This will initialize the model for the 
+        functions
+        '''
+        self._function_model = QtGui.QStandardItemModel()
+        self._function_model.setHorizontalHeaderItem(0, QtGui.QStandardItem('Name'))
+        self._function_model.setHorizontalHeaderItem(1, QtGui.QStandardItem('Num.'))
+
+        for i,key in enumerate(self._handler.func_dict.keys()):
+            self._function_model.setItem(i,0,QtGui.QStandardItem(key))
+            num_temp = QtGui.QStandardItem()
+            num_temp.setData(QtCore.QVariant(0), 0)
+            self._function_model.setItem(i,1,num_temp)
+
+        self._function_selection_view.setModel(self._function_model)
+        self._function_selection_view.verticalHeader().hide()
+
+    def setup(self):
+        '''
+        set up the models
+        '''
+        pass
 
     def setupUi(self):
         self.verticalLayout = QtWidgets.QVBoxLayout(self)
@@ -62,6 +167,20 @@ class FitWidget(QtWidgets.QWidget):
         self.verticalLayout_7.setObjectName("verticalLayout_7")
         self.groupBox_2 = QtWidgets.QGroupBox(self.tab_2)
         self.groupBox_2.setObjectName("groupBox_2")
+
+        self._function_selection_layout = QtWidgets.QVBoxLayout(self.groupBox_2)
+        self._function_selection_view = QtWidgets.QTableView()
+        self._function_selection_set = QtWidgets.QPushButton("Load")
+        self._function_selection_set = QtWidgets.QPushButton("Set")
+
+
+        self._function_selection_layout.addWidget(self._function_selection_view)
+        temp_layout  = QtWidgets.QHBoxLayout()
+        temp_layout.addStretch()
+        temp_layout.addWidget(self._function_selection_set)
+        self._function_selection_layout.addLayout(temp_layout)
+
+
         self.verticalLayout_7.addWidget(self.groupBox_2)
         self.groupBox_3 = QtWidgets.QGroupBox(self.tab_2)
         self.groupBox_3.setObjectName("groupBox_3")
@@ -82,22 +201,10 @@ class FitWidget(QtWidgets.QWidget):
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.pushButton = QtWidgets.QPushButton(self.tabWidgetPage1)
-        self.pushButton.setObjectName("pushButton")
-        self.horizontalLayout.addWidget(self.pushButton)
-        self.pushButton_2 = QtWidgets.QPushButton(self.tabWidgetPage1)
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.horizontalLayout.addWidget(self.pushButton_2)
-        self.label = QtWidgets.QLabel(self.tabWidgetPage1)
-        self.label.setObjectName("label")
-        self.horizontalLayout.addWidget(self.label)
-        self.pushButton_4 = QtWidgets.QPushButton(self.tabWidgetPage1)
-        self.pushButton_4.setObjectName("pushButton_4")
-        self.horizontalLayout.addWidget(self.pushButton_4)
-        self.pushButton_5 = QtWidgets.QPushButton(self.tabWidgetPage1)
-        self.pushButton_5.setObjectName("pushButton_5")
-        self.horizontalLayout.addWidget(self.pushButton_5)
-        self.verticalLayout_4.addLayout(self.horizontalLayout)
+
+        self._navigator_list = QtWidgets.QListWidget(self.tabWidgetPage1)
+        self.verticalLayout_4.addWidget(self._navigator_list)
+
         self.listWidget = QtWidgets.QListWidget(self.tabWidgetPage1)
         self.listWidget.setObjectName("listWidget")
         self.verticalLayout_4.addWidget(self.listWidget)
@@ -174,11 +281,7 @@ class FitWidget(QtWidgets.QWidget):
         self.groupBox_3.setTitle(_translate("self.", "Load fit from file"))
         self.groupBox_4.setTitle(_translate("self.", "Fit range parameters"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("self", "Set"))
-        self.pushButton.setText(_translate("self.", "<<"))
-        self.pushButton_2.setText(_translate("self.", "<"))
-        self.label.setText(_translate("self.", "TextLabel"))
-        self.pushButton_4.setText(_translate("self.", ">"))
-        self.pushButton_5.setText(_translate("self.", ">>"))
+
         self.pushButton_9.setText(_translate("self.", "< Fit"))
         self.pushButton_10.setText(_translate("self.", "< Copy"))
         self.fit_button_fit.setText(_translate("self.", "Fit"))
@@ -216,4 +319,5 @@ class FitWidget(QtWidgets.QWidget):
 
     def setProgress(self, value):
         self.fit_bar_progress.setValue(value)
+        
 

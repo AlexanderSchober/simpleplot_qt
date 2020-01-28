@@ -168,8 +168,6 @@ class Sidebar(QtWidgets.QWidget):
         '''
         '''
 
-
-
     def addPCA(self, item):
         '''
         '''
@@ -293,9 +291,9 @@ class Sidebar(QtWidgets.QWidget):
                     "Show on external window")
 
                 show_data_MDI.triggered.connect(partial(
-                    self.parent().parent()._playground.addData, item))
+                    self.parent().parent()._playground.displaySubwindow, item))
                 show_data_Window.triggered.connect(partial(
-                    self.parent().parent().displayData, item))
+                    self.parent().parent().displaySubwindow, item))
 
                 temp_menu.popup(self._tree_view.viewport().mapToGlobal(point))
 
@@ -310,9 +308,9 @@ class Sidebar(QtWidgets.QWidget):
                     "Show on external window")
 
                 show_data_MDI.triggered.connect(partial(
-                    self.parent().parent()._playground.addFit, item))
+                    self.parent().parent()._playground.displaySubwindow, item))
                 show_data_Window.triggered.connect(partial(
-                    self.parent().parent().displayFit, item))
+                    self.parent().parent().displaySubwindow, item))
 
                 temp_menu.popup(self._tree_view.viewport().mapToGlobal(point))
 
@@ -348,8 +346,8 @@ class Sidebar(QtWidgets.QWidget):
                     "Show on external window")
 
                 show_plot_MDI.triggered.connect(partial(
-                    self.parent().parent()._playground.addPlot, item))
+                    self.parent().parent()._playground.displaySubwindow, item))
                 show_plot_Window.triggered.connect(partial(
-                    self.parent().parent().displayPlot, item))
+                    self.parent().parent().displaySubwindow, item))
 
                 temp_menu.popup(self._tree_view.viewport().mapToGlobal(point))

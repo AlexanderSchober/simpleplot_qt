@@ -204,6 +204,7 @@ class FitLinkCreator(QtWidgets.QDialog):
                 child.data(1),
                 child.dataIndex(2)
             ])
+            
         data_injector.setBehavior(
             behavior, 
             self._dim_choices[self._selector.currentIndex()][:-1])
