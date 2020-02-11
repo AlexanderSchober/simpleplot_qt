@@ -49,7 +49,7 @@ class LineData(PlotData, SessionNode):
         for i,value in enumerate(self._axes):
             if value in kwargs.keys():
                 if isinstance(kwargs[value],np.ndarray) or isinstance(kwargs[value],list):
-                    elements[i] = np.array(kwargs[value])
+                    elements[i] = np.array(kwargs[value]).astype(np.float)
 
         shape = np.amax(
             np.array(

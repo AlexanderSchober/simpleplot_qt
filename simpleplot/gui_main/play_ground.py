@@ -43,6 +43,7 @@ class Playground(QtWidgets.QMdiArea):
             item.display_widget.parent().close()
 
         child = SubwindowMain(self)
-        item.display_widget.setup()
+        if hasattr(item.display_widget, "setup"):
+            item.display_widget.setup()
         child.setWidget(item.display_widget)
         child.show()

@@ -62,7 +62,8 @@ class MainWindow(QtWidgets.QMainWindow):
             item.display_widget.parent().close()
 
         window = MainwindowMain(parent = self)
-        item.display_widget.setup()
+        if hasattr(item.display_widget, "setup"):
+            item.display_widget.setup()
         window.setCentralWidget(item.display_widget)
         window.setWindowTitle(item._name)
         window.show()
