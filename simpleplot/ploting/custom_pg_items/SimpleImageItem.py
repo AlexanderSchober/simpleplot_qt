@@ -21,7 +21,7 @@
 #
 # *****************************************************************************
 
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 
 from ...pyqtgraph import pyqtgraph as pg
 from ...pyqtgraph.pyqtgraph import Point
@@ -134,7 +134,44 @@ class SimpleImageItem(pg.ImageItem):
         argb, alpha = fn.makeARGB(image, lut=lut, levels=levels)
         self.qimage = fn.makeQImage(argb, alpha, transpose=False)
 
+        pix_map = QtGui.QPixmap(
+            self.x[self.x.shape[0]-1]-(self.x[self.x.shape[0]-1]-self.x[self.x.shape[0]-2])/2 
+            + self.x[self.x.shape[0]-1]-self.x[self.x.shape[0]-2] 
+            - self.x[0]-(self.x[1]-self.x[0])/2,
+            self.y[self.y.shape[0]-1]-(self.y[self.y.shape[0]-1]-self.y[self.y.shape[0]-2])/2
+            + self.y[self.y.shape[0]-1]-self.y[self.y.shape[0]-2]
+            -self.y[0]-(self.y[1]-self.y[0])/2)
+        p = QtGui.QPainter(pix_map)
+
+        for i,j in [(i,j) for i in range(self.x.shape[0]) for j in range(self.y.shape[0])]:
+            if i == 0:
+                x_0 = 0.
+                w   = self.x[1]-self.x[0]
+            elif i == self.x.shape[0] - 1:
+                x_0 = self.x[self.x.shape[0]-1]-(self.x[self.x.shape[0]-1]-self.x[self.x.shape[0]-2])/2 - self.x[0]-(self.x[1]-self.x[0])/2
+                w   = self.x[self.x.shape[0]-1]-self.x[self.x.shape[0]-2]
+            else:
+                x_0 = self.x[i]-(self.x[i]-self.x[i-1])/2 - self.x[0]-(self.x[1]-self.x[0])/2
+                w   = (self.x[i]-self.x[i-1])/2 + (self.x[i+1]-self.x[i])/2
+
+            if j == 0:
+                y_0 = 0.
+                h   = self.y[1]-self.y[0]
+            elif j == self.y.shape[0] - 1:
+                y_0 = self.y[self.y.shape[0]-1]-(self.y[self.y.shape[0]-1]-self.y[self.y.shape[0]-2])/2 - self.y[0]-(self.y[1]-self.y[0])/2
+                h   = self.y[self.y.shape[0]-1]-self.y[self.y.shape[0]-2]
+            else:
+                y_0 = self.y[j]-(self.y[j]-self.y[j-1])/2 - self.y[0]-(self.y[1]-self.y[0])/2
+                h   = (self.y[j]-self.y[j-1])/2 + (self.y[j+1]-self.y[j])/2
+
+            p.setPen(QtCore.Qt.transparent)
+            p.setBrush(QtGui.QBrush(self.qimage.pixelColor(i,j)))
+            p.drawRect(QtCore.QRectF(x_0,y_0,w,h))
+        
+        self.qimage = pix_map
+
     def paint(self, p, *args):
+
         profile = debug.Profiler()
         if self.image is None:
             return
@@ -148,15 +185,18 @@ class SimpleImageItem(pg.ImageItem):
             profile('set comp mode')
 
         # shape = self.image.shape[:2] if self.axisOrder == 'col-major' else self.image.shape[:2][::-1]
-        p.drawImage(QtCore.QRectF(
-            np.amin(self.x),np.amin(self.y),
-            np.amax(self.x) - np.amin(self.x),np.amax(self.y) - np.amin(self.y)), 
-            self.qimage)
+        p.drawPixmap(
+            QtCore.QRectF(
+                np.amin(self.x),np.amin(self.y),
+                np.amax(self.x) - np.amin(self.x),np.amax(self.y) - np.amin(self.y)), 
+            self.qimage,
+            QtCore.QRectF(
+                0,0, np.amax(self.x) - np.amin(self.x),np.amax(self.y) - np.amin(self.y))
+            )
         profile('p.drawImage')
         if self.border is not None:
             p.setPen(self.border)
             p.drawRect(self.boundingRect())
-
 
     def setImage(self, data=None, autoLevels=None, **kargs):
         """
