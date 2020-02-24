@@ -52,8 +52,8 @@ class LorenzianInfo(InfoClass):
         self.para_name         = [
             ['Position', 2.],
             ['HWHM', 2.],
-            ['Amplitude', 2],
-            ['Asymmetry', 0]]
+            ['Amplitude', 2.],
+            ['Asymmetry', 0.]]
                                         
         #Parameter units
         self.para_unit          = [

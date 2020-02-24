@@ -50,9 +50,9 @@ class LinearInfo(InfoClass):
         #######################
         #parameter names
         self.para_name = [
-            ['Position', 0],
-            ['Amplitude', 0],
-            ['Offset', 0]]
+            ['Position', 0.],
+            ['Amplitude', 0.],
+            ['Offset', 0.]]
                                         
         #Parameter units
         self.para_unit  = [

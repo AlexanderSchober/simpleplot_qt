@@ -191,7 +191,7 @@ class DataLinkCreator(QtWidgets.QDialog):
         self._subplot_drop.addItems(
             [item._name for item in self._subplots])
 
-        if len(self._data) > 0:
+        if len(self._subplots) > 0:
             self._subplot_drop.setCurrentIndex(0)
 
     def _setupModel(self):

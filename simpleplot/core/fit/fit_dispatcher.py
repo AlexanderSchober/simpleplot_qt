@@ -37,7 +37,7 @@ import scipy
 #######################################
 #advanced imports
 
-#Thread the fiting process to avoid ssytem lockup
+#Thread the fiting process to avoid sytem lockup
 from threading import Thread, Event
 from Queue import Queue
 
@@ -148,9 +148,9 @@ class FitDispatcher:
     
         '''
         ######################################################################
-        This function will launcht the scatter plot interfacer onto the target
+        This function will launch the scatter plot interfacer onto the target
         
-        Note taht passing through the fititng class has historical reasons
+        Note that passing through the fitting class has historical reasons
         as it may seem unnecessarily complicated
         ######################################################################
         '''

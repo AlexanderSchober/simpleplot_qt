@@ -87,14 +87,12 @@ class IODataLoad:
 
         loop_elements = itertools.compress(loop_elements, data_axes)
         for e in itertools.product(*loop_elements):
-            print(e)
             local_index = list(get_index)
             idx = 0
             for i, element in enumerate(data_axes):
                 if element:
                     local_index[i] = e[idx]
                     idx += 1
-            print(local_index)
             self._target.addDataObject(
                 data.__getitem__(tuple(local_index)), e)
         
@@ -187,8 +185,9 @@ class IODataLoad:
         line_num = start_line + 1
         for e in itertools.product(*loop_elements):
             self._target.addDataObject(
-                np.asarray(
-                    lines[line_num].strip('\n').split(',')).reshape(
+                np.asarray([
+                    float(e) for e in 
+                    lines[line_num].strip('\n').split(',')]).reshape(
                         tuple(self._subdims)),
                 e, axes = np.asarray(self._subaxis) 
                 if len(self._subaxis)>1 

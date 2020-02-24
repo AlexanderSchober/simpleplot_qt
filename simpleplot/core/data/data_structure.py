@@ -287,7 +287,7 @@ class DataStructure:
         #create the out matrix
         numpy_out = np.zeros(
             tuple(dimensionality), 
-            dtype = str(np.asarray(self.DataObjects[0].data.dtype)))
+            dtype = self.DataObjects[0].data.dtype)
         extra_index = [slice(0,None,1) for i in list(self.DataObjects[0].dim)]
         for DataObject in self.DataObjects:
             index = list(DataObject.index) + extra_index
@@ -717,7 +717,6 @@ class DataObject:
     numpy array or list. 
     '''
     def __init__(self, id, data, index, axes = None):
-
         '''
         Here we initiate the data object and can there-
         fore set thevariables as local.

@@ -27,6 +27,7 @@ from .function_library import FunctionLibrary
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
+import numpy as np
 
 class FitHandler(QtCore.QObject, FunctionLibrary):
     '''
@@ -37,14 +38,17 @@ class FitHandler(QtCore.QObject, FunctionLibrary):
 
     Input is the environment containing the dataclass
     '''
-    progress_int = QtCore.pyqtSignal(int)
-    progress_str = QtCore.pyqtSignal(str)
+    progress_int        = QtCore.pyqtSignal(int)
+    progress_str        = QtCore.pyqtSignal(str)
+    progress_finished   = QtCore.pyqtSignal()
 
     def __init__(self, data_link, gui = False):
         QtCore.QObject.__init__(self)
         FunctionLibrary.__init__(self)
 
         self._data_link = data_link
+        self._max_rays = self._data_link.getVariableAxes()
+        self.current_idx = 0
 
         if not gui:
             self.openDummyApp()
@@ -80,7 +84,6 @@ class FitHandler(QtCore.QObject, FunctionLibrary):
         self.importFunctions()
         self.current_ray = [
             0 for e in range(len(self._data_link.getVariableAxes()))]
-        print(self._data_link.getData(self.current_ray))
 
     def connect(self):
         '''
@@ -125,20 +128,11 @@ class FitHandler(QtCore.QObject, FunctionLibrary):
         worker. This includes ranges properties and 
         parameters. 
         '''
-        import numpy as np
-        x = np.linspace(-10,10*np.pi,1000)
-        y = np.sin(x) + 0.2 + 10 * 1 * 2 / ( (x - 4)**2 + 1**2) + 20 * 3 * 2 * 1 / ( (x - 7)**2 + 3**2)
-
-        self.addFunction('Sinus', rays = 10)
-        self.addFunction('Lorenzian', rays = 10)
-        self.addFunction('Lorenzian', rays = 10)
-
-        self.func_dict['Lorenzian'][2][0][0].paras[0] = 4
-        self.func_dict['Lorenzian'][2][1][0].paras[0] = 7
-
-        self.fit_worker.setXY(x, y)
+        self.fit_worker.setXY(
+            self._data_link.getFitAxes(),
+            self._data_link.getData(self.current_ray))
         self.cloneToWorker()
-        self.fit_worker.setParameters([0, 1,2],1e10,10)
+        self.fit_worker.setParameters([0,1,2],1e10,10)
 
     def cloneToWorker(self):
         '''
@@ -151,8 +145,8 @@ class FitHandler(QtCore.QObject, FunctionLibrary):
         for key in self.func_dict.keys():
             for element in self.func_dict[key][2]:
                 self.fit_worker.addFunction(
-                    element[self.current_ray].info.name,
-                    source = element[self.current_ray])
+                    element[self.current_idx].info.name,
+                    source = element[self.current_idx])
 
     def cloneFromWorker(self):
         '''
@@ -161,61 +155,34 @@ class FitHandler(QtCore.QObject, FunctionLibrary):
         '''
         for key in self.func_dict.keys():
             for i, element in enumerate(self.func_dict[key][2]):
-                element[self.current_ray].clone(
+                element[self.current_idx].clone(
                     self.fit_worker.func_dict[key][2][i])
+
+        self.progress_finished.emit()
                 
     def setCurrentRay(self, ray):
         '''
         Allow external interface to set the ray
         '''
         self.current_ray = list(ray)
+        self.current_idx = self.getCurrentIdx()
 
-if __name__ == "__main__":
-    pass
+    def getCurrentIdx(self):
+        '''
+        Get the current idx for the function library
+        '''
+        return int(np.sum(
+            np.array(self.current_ray)
+            *np.array([1.]+[
+                np.prod(self._max_rays[0:i])
+                for i in range(1, len(self.current_ray)-1)
+            ])))
 
-    # app = QtWidgets.QApplication(sys.argv)
-    # main_widow = QtWidgets.QMainWindow()
-    # main_widow.show()
-
-    # from ...gui.fitcontrol_widget import FitControlWidget
-
-    # widget = FitControlWidget(main_widow)
-    # main_widow.setCentralWidget(widget.widget)
-    
-
-    # worker = FitHandler(3, gui = True)
-    # worker.addFunction('Sinus', rays = 10)
-    # #worker.addFunction('Linear', rays = 10)
-    # worker.addFunction('Lorenzian', rays = 10)
-    # worker.addFunction('Lorenzian', rays = 10)
-    # widget.link(worker)
-
-
-    # import numpy as np
-    # x = np.linspace(-4,5*np.pi,1000)
-    # y = np.sin(x) + 0.2 + 10 * 1 * 2 / ( (x - 4)**2 + 1**2) + 20 * 3 * 2 * 1 / ( (x - 7)**2 + 3**2)
-    # worker.addFunction('Sinus', rays = 10)
-    # #worker.addFunction('Linear', rays = 10)
-    # worker.addFunction('Lorenzian', rays = 10)
-    # worker.addFunction('Lorenzian', rays = 10)
-    # worker.func_dict['Lorenzian'][2][0][0].paras[0] = 4
-    # worker.func_dict['Lorenzian'][2][1][0].paras[0] = 7
-
-    # #worker.prepareFit()
-    # #worker.fit_worker.run()
-    # worker.performFit()
-
-    # from matplotlib import pyplot as plt
-    # plt.plot(x, worker.func_dict['Sinus'][2][0][0].returnData(x))
-    # plt.plot(x, worker.func_dict['Lorenzian'][2][0][0].returnData(x))
-    # plt.plot(x, worker.func_dict['Lorenzian'][2][1][0].returnData(x))
-    # #plt.plot(x, worker.func_dict['Linear'][2][0][0].returnData(x))
-
-    # plt.plot(x, worker.func_dict['Sinus'][2][0][0].returnData(x) + worker.func_dict['Lorenzian'][2][0][0].returnData(x) 
-    # #+ worker.func_dict['Linear'][2][0][0].returnData(x)
-    # +worker.func_dict['Lorenzian'][2][1][0].returnData(x)
-    # )
-    # plt.plot(x,y)
-    # plt.show()
-    # print(worker.func_dict['Lorenzian'][2][0][0].paras)
-    # sys.exit(app.exec_())
+    def getFunctionX(self):
+        '''
+        Get the current idx for the function library
+        '''
+        return np.linspace(
+            np.amin(self._data_link.getFitAxes()), 
+            np.amax(self._data_link.getFitAxes()),
+            10000)

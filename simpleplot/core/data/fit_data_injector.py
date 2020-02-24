@@ -106,7 +106,7 @@ class FitDataInjector:
     def getFitAxes(self):
         '''
         This method is supposed to notify the fit manager the axes 
-        so he can initialize the navigoator. 
+        so he can initialize the navigator. 
         '''
         if self._data_source == None: return None
         if self._data_source.axes == None: return None
@@ -144,9 +144,8 @@ class FitDataInjector:
         '''
         if self._data_source == None: return None
         if self._data_source.axes == None: return None
-
-        return self._data.__getitem__(tuple(
-            [slice(len(e)) for e in self.getFitAxes()] + index )) 
+        
+        return self._data.__getitem__(tuple([slice(0,len(e)) for e in self.getFitAxes()] + index )) 
 
     def _prepare_data(self):
         '''
@@ -191,13 +190,12 @@ class FitDataInjector:
                 retrieval_index.append(slice(len(shape[self._target_dim.index(behavior[1])])))
 
                 index +=1
-
-        data_slice = self._data_source.returnAsNumpy().__getitem__(
-            tuple(retrieval_index))
-
-        right = ("->" + "ijklmnopqrst")[:-(12-len(self._target_dim))]
+                
+        data_slice = self._data_source.returnAsNumpy().__getitem__(tuple(retrieval_index))
+        
+        right = ("ijklmnopqrst")[:-(12-len(self._target_dim))]
         left = "".join([
             ['i','j','k','l','m','n','o','p','q','r','s','t'][e] 
             for e in self._axis_index])
-        self._data = np.einsum(left+right, data_slice)
-
+            
+        self._data = np.einsum(right+"->"+left, data_slice)

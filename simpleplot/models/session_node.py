@@ -94,7 +94,7 @@ class SessionNode(QtGui.QStandardItem):
 
     def data(self, column):
         
-        if column is 0: return self._name
+        if column == 0: return self._name
         # elif column is 1: return self.typeInfo()
     
     def setData(self, column, value):

@@ -113,3 +113,65 @@ class ParameterDelegate(QtWidgets.QStyledItemDelegate):
             size.setHeight(27)
         return size
 
+
+class FitDelegate(QtWidgets.QStyledItemDelegate):
+
+    def createEditor(self, parent, option, index):
+        item    = index.model().getNode(index) 
+        if isinstance(item.data(index.column()),bool):
+            editor = QtWidgets.QCheckBox(parent)
+        else:
+            editor = super().createEditor(parent, option, index)
+        return editor
+
+    def setEditorData(self, editor, index):
+        item  = index.model().getNode(index) 
+        if isinstance(item.data(index.column()),bool):
+            editor.setChecked(not item.data(index.column()))
+        else:
+            super().setEditorData(editor, index)
+
+    def setModelData(self, editor, model, index):
+        item    = index.model().getNode(index) 
+        if isinstance(item.data(index.column()),bool):
+            model.setData(index, editor.isChecked(), QtCore.Qt.EditRole)
+        else:
+            super().setModelData(editor, model, index)
+
+    def updateEditorGeometry(self, editor, option, index):
+        editor.setGeometry(option.rect)
+
+    def paint(self, painter, option, index):
+        item    = index.model().getNode(index) 
+        if isinstance(item.data(index.column()),bool):
+            checked = item.data(index.column())
+            check_box_style_option = QtWidgets.QStyleOptionButton()
+    
+            if checked:
+                check_box_style_option.state |= QtWidgets.QStyle.State_On
+            else:
+                check_box_style_option.state |= QtWidgets.QStyle.State_Off
+    
+            check_box_style_option.rect = self.getCheckBoxRect(option)
+            check_box_style_option.state |= QtWidgets.QStyle.State_Enabled
+            QtWidgets.QApplication.style().drawControl(
+                QtWidgets.QStyle.CE_CheckBox, check_box_style_option, painter)
+
+        else:
+            super().paint(painter, option, index)
+
+    def getCheckBoxRect(self, option):
+        '''
+        Get the rectangle for the drawing of the
+        checkbox
+        '''
+        check_box_style_option = QtWidgets.QStyleOptionButton()
+        check_box_rect = QtWidgets.QApplication.style().subElementRect(
+            QtWidgets.QStyle.SE_CheckBoxIndicator, check_box_style_option, None)
+        check_box_point = QtCore.QPoint (
+            option.rect.x(), 
+            option.rect.y() + option.rect.height() / 2 
+            - check_box_rect.height() / 2)
+
+        return QtCore.QRect(check_box_point, check_box_rect.size())
+

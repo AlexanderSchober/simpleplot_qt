@@ -45,6 +45,7 @@ def startPlayGround():
     
     data_node = project_item.childFromName('Datasets')
     data_item = data_node.addDataItem()
+    
     from .core.io.io_data_import import IODataLoad
     loader = IODataLoad(data_item.data_item, r"/home/alexander/Desktop/example.txt")
     loader.load("txt")
@@ -53,6 +54,7 @@ def startPlayGround():
         ['[ dim_1 ]', 'Variable 0', 0], 
         ['[ dim_2 ]', 'Variable 1', 0], 
         ['Data axis n. 0', 'x', 0]]
+
     from .models.project_node import FitLinkItem, FitItem
     data_link_item  = FitLinkItem()
     data_injector   = data_link_item.data_injector

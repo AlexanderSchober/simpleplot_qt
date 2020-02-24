@@ -25,6 +25,11 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from functools import partial
 import os
 
+from ....models.session_node import SessionNode
+from ....models.plot_model import PlotModel
+from ....models.fit_node import FitNode, FunctionNode
+from ....models.delegates import FitDelegate
+
 class FitWidget(QtWidgets.QWidget):
     '''
     '''
@@ -32,13 +37,19 @@ class FitWidget(QtWidgets.QWidget):
         super(FitWidget, self).__init__(*args, **kwargs)
 
         self._handler = handler
+        self._root_node = None
+        self._model = None
+        self._rays = 1
+        self._subplot = None
 
         self._setupLayout()
         self._initialize()
         self._setFunctionModel()
         self._setNavigator()
+        self._populateProjects()
+        self._populatePlots()
+        self._buildFunctionModel()
         self._connectMethods()
-        
 
     def _setupLayout(self):
         '''
@@ -66,6 +77,8 @@ class FitWidget(QtWidgets.QWidget):
             temp_drop.addItems([
                 str(e) for e in self._handler._data_link.getVariableAxes()[i]])
             temp_drop.setObjectName("drop_item")
+
+            self._rays *= len(self._handler._data_link.getVariableAxes()[i])
             
             temp_layout.addWidget(temp_mm)
             temp_layout.addWidget(temp_m)
@@ -123,6 +136,8 @@ class FitWidget(QtWidgets.QWidget):
             ray.append(widget.currentIndex())
 
         self._handler.setCurrentRay(ray)
+        if not self._model is None:
+            self._model.dataChanged.emit(QtCore.QModelIndex(), QtCore.QModelIndex())
 
     def _setFunctionModel(self):
         '''
@@ -141,6 +156,90 @@ class FitWidget(QtWidgets.QWidget):
 
         self._function_selection_view.setModel(self._function_model)
         self._function_selection_view.verticalHeader().hide()
+
+    def _populateProjects(self):
+        '''
+        The data and subplot comboboxes 
+        can be populated immediately
+        '''
+        self._function_selection_project.clear()
+
+        target = None
+        for widget in QtWidgets.QApplication.topLevelWidgets():
+            if widget.__class__.__name__ == "MainWindow":
+                target = widget
+        if target == None: return
+
+        root_pointer = target._model.root()
+
+        self._projects = []
+        for i in range(root_pointer.childCount()):
+            if root_pointer.child(i).descriptor == 'project':
+                self._projects.append(root_pointer.child(i))
+
+        self._function_selection_project.addItems(
+            [item._name for item in self._projects])
+
+        if len(self._projects) > 0:
+            self._function_selection_project.setCurrentIndex(0)
+
+        self._populatePlots()
+
+    def _populatePlots(self):
+        '''
+        The data and subplot comboboxes 
+        can be populated immediately
+        '''
+        self._function_selection_plots.clear()
+
+        target = None
+        for widget in QtWidgets.QApplication.topLevelWidgets():
+            if widget.__class__.__name__ == "MainWindow":
+                target = widget
+        if target == None: return
+
+        root_pointer = target._model.root()
+
+        self._plots = []
+        for i in range(root_pointer.childCount()):
+            if root_pointer.child(i).descriptor == 'project' and root_pointer.child(i)._name == self._function_selection_project.currentText():
+                plot_root = root_pointer.child(i).childFromName('Plots')
+                self._plots = plot_root._children
+
+        self._function_selection_plots.addItems(
+            [item._name for item in self._plots])
+
+        if len(self._plots) > 0:
+            self._function_selection_plots.setCurrentIndex(0)
+
+        self._populateSubplot()
+
+    def _populateSubplot(self):
+        '''
+        The data and subplot comboboxes 
+        can be populated immediately
+        '''
+        self._function_selection_subplots.clear()
+
+        target = None
+        for widget in QtWidgets.QApplication.topLevelWidgets():
+            if widget.__class__.__name__ == "MainWindow":
+                target = widget
+        if target == None: return
+
+        if self._function_selection_plots.currentText() == "": 
+            self._subplots = []
+            return
+        
+        self._subplots  = [
+            item for item in 
+            self._plots[self._function_selection_plots.currentIndex()].canvas_item._rootNode._children[:-1]]
+
+        self._function_selection_subplots.addItems(
+            [item._name for item in self._subplots])
+
+        if len(self._subplots) > 0:
+            self._function_selection_subplots.setCurrentIndex(0)
 
     def setup(self):
         '''
@@ -168,15 +267,26 @@ class FitWidget(QtWidgets.QWidget):
         self.groupBox_2 = QtWidgets.QGroupBox(self.tab_2)
         self.groupBox_2.setObjectName("groupBox_2")
 
-        self._function_selection_layout = QtWidgets.QVBoxLayout(self.groupBox_2)
+        # The part of the selector
+        self._function_selection_layout = QtWidgets.QHBoxLayout(self.groupBox_2)
         self._function_selection_view = QtWidgets.QTableView()
-        self._function_selection_set = QtWidgets.QPushButton("Load")
+        self._function_selection_load = QtWidgets.QPushButton("Load")
         self._function_selection_set = QtWidgets.QPushButton("Set")
+        self._function_selection_project = QtWidgets.QComboBox()
+        self._function_selection_plots = QtWidgets.QComboBox()
+        self._function_selection_subplots = QtWidgets.QComboBox()
 
 
         self._function_selection_layout.addWidget(self._function_selection_view)
-        temp_layout  = QtWidgets.QHBoxLayout()
+        temp_layout  = QtWidgets.QVBoxLayout()
+        temp_layout.addWidget(QtWidgets.QLabel("Project:"))
+        temp_layout.addWidget(self._function_selection_project)
+        temp_layout.addWidget(QtWidgets.QLabel("Plot:"))
+        temp_layout.addWidget(self._function_selection_plots)
+        temp_layout.addWidget(QtWidgets.QLabel("Subplot:"))
+        temp_layout.addWidget(self._function_selection_subplots)
         temp_layout.addStretch()
+        temp_layout.addWidget(self._function_selection_load)
         temp_layout.addWidget(self._function_selection_set)
         self._function_selection_layout.addLayout(temp_layout)
 
@@ -203,11 +313,12 @@ class FitWidget(QtWidgets.QWidget):
         self.horizontalLayout.setObjectName("horizontalLayout")
 
         self._navigator_list = QtWidgets.QListWidget(self.tabWidgetPage1)
+        self._main_tree_view = QtWidgets.QTreeView(self.tabWidgetPage1)
+        self._main_tree_view.setItemDelegate(FitDelegate())
+        self._main_tree_view.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
         self.verticalLayout_4.addWidget(self._navigator_list)
+        self.verticalLayout_4.addWidget(self._main_tree_view)
 
-        self.listWidget = QtWidgets.QListWidget(self.tabWidgetPage1)
-        self.listWidget.setObjectName("listWidget")
-        self.verticalLayout_4.addWidget(self.listWidget)
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
         self.fit_bar_progress = QtWidgets.QProgressBar(self.tabWidgetPage1)
@@ -301,6 +412,24 @@ class FitWidget(QtWidgets.QWidget):
         '''
         self.fit_button_fit.clicked.connect(self.setFit)
         self._handler.progress_int.connect(self.setProgress)
+        self._handler.progress_finished.connect(lambda: self._model.dataChanged.emit(
+            QtCore.QModelIndex(), QtCore.QModelIndex()
+        ))
+        self._handler.progress_finished.connect(self._refreshPlots)
+
+
+        self._function_selection_set.clicked.connect(self._buildFitSetup)
+        self._function_selection_project.currentTextChanged.connect(self._populatePlots)
+        self._function_selection_plots.currentTextChanged.connect(self._populateSubplot)
+        
+        target = None
+        for widget in QtWidgets.QApplication.topLevelWidgets():
+            if widget.__class__.__name__ == "MainWindow":
+                target = widget
+        if not target == None: 
+            target._model.rowsInserted.connect(self._populateProjects)
+            target._model.rowsMoved.connect(self._populateProjects)
+            target._model.rowsRemoved.connect(self._populateProjects)
 
     def _initialize(self):
         '''
@@ -319,5 +448,81 @@ class FitWidget(QtWidgets.QWidget):
 
     def setProgress(self, value):
         self.fit_bar_progress.setValue(value)
-        
 
+    def _buildFitSetup(self):
+        '''
+        This function will manage the build of the setup of the 
+        function model and the setup of the plot outputs in the 
+        said model.
+        '''
+        self._buildFunctionModel()
+
+        if not len(self._subplots) == 0:
+            self._removePlots()
+            self._subplot = self._subplots[self._function_selection_subplots.currentIndex()]
+            self._addPlots()
+        else:
+            return
+
+    def _removePlots(self):
+        '''
+
+        '''
+
+    def _addPlots(self):
+        '''
+
+        '''
+        for function_node in self._root_node._children:
+            for function in function_node._children:
+                function.setPlotItem(self._subplot)
+
+    def _refreshPlots(self):
+        '''
+        This function is called when the data in the plots should 
+        be refreshed and merely serves as bridge
+        '''
+        print(self._handler.getFunctionX())
+        for function_node in self._root_node._children:
+            for function in function_node._children:
+                function.refreshPlot(self._handler.getFunctionX())
+
+    def _buildFunctionModel(self):
+        '''
+        This will populate the function model adequately and then 
+        display it on the main manager.
+        '''
+        plot_dict = {}
+
+        col_count = 0
+        for i in range(self._function_model.rowCount()):
+            if not self._function_model.item(i,0).data(QtCore.Qt.DisplayRole) is None:
+                plot_dict[self._function_model.item(i,0).data(QtCore.Qt.DisplayRole)] = self._function_model.item(i,1).data(QtCore.Qt.DisplayRole)
+                para_count = self._handler.func_dict[self._function_model.item(i,0).data(QtCore.Qt.DisplayRole)][0].para_num
+
+                if para_count > col_count:
+                    col_count = para_count
+
+        if self._root_node is None:
+            self._root_node = SessionNode("Root")
+        self._model = PlotModel(self._root_node, col_count = 2*col_count + 2)
+
+        idx = 0
+        for i,key in enumerate(plot_dict.keys()):
+            if self._root_node.childFromName(key) is None and not plot_dict[key] == 0: 
+                element = FitNode(name = key, handler = self._handler)
+                self._model.insertRows(idx, 1,[element],self._root_node)
+                idx += 1
+
+            elif not plot_dict[key] == 0:
+                idx += 1
+            else:
+                continue
+
+            for l in range(self._root_node.childFromName(key).childCount()-1, plot_dict[key]):
+                element = FunctionNode(str(key)+ " "+str(l))
+                self._model.insertRows(l, 1, [element],self._root_node.childFromName(key))
+                self._handler.addFunction(key, self._rays)
+
+        self._main_tree_view.setModel(self._model)
+        
