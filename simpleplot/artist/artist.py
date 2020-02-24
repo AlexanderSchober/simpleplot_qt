@@ -126,7 +126,7 @@ class Artist():
         '''
         Remove an item from the handlers
         '''
-        self._plot_model.removeRows(
+        self.canvas._plot_model.removeRows(
             plot_item.parent()._children.index(plot_item),
             1, plot_item.parent())
 

@@ -125,9 +125,8 @@ class FunctionNode(SessionNode):
         '''
         if not self._plot_item is None:
             idx = self.parent().handler.current_idx
-            if not self._plot_item is None:
-                self._plot_item.setData(
-                    x = x, 
-                    y = self.parent().handler.func_dict[
-                        self.parent()._name][2][
-                            self.parent()._children.index(self)][idx].quickReturn(x))
+            self._plot_item.setData(
+                x = x, 
+                y = self.parent().handler.func_dict[
+                    self.parent()._name][2][
+                        self.parent()._children.index(self)][idx].returnData(x))

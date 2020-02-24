@@ -121,6 +121,7 @@ class FitWidget(QtWidgets.QWidget):
             out = current_idx + amount
 
         widget.setCurrentIndex(out)
+        self._refreshPlots()
 
     def _refreshIndex(self):
         '''
@@ -413,11 +414,7 @@ class FitWidget(QtWidgets.QWidget):
         '''
         self.fit_button_fit.clicked.connect(self.setFit)
         self._handler.progress_int.connect(self.setProgress)
-        self._handler.progress_finished.connect(lambda: self._model.dataChanged.emit(
-            QtCore.QModelIndex(), QtCore.QModelIndex()
-        ))
         self._handler.progress_finished.connect(self._refreshPlots)
-
 
         self._function_selection_set.clicked.connect(self._buildFitSetup)
         self._function_selection_project.currentTextChanged.connect(self._populatePlots)
@@ -462,6 +459,7 @@ class FitWidget(QtWidgets.QWidget):
             self._removePlots()
             self._subplot = self._subplots[self._function_selection_subplots.currentIndex()]
             self._addPlots()
+            self._refreshPlots()
         else:
             return
 
@@ -496,6 +494,10 @@ class FitWidget(QtWidgets.QWidget):
         This function is called when the data in the plots should 
         be refreshed and merely serves as bridge
         '''
+        self._model.dataChanged.emit(
+            QtCore.QModelIndex(), QtCore.QModelIndex()
+        )
+
         if not self._main_plot is None:
             self._main_plot.setData(
                 x = self._handler.getDataX(),
@@ -504,7 +506,8 @@ class FitWidget(QtWidgets.QWidget):
             
         for function_node in self._root_node._children:
             for function in function_node._children:
-                function.refreshPlot(self._handler.getFunctionX())
+                function.refreshPlot(self._handler.getDataX())
+
 
     def _buildFunctionModel(self):
         '''
