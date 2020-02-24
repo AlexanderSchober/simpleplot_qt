@@ -41,6 +41,7 @@ class FitWidget(QtWidgets.QWidget):
         self._model = None
         self._rays = 1
         self._subplot = None
+        self._main_plot = None
 
         self._setupLayout()
         self._initialize()
@@ -468,11 +469,24 @@ class FitWidget(QtWidgets.QWidget):
         '''
 
         '''
+        if not self._main_plot is None:
+            self._subplot.artist.removePlot(self._main_plot)
+
+        for function_node in self._root_node._children:
+            for function in function_node._children:
+                function.removePlotItem(self._subplot)
 
     def _addPlots(self):
         '''
 
         '''
+        self._main_plot =  self._subplot.artist.addPlot(
+            'Scatter',
+            Name = 'Data',
+            Style = ['-'], 
+            Log = [False,False]
+        )
+
         for function_node in self._root_node._children:
             for function in function_node._children:
                 function.setPlotItem(self._subplot)
@@ -482,7 +496,12 @@ class FitWidget(QtWidgets.QWidget):
         This function is called when the data in the plots should 
         be refreshed and merely serves as bridge
         '''
-        print(self._handler.getFunctionX())
+        if not self._main_plot is None:
+            self._main_plot.setData(
+                x = self._handler.getDataX(),
+                y = self._handler.getDataY()
+            )
+            
         for function_node in self._root_node._children:
             for function in function_node._children:
                 function.refreshPlot(self._handler.getFunctionX())

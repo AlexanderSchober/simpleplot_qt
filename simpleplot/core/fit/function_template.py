@@ -150,3 +150,4 @@ class FunctionClass:
         self.paras          = list(source.paras)
         self.para_ini       = list(source.para_ini)
         self.para_fix       = list(source.para_fix)
+        

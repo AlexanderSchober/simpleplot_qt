@@ -186,3 +186,15 @@ class FitHandler(QtCore.QObject, FunctionLibrary):
             np.amin(self._data_link.getFitAxes()), 
             np.amax(self._data_link.getFitAxes()),
             10000)
+
+    def getDataX(self):
+        '''
+        Get the current idx for the function library
+        '''
+        return np.array(self._data_link.getFitAxes()[0])
+
+    def getDataY(self):
+        '''
+        Get the current idx for the function library
+        '''
+        return np.array(self._data_link.getData(self.current_ray))

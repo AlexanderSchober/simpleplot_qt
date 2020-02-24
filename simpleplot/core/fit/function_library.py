@@ -125,7 +125,8 @@ class FunctionLibrary:
         their constructors.
         '''
         self.func_dict = {}
-        for i in range(0,self.num_func): 
+        for i in range(0,self.num_func):
+            self.func_ptrs[i] = [] 
             self.func_dict[self.func_inf_ptrs[i].name] = [
                 self.func_inf_ptrs[i],
                 self.class_ptrs[i],

@@ -61,7 +61,7 @@ class FunctionNode(SessionNode):
         self._plot_properties = None
         
     def data(self, column):
-        if   column == 0: 
+        if column == 0: 
             return self._name
         elif column in range(1, 2*self.parent().handler.func_dict[self.parent()._name][0].para_num+1): 
             idx = self.parent().handler.current_idx
@@ -77,9 +77,9 @@ class FunctionNode(SessionNode):
             return QtCore.QVariant()
 
     def setData(self, column, value):
-        if   column == 0: 
+        if column == 0: 
             return 
-        elif column in range(1, self.parent().handler.func_dict[self.parent()._name][0].para_num+1): 
+        elif column in range(1, 2*self.parent().handler.func_dict[self.parent()._name][0].para_num+1): 
             idx = self.parent().handler.current_idx
             if (column - 1) % 2 == 0:
                 self.parent().handler.func_dict[
@@ -115,17 +115,19 @@ class FunctionNode(SessionNode):
         '''
         Tell the item to remove itself from the canvas
         '''
-        canvas.artist.removePlot(self._plot_item)
-        self._plot_item = None
+        if not self._plot_item is None:
+            canvas.artist.removePlot(self._plot_item)
+            self._plot_item = None
 
     def refreshPlot(self, x):
         '''
         Tell the item to remove itself from the canvas
         '''
-        idx = self.parent().handler.current_idx
         if not self._plot_item is None:
-            self._plot_item.setData(
-                x = x, 
-                y = self.parent().handler.func_dict[
-                    self.parent()._name][2][
-                        self.parent()._children.index(self)][idx].quickReturn(x))
+            idx = self.parent().handler.current_idx
+            if not self._plot_item is None:
+                self._plot_item.setData(
+                    x = x, 
+                    y = self.parent().handler.func_dict[
+                        self.parent()._name][2][
+                            self.parent()._children.index(self)][idx].quickReturn(x))
