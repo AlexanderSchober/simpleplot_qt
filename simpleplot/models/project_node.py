@@ -260,7 +260,7 @@ class AnalysisNode(SessionNode):
         return temp
 
 class FitItem(SessionNode):
-    def __init__(self, link_item = None, name = 'fit item', parent = None):
+    def __init__(self, link_item = None, name = 'Fit item', parent = None):
         SessionNode.__init__(self, name, parent)
         self.descriptor = "fit item"
         self.handler  = FitHandler(link_item, gui = True)
