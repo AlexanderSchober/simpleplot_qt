@@ -127,6 +127,8 @@ class FunctionNode(SessionNode):
             idx = self.parent().handler.current_idx
             self._plot_item.setData(
                 x = x, 
-                y = self.parent().handler.func_dict[
-                    self.parent()._name][2][
-                        self.parent()._children.index(self)][idx].returnData(x))
+                y = (
+                    (self.parent().handler.func_dict['Baseline'][2][0][idx].returnData(x) if not 'Baseline' in self._name else x*0.)
+                    + self.parent().handler.func_dict[
+                        self.parent()._name][2][
+                            self.parent()._children.index(self)][idx].returnData(x)))

@@ -29,7 +29,7 @@ from ..function_template import FunctionClass
 
 import numpy as np
 
-class LinearInfo(InfoClass):
+class BaselineInfo(InfoClass):
     '''
     This class will contain information about 
     the function, parameters and names
@@ -39,41 +39,29 @@ class LinearInfo(InfoClass):
         
         #######################
         #name of the function
-        self.name = 'Linear'
+        self.name = 'Baseline'
         
-        #how to order the functions( do not touch lorenz and linear)
-        self.order = 1
+        #how to order the functions(do not touch lorenz, baseline and linear)
+        self.order = 0
         
         #number of parameters
-        self.para_num   = 3
+        self.para_num   = 1
         
         #######################
         #parameter names
         self.para_name = [
-            ['Position', 0.],
-            ['Amplitude', 0.],
             ['Offset', 0.]]
                                         
         #Parameter units
         self.para_unit  = [
-            'cm-1',
-            'Intensity',
             'Intensity']
 
         self.para_fix_ini   = [
-            True,
-            False,
             False]   
                                        
         #######################
         #Parameter Boundaries
         self.para_bound    = [
-            ['-10','10', False],        # <- Relative shift min, max
-            ['xmin','xmax', True],     # <- Absolute shift min, max
-            
-            ['-2','2', False],          # <- Relative shift min, max
-            ['0.01','Inf', True],      # <- Absolute shift min, max
-            
             ['-1000','1000', False],    # <- Relative shift min, max
             ['-Inf','Inf', True]         # <- Absolute shift min, max
             ]
@@ -81,10 +69,10 @@ class LinearInfo(InfoClass):
         #######################
         #Parameter Boundaries
         self.para_proc    = [
-            5,         # <- Number of iteration
-            [0,1,2]]   # <- Order of Processing
+            2,         # <- Number of iteration
+            [0]]   # <- Order of Processing
 
-class Linear(FunctionClass):
+class Baseline(FunctionClass):
     '''
     In this class we will store the 
     cropped data used for the calculation
@@ -97,15 +85,13 @@ class Linear(FunctionClass):
     
     def function(self,para):
         '''
-        This is the linear function
+        This is the baseline function
         '''
         #function parameters
         x           = np.asarray(para[0])
-        Position    = para[1]
-        Factor      = para[2]
-        Offset      = para[3]
+        Offset      = para[1]
     
         #process the function
-        y           = ( x - Position ) * Factor + Offset
+        y           = np.zeros(x.shape[0]) + Offset
         return y
     

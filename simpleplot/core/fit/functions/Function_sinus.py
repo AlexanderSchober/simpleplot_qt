@@ -42,7 +42,7 @@ class SinusInfo(InfoClass):
         self.name = 'Sinus'
         
         #how to order the functions( do not touch lorenz and linear)
-        self.order = 2
+        self.order = 3
 
         #number of parameters
         self.para_num   = 4

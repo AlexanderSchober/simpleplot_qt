@@ -97,7 +97,7 @@ class PlotModel(QtCore.QAbstractItemModel):
             if section == 0:
                 return "Properties"
             else:
-                return "Values"
+                return ""
 
     """INPUTS: QModelIndex"""
     """OUTPUT: int (flag)"""

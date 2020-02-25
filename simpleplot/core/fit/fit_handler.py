@@ -132,7 +132,7 @@ class FitHandler(QtCore.QObject, FunctionLibrary):
             self._data_link.getFitAxes(),
             self._data_link.getData(self.current_ray))
         self.cloneToWorker()
-        self.fit_worker.setParameters([0,1,2],1e10,10)
+        self.fit_worker.setParameters([0,1,2,3],1e10,10)
 
     def cloneToWorker(self):
         '''
@@ -198,3 +198,15 @@ class FitHandler(QtCore.QObject, FunctionLibrary):
         Get the current idx for the function library
         '''
         return np.array(self._data_link.getData(self.current_ray))
+
+    def getFitSumY(self):
+        '''
+        Get the current idx for the function library
+        '''
+        x = self.getDataX()
+        output = x*0.
+        for key in self.func_dict.keys():
+            for i, element in enumerate(self.func_dict[key][2]):
+                output += element[self.current_idx].returnData(x)
+        return output
+        

@@ -42,7 +42,7 @@ class LorenzianInfo(InfoClass):
         self.name = 'Lorenzian'
         
         #how to order the functions( do not touch lorenz and linear)
-        self.order = 0
+        self.order = 2
         
         #number of parameters
         self.para_num        = 4

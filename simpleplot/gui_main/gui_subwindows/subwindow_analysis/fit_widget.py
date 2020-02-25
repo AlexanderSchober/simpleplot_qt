@@ -42,6 +42,7 @@ class FitWidget(QtWidgets.QWidget):
         self._rays = 1
         self._subplot = None
         self._main_plot = None
+        self._sum_plot = None
 
         self._setupLayout()
         self._initialize()
@@ -121,7 +122,6 @@ class FitWidget(QtWidgets.QWidget):
             out = current_idx + amount
 
         widget.setCurrentIndex(out)
-        self._refreshPlots()
 
     def _refreshIndex(self):
         '''
@@ -141,6 +141,8 @@ class FitWidget(QtWidgets.QWidget):
         if not self._model is None:
             self._model.dataChanged.emit(QtCore.QModelIndex(), QtCore.QModelIndex())
 
+        self._refreshPlots()
+        
     def _setFunctionModel(self):
         '''
         This will initialize the model for the 
@@ -153,7 +155,11 @@ class FitWidget(QtWidgets.QWidget):
         for i,key in enumerate(self._handler.func_dict.keys()):
             self._function_model.setItem(i,0,QtGui.QStandardItem(key))
             num_temp = QtGui.QStandardItem()
-            num_temp.setData(QtCore.QVariant(0), 0)
+            if key == 'Baseline':
+                num_temp.setEditable(False)
+                num_temp.setData(QtCore.QVariant(1), 0)
+            else:   
+                num_temp.setData(QtCore.QVariant(0), 0)
             self._function_model.setItem(i,1,num_temp)
 
         self._function_selection_view.setModel(self._function_model)
@@ -470,6 +476,9 @@ class FitWidget(QtWidgets.QWidget):
         if not self._main_plot is None:
             self._subplot.artist.removePlot(self._main_plot)
 
+        if not self._sum_plot is None:
+            self._subplot.artist.removePlot(self._sum_plot)
+
         for function_node in self._root_node._children:
             for function in function_node._children:
                 function.removePlotItem(self._subplot)
@@ -481,6 +490,15 @@ class FitWidget(QtWidgets.QWidget):
         self._main_plot =  self._subplot.artist.addPlot(
             'Scatter',
             Name = 'Data',
+            Color = 'red',
+            Style = ['-'], 
+            Log = [False,False]
+        )
+
+        self._sum_plot =  self._subplot.artist.addPlot(
+            'Scatter',
+            Name = 'Fit sum',
+            Color = 'black',
             Style = ['-'], 
             Log = [False,False]
         )
@@ -504,6 +522,12 @@ class FitWidget(QtWidgets.QWidget):
                 y = self._handler.getDataY()
             )
             
+        if not self._sum_plot is None:
+            self._sum_plot.setData(
+                x = self._handler.getDataX(),
+                y = self._handler.getFitSumY()
+            )
+
         for function_node in self._root_node._children:
             for function in function_node._children:
                 function.refreshPlot(self._handler.getDataX())
@@ -541,10 +565,18 @@ class FitWidget(QtWidgets.QWidget):
             else:
                 continue
 
-            for l in range(self._root_node.childFromName(key).childCount()-1, plot_dict[key]):
+            for l in range(self._root_node.childFromName(key).childCount(), plot_dict[key]):
                 element = FunctionNode(str(key)+ " "+str(l))
                 self._model.insertRows(l, 1, [element],self._root_node.childFromName(key))
-                self._handler.addFunction(key, self._rays)
+                self._handler.addFunction(key, rays = self._rays)
 
         self._main_tree_view.setModel(self._model)
+
+        self._main_tree_view.header().setSectionResizeMode(
+            0, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+
+        for i in range(2*col_count):
+            if i%2==0:
+                self._main_tree_view.header().setSectionResizeMode(
+                    i+1, QtWidgets.QHeaderView.ResizeMode.ResizeToContents) 
         
