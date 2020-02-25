@@ -545,7 +545,8 @@ class FitWidget(QtWidgets.QWidget):
         for i in range(self._function_model.rowCount()):
             if not self._function_model.item(i,0).data(QtCore.Qt.DisplayRole) is None:
                 plot_dict[self._function_model.item(i,0).data(QtCore.Qt.DisplayRole)] = self._function_model.item(i,1).data(QtCore.Qt.DisplayRole)
-                para_count = self._handler.func_dict[self._function_model.item(i,0).data(QtCore.Qt.DisplayRole)][0].para_num
+                para_count = self._handler.func_dict[
+                    self._function_model.item(i,0).data(QtCore.Qt.DisplayRole)][0].para_num
 
                 if para_count > col_count:
                     col_count = para_count

@@ -23,6 +23,7 @@
 
 from .session_node import SessionNode
 from PyQt5 import QtWidgets, QtGui, QtCore
+from functools import partial
 
 from ..core.data.data_structure import DataStructure
 from ..core.data.plot_data_injector import PlotDataInjector
@@ -32,7 +33,9 @@ from ..core.fit.fit_handler import FitHandler
 from ..canvas.multi_canvas import MultiCanvasItem
 from ..gui_main.gui_subwindows.subwindow_data.data_widget import DataWidget
 from ..gui_main.gui_subwindows.subwindow_analysis.fit_widget import FitWidget
- 
+from ..core.io.io_data_import import IODataLoad
+from ..gui_main.gui_dialogs.raw_txt_import import RawTxtImport
+
 class ProjectNode(SessionNode):
     def __init__(self, name = 'New Project', parent = None, parameters = {}, method = None):
         SessionNode.__init__(self, name, parent)
@@ -44,8 +47,8 @@ class ProjectNode(SessionNode):
         self.addChild(PlotNode())
  
     def data(self, column):
-        if   column is 0: return self._name
-        elif column is 1: return self.description
+        if   column == 0: return self._name
+        elif column == 1: return self.description
 
     def setData(self, column, value):
         pass
@@ -58,13 +61,25 @@ class ProjectNode(SessionNode):
         else:
             return QtCore.Qt.NoItemFlags
 
+    def contextMenuRequested(self, parent = None):
+        """
+        This method starts when the context menu is requested. 
+        It will generate it on the fly and then return it.
+        """
+        temp_menu = QtWidgets.QMenu(self._name, parent)
+        for child in self._children:
+            if hasattr(child, "contextMenuRequested"):
+                temp_menu.addMenu(child.contextMenuRequested(parent = temp_menu))
+
+        return temp_menu
+
 class DatasetsNode(SessionNode):
     def __init__(self, name = 'Datasets', parent = None):
         SessionNode.__init__(self, name, parent)
         self.descriptor = "data"
  
     def data(self, column):
-        if column is 0: return self._name
+        if column == 0: return self._name
  
     def setData(self, column, value):
         pass
@@ -77,6 +92,73 @@ class DatasetsNode(SessionNode):
         self.model().insertRows(self.childCount(), 1, [temp], self)
         return temp
 
+    def addDataTxt(self):
+        '''
+        Tell the current main Session node
+        of the current model to add a new
+        project with the name determined 
+        from the dialog
+        '''
+        data_item = self.addDataItem()
+        window = RawTxtImport(data_item.data_item)
+        window.show()
+        return window
+
+    def addDataNpy(self):
+        '''
+        Tell the current main Session node
+        of the current model to add a new
+        project with the name determined 
+        from the dialog
+        '''
+        path = QtWidgets.QFileDialog.getOpenFileName(
+            parent = self, filter = "Numpy binary (*.npy) ;; Numpy text (*.txt)")
+        
+        if not path[0] == "":
+            data_item = self.addDataItem()
+            loader = IODataLoad(
+                data_item.data_item, 
+                path[0])
+            shape = loader.previewFromNumpy()
+            loader.loadFromNumpy([
+                True if not i == len(shape) - 1 
+                else False for i in range(len(shape))])
+
+    def addDataProcTxt(self):
+        '''
+        '''
+        path = QtWidgets.QFileDialog.getOpenFileName(
+            parent = self, filter = "Text (*.txt)")
+        
+        if not path[0] == "":
+            data_item = self.addDataItem()
+            loader = IODataLoad(data_item.data_item, path[0])
+            loader.load(path[1].split("(*.")[1].split(")")[0])
+
+    def addDataProcHDF(self):
+        '''
+        '''
+
+    def contextMenuRequested(self, parent = None):
+        """
+        This method starts when the context menu is requested. 
+        It will generate it on the fly and then return it.
+        """
+        temp_menu = QtWidgets.QMenu(self._name, parent)
+
+        add_data_raw_txt = temp_menu.addAction("Add from raw text files ...")
+        add_data_raw_npy = temp_menu.addAction("Add from npy file ...")
+        temp_menu.addSeparator()
+        add_data_proc_txt = temp_menu.addAction("Add from processed text file ...")
+        add_data_proc_hdf = temp_menu.addAction("Add from processed Hdf5 file ...")
+        
+        add_data_raw_txt.triggered.connect(self.addDataTxt)
+        add_data_raw_npy.triggered.connect(self.addDataNpy)
+        add_data_proc_txt.triggered.connect(self.addDataProcTxt)
+        add_data_proc_hdf.triggered.connect(self.addDataProcHDF)
+
+        return temp_menu
+
 class DataItem(SessionNode):
     def __init__(self, name = 'Dataset', parent = None):
         SessionNode.__init__(self, name, parent)
@@ -85,17 +167,40 @@ class DataItem(SessionNode):
         self.display_widget = DataWidget(self.data_item)
  
     def data(self, column):
-        if column is 0: return self._name
+        if column == 0: return self._name
  
     def setData(self, column, value):
-        if  column is 0: self._name = value
+        if  column == 0: self._name = value
         
     def flags(self, index):
         column = index.column()
 
-        if column is 0: return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
+        if column == 0: return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
 
         else: return QtCore.Qt.ItemIsEnabled
+
+    def contextMenuRequested(self, parent = None):
+        """
+        This method starts when the context menu is requested. 
+        It will generate it on the fly and then return it.
+        """
+        temp_menu = QtWidgets.QMenu(self._name, parent)
+
+        for widget in QtWidgets.QApplication.topLevelWidgets():
+            if widget.__class__.__name__ == "MainWindow":
+                target = widget
+        if target == None: temp_menu
+
+        change_name  = temp_menu.addAction("Rename")
+        show_plot_MDI  = temp_menu.addAction("Show on MDI surface")
+        show_plot_Window  = temp_menu.addAction("Show on external window")
+
+        show_plot_MDI.triggered.connect(partial(
+            target._playground.displaySubwindow, self))
+        show_plot_Window.triggered.connect(partial(
+            target.displaySubwindow, self))
+
+        return temp_menu
 
 class PlotLinkItem(SessionNode):
     def __init__(self, name = 'Plot link', parent = None):
@@ -104,15 +209,15 @@ class PlotLinkItem(SessionNode):
         self.data_injector = PlotDataInjector()
  
     def data(self, column):
-        if column is 0: return self._name
+        if column == 0: return self._name
  
     def setData(self, column, value):
-        if  column is 0: self._name = value
+        if  column == 0: self._name = value
         
     def flags(self, index):
         column = index.column()
 
-        if column is 0: return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
+        if column == 0: return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
 
         else: return QtCore.Qt.ItemIsEnabled
 
@@ -123,15 +228,15 @@ class FitLinkItem(SessionNode):
         self.data_injector = FitDataInjector()
 
     def data(self, column):
-        if column is 0: return self._name
+        if column == 0: return self._name
  
     def setData(self, column, value):
-        if  column is 0: self._name = value
+        if  column == 0: self._name = value
         
     def flags(self, index):
         column = index.column()
 
-        if column is 0: return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
+        if column == 0: return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
 
         else: return QtCore.Qt.ItemIsEnabled
 
@@ -141,7 +246,7 @@ class AnalysisNode(SessionNode):
         self.descriptor = "analysis"
  
     def data(self, column):
-        if column is 0: return self._name
+        if column == 0: return self._name
  
     def setData(self, column, value):
         pass
@@ -162,17 +267,40 @@ class FitItem(SessionNode):
         self.display_widget = FitWidget(handler = self.handler)
         
     def data(self, column):
-        if column is 0: return self._name
+        if column == 0: return self._name
  
     def setData(self, column, value):
-        if  column is 0: self._name = value
+        if  column == 0: self._name = value
         
     def flags(self, index):
         column = index.column()
 
-        if column is 0: return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
+        if column == 0: return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
 
         else: return QtCore.Qt.ItemIsEnabled
+
+    def contextMenuRequested(self, parent = None):
+        """
+        This method starts when the context menu is requested. 
+        It will generate it on the fly and then return it.
+        """
+        temp_menu = QtWidgets.QMenu(self._name, parent)
+
+        for widget in QtWidgets.QApplication.topLevelWidgets():
+            if widget.__class__.__name__ == "MainWindow":
+                target = widget
+        if target == None: temp_menu
+
+        change_name  = temp_menu.addAction("Rename")
+        show_plot_MDI  = temp_menu.addAction("Show on MDI surface")
+        show_plot_Window  = temp_menu.addAction("Show on external window")
+
+        show_plot_MDI.triggered.connect(partial(
+            target._playground.displaySubwindow, self))
+        show_plot_Window.triggered.connect(partial(
+            target.displaySubwindow, self))
+
+        return temp_menu
 
 class PlotNode(SessionNode):
     def __init__(self, name = 'Plots', parent = None):
@@ -180,7 +308,7 @@ class PlotNode(SessionNode):
         self.descriptor = "plot"
  
     def data(self, column):
-        if column is 0: return self._name
+        if column == 0: return self._name
  
     def setData(self, column, value):
         pass
@@ -204,14 +332,37 @@ class PlotItem(SessionNode):
                 target.launchLinkCreator)
  
     def data(self, column):
-        if column is 0: return self._name
+        if column == 0: return self._name
  
     def setData(self, column, value):
-        if  column is 0: self._name = value
+        if  column == 0: self._name = value
         
     def flags(self, index):
         column = index.column()
 
-        if column is 0: return QtCore.Qt.ItemIsEnabled
+        if column == 0: return QtCore.Qt.ItemIsEnabled
 
         else: return QtCore.Qt.ItemIsEnabled
+        
+    def contextMenuRequested(self, parent = None):
+        """
+        This method starts when the context menu is requested. 
+        It will generate it on the fly and then return it.
+        """
+        temp_menu = QtWidgets.QMenu(self._name, parent)
+
+        for widget in QtWidgets.QApplication.topLevelWidgets():
+            if widget.__class__.__name__ == "MainWindow":
+                target = widget
+        if target == None: temp_menu
+
+        change_name  = temp_menu.addAction("Rename")
+        show_plot_MDI  = temp_menu.addAction("Show on MDI surface")
+        show_plot_Window  = temp_menu.addAction("Show on external window")
+
+        show_plot_MDI.triggered.connect(partial(
+            target._playground.displaySubwindow, self))
+        show_plot_Window.triggered.connect(partial(
+            target.displaySubwindow, self))
+
+        return temp_menu
