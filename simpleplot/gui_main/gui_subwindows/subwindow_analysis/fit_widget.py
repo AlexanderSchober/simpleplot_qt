@@ -473,15 +473,16 @@ class FitWidget(QtWidgets.QWidget):
         '''
 
         '''
-        if not self._main_plot is None:
-            self._subplot.artist.removePlot(self._main_plot)
+        if not self._subplot is None:
+            if not self._main_plot is None:
+                self._subplot.artist.removePlot(self._main_plot)
 
-        if not self._sum_plot is None:
-            self._subplot.artist.removePlot(self._sum_plot)
+            if not self._sum_plot is None:
+                self._subplot.artist.removePlot(self._sum_plot)
 
-        for function_node in self._root_node._children:
-            for function in function_node._children:
-                function.removePlotItem(self._subplot)
+            for function_node in self._root_node._children:
+                for function in function_node._children:
+                    function.removePlotItem(self._subplot)
 
     def _addPlots(self):
         '''
