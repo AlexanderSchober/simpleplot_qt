@@ -26,6 +26,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import os
 from functools import partial
 from .settings import PreferenceWidget
+from ...ressources.icons import icons_ui
 
 class ModeSelect(QtWidgets.QHBoxLayout):
 
@@ -59,10 +60,10 @@ class ModeSelect(QtWidgets.QHBoxLayout):
         '''
         #Modes and variables
         self.modes = [
-            ("Zoom"       , 0),
-            ("Measure"    , 1),
-            ("Edit"       , 2),
-            ("Settings"   , 3)
+            (r"Zoom"       , 0),
+            (r"Measure"    , 1),
+            (r"Edit"       , 2),
+            (r"Settings"   , 3)
             ]
         #Grab the Path
         Path = os.path.join(os.path.dirname(__file__),'ressources')
@@ -70,7 +71,7 @@ class ModeSelect(QtWidgets.QHBoxLayout):
         #populate buttons
         for i in range(len(self.modes)):
             self.buttons.append(QtWidgets.QPushButton('', parent))
-            self.buttons[i].setIcon(QtGui.QIcon(QtGui.QPixmap(os.path.join(Path,self.modes[i][0]+'.jpg'))))
+            self.buttons[i].setIcon(QtGui.QIcon(":/icons/"+self.modes[i][0]+".jpg"))
             self.buttons[i].setIconSize(QtCore.QSize(icon_dim, icon_dim))
             self.buttons[i].setStyleSheet('background-color: silver; border-style: inset;border-width: 2px')
             if i < len(self.modes) - 1:
