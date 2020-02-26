@@ -41,7 +41,7 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
 
         self._rootNode = ProjectHandler("Root", None)
-        self._model = PlotModel(self._rootNode, self,  2)
+        self._model = PlotModel(self._rootNode, self,  1)
         self._model.referenceModel()
 
         #Set up the visuals of the widget

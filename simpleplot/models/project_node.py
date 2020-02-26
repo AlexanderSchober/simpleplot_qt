@@ -159,10 +159,28 @@ class DatasetsNode(SessionNode):
 
         return temp_menu
 
+    def localContextMenuGenerator(self, parent):
+        '''
+        Set the local context menu just in case
+        '''
+        self.contextMenuRequested(parent = parent).popup(parent.parent().mapToGlobal(parent.pos()))
+
+    def setHoverButtons(self, button_list):
+        '''
+        Set up all the hover button functionalities
+        '''
+        button_list[0].setVisible(True)
+        button_list[0].setText("+")
+        button_list[0].setIcon(QtGui.QIcon())
+        button_list[0].clicked.connect(
+            partial(self.localContextMenuGenerator, button_list[0]))
+        button_list[0].setToolTip("Add data")
+
 class DataItem(SessionNode):
     def __init__(self, name = 'Dataset', parent = None):
         SessionNode.__init__(self, name, parent)
         self.descriptor = "data item"
+
         self.data_item = DataStructure()
         self.display_widget = DataWidget(self.data_item)
  
@@ -189,7 +207,7 @@ class DataItem(SessionNode):
         for widget in QtWidgets.QApplication.topLevelWidgets():
             if widget.__class__.__name__ == "MainWindow":
                 target = widget
-        if target == None: temp_menu
+        if target == None: return temp_menu
 
         change_name  = temp_menu.addAction("Rename")
         show_plot_MDI  = temp_menu.addAction("Show on MDI surface")
@@ -201,6 +219,36 @@ class DataItem(SessionNode):
             target.displaySubwindow, self))
 
         return temp_menu
+
+    def localContextMenuGenerator(self, parent):
+        '''
+        Set the local context menu just in case
+        '''
+        self.contextMenuRequested(parent = parent).popup(parent.parent().mapToGlobal(parent.pos()))
+
+    def setHoverButtons(self, button_list):
+        '''
+        Set up all the hover button functionalities
+        '''
+        button_list[0].setVisible(True)
+        button_list[0].setText("")
+        button_list[0].setIcon(
+            button_list[0].style().standardIcon(QtGui.QStyle.SP_TitleBarNormalButton))
+        button_list[0].clicked.connect(
+            partial(self.localContextMenuGenerator, button_list[0]))
+        button_list[0].setToolTip("Show the data")
+
+        button_list[1].setVisible(True)
+        button_list[1].setText("")
+        button_list[1].setIcon(
+            button_list[0].style().standardIcon(QtGui.QStyle.SP_MessageBoxInformation))
+        button_list[0].setToolTip("Show the data information")
+
+        button_list[2].setVisible(True)
+        button_list[2].setText("")
+        button_list[2].setIcon(
+            button_list[1].style().standardIcon(QtGui.QStyle.SP_TrashIcon))
+        button_list[0].setToolTip("Remove the data")
 
 class PlotLinkItem(SessionNode):
     def __init__(self, name = 'Plot link', parent = None):
@@ -289,7 +337,7 @@ class FitItem(SessionNode):
         for widget in QtWidgets.QApplication.topLevelWidgets():
             if widget.__class__.__name__ == "MainWindow":
                 target = widget
-        if target == None: temp_menu
+        if target == None: return temp_menu
 
         change_name  = temp_menu.addAction("Rename")
         show_plot_MDI  = temp_menu.addAction("Show on MDI surface")
@@ -301,6 +349,30 @@ class FitItem(SessionNode):
             target.displaySubwindow, self))
 
         return temp_menu
+
+    def localContextMenuGenerator(self, parent):
+        '''
+        Set the local context menu just in case
+        '''
+        self.contextMenuRequested(parent = parent).popup(parent.parent().mapToGlobal(parent.pos()))
+
+    def setHoverButtons(self, button_list):
+        '''
+        Set up all the hover button functionalities
+        '''
+        button_list[0].setVisible(True)
+        button_list[0].setText("")
+        button_list[0].setIcon(
+            button_list[0].style().standardIcon(QtGui.QStyle.SP_TitleBarNormalButton))
+        button_list[0].clicked.connect(
+            partial(self.localContextMenuGenerator, button_list[0]))
+        button_list[0].setToolTip("Show the fit manager")
+
+        button_list[2].setVisible(True)
+        button_list[2].setText("")
+        button_list[2].setIcon(
+            button_list[1].style().standardIcon(QtGui.QStyle.SP_TrashIcon))
+        button_list[0].setToolTip("Remove the fit manager")
 
 class PlotNode(SessionNode):
     def __init__(self, name = 'Plots', parent = None):
@@ -315,6 +387,27 @@ class PlotNode(SessionNode):
      
     def flags(self, index):
         return QtCore.Qt.ItemIsEnabled
+
+    def createPlot(self):
+        '''
+        Call the plot creator
+        '''
+        for widget in QtWidgets.QApplication.topLevelWidgets():
+            if widget.__class__.__name__ == "MainWindow":
+                target = widget
+        if target == None: return
+
+        target._sidebar.addPlot(self)
+
+    def setHoverButtons(self, button_list):
+        '''
+        Set up all the hover button functionalities
+        '''
+        button_list[0].setVisible(True)
+        button_list[0].setText("+")
+        button_list[0].setIcon(QtGui.QIcon())
+        button_list[0].clicked.connect(self.createPlot)
+        button_list[0].setToolTip("Add data")
 
 class PlotItem(SessionNode):
     def __init__(self, name = 'Plot', parent = None, **kwargs):
@@ -366,3 +459,27 @@ class PlotItem(SessionNode):
             target.displaySubwindow, self))
 
         return temp_menu
+
+    def localContextMenuGenerator(self, parent):
+        '''
+        Set the local context menu just in case
+        '''
+        self.contextMenuRequested(parent = parent).popup(parent.parent().mapToGlobal(parent.pos()))
+
+    def setHoverButtons(self, button_list):
+        '''
+        Set up all the hover button functionalities
+        '''
+        button_list[0].setVisible(True)
+        button_list[0].setText("")
+        button_list[0].setIcon(
+            button_list[0].style().standardIcon(QtGui.QStyle.SP_TitleBarNormalButton))
+        button_list[0].clicked.connect(
+            partial(self.localContextMenuGenerator, button_list[0]))
+        button_list[0].setToolTip("Show the plot")
+
+        button_list[2].setVisible(True)
+        button_list[2].setText("")
+        button_list[2].setIcon(
+            button_list[1].style().standardIcon(QtGui.QStyle.SP_TrashIcon))
+        button_list[0].setToolTip("Remove the plot")

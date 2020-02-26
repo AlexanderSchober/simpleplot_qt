@@ -28,6 +28,7 @@ from functools import partial
 from .gui_dialogs.plot_setup_dialog import PlotSetupDialog
 from .gui_plot.data_link_creator    import DataLinkCreator
 from .gui_dialogs.fit_link_creator  import FitLinkCreator
+from .side_bar_tree_view            import SidebarTreeView
 
 class Sidebar(QtWidgets.QWidget):
     '''
@@ -38,20 +39,16 @@ class Sidebar(QtWidgets.QWidget):
         super(Sidebar, self).__init__(*args, **kwargs)
 
         #Set up the visuals of the widget
-        self._tree_view = QtWidgets.QTreeView(parent = self)
+        self._tree_view = SidebarTreeView(parent = self)
         self._add_button = QtWidgets.QPushButton("+", parent = self)
         self._remove_button = QtWidgets.QPushButton("-", parent = self)
         self._preferences_button = QtWidgets.QPushButton("pref", parent = self)
 
-        self._tree_view.setSelectionBehavior(
-            QtWidgets.QTableView.SelectRows)
+        self._tree_view.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
         self._tree_view.setModel(model)
-        self._tree_view.setContextMenuPolicy(
-            QtCore.Qt.CustomContextMenu)
-        self._tree_view.expanded.connect(partial(
-            self._tree_view.resizeColumnToContents,0))
-        self._tree_view.collapsed.connect(partial(
-            self._tree_view.resizeColumnToContents,0))
+        self._tree_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self._tree_view.expanded.connect(partial(self._tree_view.resizeColumnToContents,0))
+        self._tree_view.collapsed.connect(partial(self._tree_view.resizeColumnToContents,0))
 
         sidebar_layout = QtWidgets.QVBoxLayout(self)
         bottom_layout = QtWidgets.QHBoxLayout()
