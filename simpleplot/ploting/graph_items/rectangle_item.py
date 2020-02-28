@@ -34,7 +34,6 @@ class RectangleItem(ParameterHandler):
     This item will be the graph item that is
     put an managed on its own
     '''
-
     def __init__(self,*args, **kwargs):
         '''
         Arrows can be initialized with any keyword arguments accepted by 
@@ -57,6 +56,10 @@ class RectangleItem(ParameterHandler):
         self.addParameter(
             'Position', [2.,2.,0.],
             names  = ['x','y','z'],
+            tags   = ['2D', '3D'],
+            method = self.refresh)
+        self.addParameter(
+            'Angle', 0.,
             tags   = ['2D', '3D'],
             method = self.refresh)
         self.addParameter(
@@ -105,7 +108,6 @@ class RectangleItem(ParameterHandler):
                     pass
             else:
                 self.removeItems()
-                del self.draw_items
 
         else:
             if self['Visible'] and self._mode == '2D':
@@ -133,12 +135,14 @@ class RectangleItem(ParameterHandler):
 
         self.draw_items[-1].setData(
             positions = self['Position'][:-1], 
-            dimensions = self['Dimensions'])
+            dimensions = self['Dimensions'],
+            angle = self['Angle'])
 
     def draw(self, target_surface = None):
         '''
         Draw the objects.
         '''
+        self.removeItems()
         self._mode = '2D'
         if not target_surface == None:
             self.default_target = target_surface.draw_surface.vb
@@ -147,8 +151,8 @@ class RectangleItem(ParameterHandler):
         if self['Visible']:
             self.draw_items = []
             self.draw_items.append(RectangleView())
-            self.setVisual()
             self.default_target.addItem(self.draw_items[-1])
+            self.setVisual()
 
     def drawGL(self, target_view = None):
         '''
@@ -169,6 +173,7 @@ class RectangleItem(ParameterHandler):
         if hasattr(self, 'draw_items'):
             for curve in self.draw_items:
                 self.default_target.removeItem(curve)
+            del self.draw_items
 
     def processRay(self, ray):
         '''

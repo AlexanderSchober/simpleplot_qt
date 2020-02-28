@@ -105,7 +105,6 @@ class SquareItem(ParameterHandler):
                     pass
             else:
                 self.removeItems()
-                del self.draw_items
 
         else:
             if self['Visible'] and self._mode == '2D':
@@ -139,6 +138,7 @@ class SquareItem(ParameterHandler):
         '''
         Draw the objects.
         '''
+        self.removeItems()
         self._mode = '2D'
         if not target_surface == None:
             self.default_target = target_surface.draw_surface.vb
@@ -147,8 +147,8 @@ class SquareItem(ParameterHandler):
         if self['Visible']:
             self.draw_items = []
             self.draw_items.append(RectangleView())
-            self.setVisual()
             self.default_target.addItem(self.draw_items[-1])
+            self.setVisual()
 
     def drawGL(self, target_view = None):
         '''
@@ -169,6 +169,7 @@ class SquareItem(ParameterHandler):
         if hasattr(self, 'draw_items'):
             for curve in self.draw_items:
                 self.default_target.removeItem(curve)
+            del self.draw_items
 
     def processRay(self, ray):
         '''

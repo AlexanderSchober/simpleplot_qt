@@ -45,7 +45,6 @@ class EllipseView(pg.GraphicsObject):
         '''
         Set the data for display
         '''
-        self.prepareGeometryChange()
         self.diameters = diameters
         self.positions = positions
 

@@ -106,11 +106,9 @@ class CircleItem(ParameterHandler):
                 if self._mode == '2D':
                     self.setVisual()
                 elif self._mode == '3D':
-                    # self.drawGL()
                     pass
             else:
                 self.removeItems()
-                del self.draw_items
 
         else:
             if self['Visible'] and self._mode == '2D':
@@ -126,17 +124,17 @@ class CircleItem(ParameterHandler):
             pen = QtGui.QPen()
             pen.setColor(self['Line'][2])
             pen.setWidthF(self['Line'][1])
-            self.draw_items[-1].pen = pen
+            self.draw_items[0].pen = pen
         else:
-            self.draw_items[-1].pen = QtCore.Qt.NoPen
+            self.draw_items[0].pen = QtCore.Qt.NoPen
 
         if self['Fill'][0]:
             brush = QtGui.QBrush(self['Fill'][1])
-            self.draw_items[-1].brush = brush
+            self.draw_items[0].brush = brush
         else:
-            self.draw_items[-1].brush = QtCore.Qt.NoBrush
+            self.draw_items[0].brush = QtCore.Qt.NoBrush
 
-        self.draw_items[-1].setData(
+        self.draw_items[0].setData(
             positions = self['Position'][:-1], 
             diameters = [self['Diameter'], self['Diameter']])
 
@@ -144,16 +142,16 @@ class CircleItem(ParameterHandler):
         '''
         Draw the objects.
         '''
+        self.removeItems()
         self._mode = '2D'
         if not target_surface == None:
-            self.default_target = target_surface.draw_surface.vb
+            self.default_target = target_surface.draw_surface
             self.setCurrentTags(['2D'])
             
         if self['Visible']:
-            self.draw_items = []
-            self.draw_items.append(EllipseView())
+            self.draw_items = [EllipseView()]
+            self.default_target.addItem(self.draw_items[0])
             self.setVisual()
-            self.default_target.addItem(self.draw_items[-1])
 
     def drawGL(self, target_view = None):
         '''
@@ -174,6 +172,7 @@ class CircleItem(ParameterHandler):
         if hasattr(self, 'draw_items'):
             for curve in self.draw_items:
                 self.default_target.removeItem(curve)
+            del self.draw_items
 
     def processRay(self, ray):
         '''

@@ -34,6 +34,7 @@ from .crystal_plot_handler          import CrystalPlotHandler
 
 from .graph_items.circle_item       import CircleItem
 from .graph_items.ellipse_item      import EllipseItem
+from .graph_items.rectangle_item    import RectangleItem
 from .graph_items.square_item       import SquareItem
 
 from ..models.session_node          import SessionNode
@@ -81,7 +82,8 @@ class MainHandler(SessionNode):
         self._item_dict = {
             'Circle':CircleItem,
             'Ellipse':EllipseItem,
-            'Square':SquareItem
+            'Square':SquareItem,
+            'Rectangle':RectangleItem
         }
         
     def addChild(self,*args, **kwargs):
@@ -97,7 +99,7 @@ class MainHandler(SessionNode):
             self._children[-1]._parent = self
         return self._children[-1]
 
-    def removeItem(self, name = '', idx = None, target = None):
+    def removeItem(self):
         '''
         here we will ask the element in question to 
         remove one of its items and proceed to a clean
@@ -115,6 +117,15 @@ class MainHandler(SessionNode):
         #     self.plot_elements[idx].remove_items(target)
         #     del self.plot_elements[idx]
 
+    def removeItems(self):
+        '''
+        here we will ask the element in question to 
+        remove one of its items and proceed to a clean
+        removal. 
+        '''
+        for plot_element in self._children:
+            plot_element.removeItems()
+        
     def clear(self, target):
         '''
         Draw all the items onto the plot

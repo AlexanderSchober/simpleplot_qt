@@ -38,17 +38,17 @@ class RectangleView(pg.GraphicsObject):
         
         self.dimensions = [1.,1.]
         self.positions  = [2.,2.]
+        self.angle      = 0.
         self.brush      = QtGui.QBrush()
         self.pen        = QtGui.QPen()
 
-    def setData(self, positions = [1.,1.], dimensions = [2.,2.]):
+    def setData(self, positions = [1.,1.], dimensions = [2.,2.], angle = 0.):
         '''
         Set the data for display
         '''
-        self.prepareGeometryChange()
-
         self.dimensions = dimensions
         self.positions = positions
+        self.angle = angle
 
     def paint(self, p, *args):
         '''
@@ -60,10 +60,18 @@ class RectangleView(pg.GraphicsObject):
         p.setBrush(self.brush)
         p.setPen(self.pen)
 
-        p.drawRect(QtCore.QRectF(
-            self.positions[0] - self.dimensions[0]/2., 
-            self.positions[1] - self.dimensions[1]/2., 
-            self.dimensions[0], self.dimensions[1]))
+        p.translate(self.positions[0], self.positions[1])
+        p.rotate(-self.angle)
+
+        rect = QtCore.QRectF(
+            - self.dimensions[0]/2., 
+            - self.dimensions[1]/2., 
+            self.dimensions[0], self.dimensions[1])
+        
+        p.drawRect(rect)
+
+        p.rotate(self.angle)
+        p.translate(-self.positions[0], -self.positions[1])
 
     def boundingRect(self):
         return  QtCore.QRectF(

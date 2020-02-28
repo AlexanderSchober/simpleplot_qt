@@ -82,7 +82,6 @@ class Artist():
             active_handlers.index(name_type)].addChild(*args, **kwargs)
 
         self.canvas._plot_model.referenceModel()
-        self.draw()
 
         return output
 
@@ -105,7 +104,6 @@ class Artist():
             active_handlers.index("Items")].addChild(name_type,*args, **kwargs)
 
         self.canvas._plot_model.referenceModel()
-        self.draw()
 
         return output
 
@@ -166,6 +164,8 @@ class Artist():
         selected items. if not a new instance will be
         generated and then fed into the handler system
         '''
+        for plot_handler in self.canvas._plot_root._children:
+            plot_handler.removeItems()
         for plot_handler in self.canvas._plot_root._children:
             plot_handler.draw(self.canvas)
 

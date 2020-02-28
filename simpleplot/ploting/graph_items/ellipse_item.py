@@ -145,16 +145,16 @@ class EllipseItem(ParameterHandler):
         '''
         Draw the objects.
         '''
+        self.removeItems()
         self._mode = '2D'
         if not target_surface == None:
-            self.default_target = target_surface.draw_surface.vb
+            self.default_target = target_surface.draw_surface
             self.setCurrentTags(['2D'])
             
         if self['Visible']:
-            self.draw_items = []
-            self.draw_items.append(EllipseView())
+            self.draw_items = [EllipseView()]
+            self.default_target.addItem(self.draw_items[0])
             self.setVisual()
-            self.default_target.addItem(self.draw_items[-1])
 
     def drawGL(self, target_view = None):
         '''
