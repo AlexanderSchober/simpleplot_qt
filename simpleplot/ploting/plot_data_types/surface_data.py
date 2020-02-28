@@ -214,7 +214,6 @@ class SurfaceData(PlotData, SessionNode):
         '''
         self._bounds = []
         for element in self._data:
-            print(element)
             self._bounds.append([np.amin(element.astype(np.float)), np.amax(element.astype(np.float))])
 
     def _buildVerticeMap(self):

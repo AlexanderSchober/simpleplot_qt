@@ -45,7 +45,7 @@ def startPlayGround():
     
     data_node = project_item.childFromName('Datasets')
     data_item = data_node.addDataItem()
-    
+
     from .core.io.io_data_import import IODataLoad
     loader = IODataLoad(data_item.data_item, r"/home/alexander/Desktop/example.txt")
     loader.load("txt")
@@ -605,6 +605,38 @@ def exampleCrystalPlot():
     widget.show()
     sys.exit(app.exec_())
 
+def exampleItems():
+    #set upt the window and the plot widget
+    app 	        = QtWidgets.QApplication(sys.argv)
+    widget          = QtWidgets.QWidget()
+    multi_canvas    = MultiCanvasItem(
+        widget = widget,        
+        grid        = [[True]],
+        element_types = [['2D']],
+        x_ratios    = [1],
+        y_ratios    = [1],
+        background  = "w",
+        highlightthickness = 0)
+    
+    #link to the subplots
+    ax = multi_canvas.getSubplot(0,0)    
+    
+    ax.draw()
+
+    circle = ax.addItem("Circle")
+
+    ellipse = ax.addItem("Ellipse")
+    ellipse['Position'] = [0.,0.,0.]
+    ellipse['Diameters'] = [0.5,1,0.]
+
+    square = ax.addItem("Square")
+    square['Position'] = [0.,3.,0.]
+    square['Dimension'] = 0.5
+
+    #show widget
+    widget.show()
+    sys.exit(app.exec_())
+
 def example():
 
     #set upt the window and the plot widget
@@ -751,7 +783,8 @@ def example():
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
-    startPlayGround()
+    # startPlayGround()
+    exampleItems()
     # exampleMultiLinePlot()
     # exampleProjectionPlot()
     # exampleLinePlot()

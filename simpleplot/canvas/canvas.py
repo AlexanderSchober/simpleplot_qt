@@ -97,6 +97,8 @@ class CanvasNode(SessionNode):
 
         self._plot_root  = SessionNode('Root', None) 
         self._plot_model = PlotModel(self._plot_root, self.multi_canvas)
+        self._item_root  = SessionNode('Root', None) 
+        self._item_model = PlotModel(self._item_root, self.multi_canvas)
 
     def _hideCanvas(self):
         '''

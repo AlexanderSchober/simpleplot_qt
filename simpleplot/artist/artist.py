@@ -86,6 +86,29 @@ class Artist():
 
         return output
 
+    def addItem(self, name_type, *args, **kwargs):
+        '''
+        '''
+        active_handlers = [
+            child._name for child in 
+            self.canvas._plot_root._children]
+
+        if not "Items" in active_handlers:
+            new_child = get_main_handler("Items")
+            self.canvas._plot_root.addChild(new_child)
+
+        active_handlers = [
+            child._name for child in 
+            self.canvas._plot_root._children]
+
+        output = self.canvas._plot_root._children[
+            active_handlers.index("Items")].addChild(name_type,*args, **kwargs)
+
+        self.canvas._plot_model.referenceModel()
+        self.draw()
+
+        return output
+
     def addFromDrop(self, file_paths):
         '''
         '''
@@ -165,7 +188,7 @@ class Artist():
         for plot_handler in self.canvas._plot_root._children:
             plot_handler.clear(self.canvas)
 
-    def addItem(self, location, item):
+    def addHistogramItem(self, location, item):
         '''
         Put a histogram on the layout
         The location is a string that will 
