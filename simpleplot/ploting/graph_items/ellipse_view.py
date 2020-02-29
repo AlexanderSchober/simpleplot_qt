@@ -38,15 +38,17 @@ class EllipseView(pg.GraphicsObject):
         
         self.diameters = [1.,1.]
         self.positions = [2.,2.]
+        self.angle      = 0.
         self.brush     = QtGui.QBrush()
         self.pen       = QtGui.QPen()
 
-    def setData(self, positions = [1.,1.], diameters = [2.,2.]):
+    def setData(self, positions = [1.,1.], diameters = [2.,2.], angle = 0.):
         '''
         Set the data for display
         '''
         self.diameters = diameters
         self.positions = positions
+        self.angle = angle
 
     def paint(self, p, *args):
         '''
@@ -56,9 +58,16 @@ class EllipseView(pg.GraphicsObject):
         p.setRenderHint(QtGui.QPainter.Antialiasing)
         p.setBrush(self.brush)
         p.setPen(self.pen)
+
+        p.translate(self.positions[0], self.positions[1])
+        p.rotate(self.angle)
+
         p.drawEllipse(
-            QtCore.QPointF(self.positions[0], self.positions[1]), 
+            QtCore.QPointF(0.,0.), 
             self.diameters[0], self.diameters[1])
+
+        p.rotate(-self.angle)
+        p.translate(-self.positions[0], -self.positions[1])
 
     def boundingRect(self):
         return  QtCore.QRectF(

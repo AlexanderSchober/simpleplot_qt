@@ -60,6 +60,10 @@ class SquareItem(ParameterHandler):
             tags   = ['2D', '3D'],
             method = self.refresh)
         self.addParameter(
+            'Angle', 0.,
+            tags   = ['2D', '3D'],
+            method = self.refresh)
+        self.addParameter(
             'Dimension', 2.,
             names  = ['x','y','z'],
             tags   = ['2D', '3D'],
@@ -132,7 +136,8 @@ class SquareItem(ParameterHandler):
 
         self.draw_items[-1].setData(
             positions = self['Position'][:-1], 
-            dimensions = [self['Dimension'],self['Dimension']])
+            dimensions = [self['Dimension'],self['Dimension']],
+            angle = self['Angle'])
 
     def draw(self, target_surface = None):
         '''

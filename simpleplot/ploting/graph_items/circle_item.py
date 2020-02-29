@@ -60,6 +60,10 @@ class CircleItem(ParameterHandler):
             tags   = ['2D', '3D'],
             method = self.refresh)
         self.addParameter(
+            'Angle', 0.,
+            tags   = ['2D', '3D'],
+            method = self.refresh)
+        self.addParameter(
             'Diameter', 2.,
             tags   = ['2D', '3D'],
             method = self.refresh)
@@ -136,7 +140,8 @@ class CircleItem(ParameterHandler):
 
         self.draw_items[0].setData(
             positions = self['Position'][:-1], 
-            diameters = [self['Diameter'], self['Diameter']])
+            diameters = [self['Diameter'], self['Diameter']],
+            angle = self['Angle'])
 
     def draw(self, target_surface = None):
         '''

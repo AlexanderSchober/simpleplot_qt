@@ -60,6 +60,10 @@ class EllipseItem(ParameterHandler):
             tags   = ['2D', '3D'],
             method = self.refresh)
         self.addParameter(
+            'Angle', 0.,
+            tags   = ['2D', '3D'],
+            method = self.refresh)
+        self.addParameter(
             'Diameters', [2.,2.,1.],
             names  = ['x','y','z'],
             tags   = ['2D', '3D'],
@@ -139,7 +143,8 @@ class EllipseItem(ParameterHandler):
 
         self.draw_items[-1].setData(
             positions = self['Position'][:-1], 
-            diameters = self['Diameters'][:-1])
+            diameters = self['Diameters'][:-1],
+            angle = self['Angle'])
 
     def draw(self, target_surface = None):
         '''

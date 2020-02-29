@@ -61,7 +61,7 @@ class RectangleView(pg.GraphicsObject):
         p.setPen(self.pen)
 
         p.translate(self.positions[0], self.positions[1])
-        p.rotate(-self.angle)
+        p.rotate(self.angle)
 
         rect = QtCore.QRectF(
             - self.dimensions[0]/2., 
@@ -70,7 +70,7 @@ class RectangleView(pg.GraphicsObject):
         
         p.drawRect(rect)
 
-        p.rotate(self.angle)
+        p.rotate(-self.angle)
         p.translate(-self.positions[0], -self.positions[1])
 
     def boundingRect(self):
