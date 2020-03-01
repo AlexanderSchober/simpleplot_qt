@@ -621,15 +621,16 @@ def exampleItems():
     #link to the subplots
     ax = multi_canvas.getSubplot(0,0)    
     circle = ax.addItem("Circle")
-    ax.draw()
     ellipse = ax.addItem("Ellipse")
-    ax.draw()
     square = ax.addItem("Square")
-    ax.draw()
     rectangle = ax.addItem("Rectangle")
+    pie = ax.addItem("Pie")
+
+
+    plot = ax.addPlot('Scatter', Style = ['d','r','20'])
+
     ax.draw()
 
-    
     ellipse['Position'] = [0.,0.,0.]
     ellipse['Diameters'] = [0.5,1,0.]
     
@@ -638,11 +639,9 @@ def exampleItems():
     
     rectangle['Position'] = [-2.,-1.,0.]
     rectangle['Dimensions'] = [0.5,1.]
-
-    # plot = ax.addPlot('Scatter', Style = ['d','r','20'])
-    # plot.setData(
-    #     x = np.array([i for i in range(100)])/10,
-    #     y = np.sin(np.array([i for i in range(100)])/10))
+    plot.setData(
+        x = np.array([i for i in range(100)])/10,
+        y = np.sin(np.array([i for i in range(100)])/10))
 
     #show widget
     widget.show()

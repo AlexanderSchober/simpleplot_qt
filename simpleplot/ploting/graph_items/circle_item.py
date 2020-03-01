@@ -150,7 +150,7 @@ class CircleItem(ParameterHandler):
         self.removeItems()
         self._mode = '2D'
         if not target_surface == None:
-            self.default_target = target_surface.draw_surface
+            self.default_target = target_surface.draw_surface.vb
             self.setCurrentTags(['2D'])
             
         if self['Visible']:

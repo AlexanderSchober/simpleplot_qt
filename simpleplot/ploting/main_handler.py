@@ -36,6 +36,7 @@ from .graph_items.circle_item       import CircleItem
 from .graph_items.ellipse_item      import EllipseItem
 from .graph_items.rectangle_item    import RectangleItem
 from .graph_items.square_item       import SquareItem
+from .graph_items.pie_item          import PieItem
 
 from ..models.session_node          import SessionNode
 
@@ -83,7 +84,8 @@ class MainHandler(SessionNode):
             'Circle':CircleItem,
             'Ellipse':EllipseItem,
             'Square':SquareItem,
-            'Rectangle':RectangleItem
+            'Rectangle':RectangleItem,
+            'Pie':PieItem
         }
         
     def addChild(self,*args, **kwargs):
@@ -92,11 +94,11 @@ class MainHandler(SessionNode):
         plot_elements array. 
         '''
         if self.target_class == None:
-            self._children.append(self._item_dict[args[0]](*args,**kwargs))
-            self._children[-1]._parent = self
+            new_child = self._item_dict[args[0]](*args,**kwargs)
         else:
-            self._children.append(self.target_class(*args,**kwargs))
-            self._children[-1]._parent = self
+            new_child = self.target_class(*args,**kwargs)
+
+        self._model.insertRows(len(self._children), 1, [new_child], self)
         return self._children[-1]
 
     def removeItem(self):

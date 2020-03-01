@@ -23,8 +23,9 @@
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from ...pyqtgraph import pyqtgraph as pg
+import numpy as np
 
-class RectangleView(pg.GraphicsObject):
+class PieView(pg.GraphicsObject):
     '''
     This item will be the graph item that is
     put an managed on its own
@@ -36,19 +37,22 @@ class RectangleView(pg.GraphicsObject):
         '''
         super().__init__(opts.get('parent', None))
         
-        self.dimensions = [1.,1.]
-        self.positions  = [2.,2.]
-        self.angle      = 0.
-        self.brush      = QtGui.QBrush()
-        self.pen        = QtGui.QPen()
+        self.radial_range = [1.,1.]
+        self.angle_range = [1.,1.]
+        self.positions = [2.,2.]
+        self.angle = 0.
+        self.brush = QtGui.QBrush()
+        self.pen = QtGui.QPen()
 
-    def setData(self, positions = [1.,1.], dimensions = [2.,2.], angle = 0.):
+    def setData(self, positions = [1.,1.], radial_range = [2.,2.], angle_range = [2.,2.], angle = 0.):
         '''
         Set the data for display
         '''
-        self.dimensions = dimensions
+        self.radial_range = radial_range
+        self.angle_range = angle_range
         self.positions = positions
         self.angle = angle
+        self.path = self.getPiePath()
         self.prepareGeometryChange()
         self.update()
 
@@ -56,37 +60,51 @@ class RectangleView(pg.GraphicsObject):
         '''
         override the paint method
         '''
-        p.setRenderHint(QtGui.QPainter.Antialiasing)
+        p.setRenderHint(QtGui.QPainter.HighQualityAntialiasing)
         p.setBrush(self.brush)
         p.setPen(self.pen)
 
         p.translate(self.positions[0], self.positions[1])
         p.rotate(self.angle)
 
-        rect = QtCore.QRectF(
-            - self.dimensions[0]/2., 
-            - self.dimensions[1]/2., 
-            self.dimensions[0], self.dimensions[1])
-        
-        p.drawRect(rect)
+        p.drawPath(self.path)
 
         p.rotate(-self.angle)
         p.translate(-self.positions[0], -self.positions[1])
 
     def boundingRect(self):
         return  QtCore.QRectF(
-            self.positions[0] - self.dimensions[0]/2. - self.pen.widthF()*2, 
-            self.positions[1] - self.dimensions[1]/2. - self.pen.widthF()*2,
-            self.dimensions[0] + self.pen.widthF()*4., 
-            self.dimensions[1] + self.pen.widthF()*4.)
+            self.positions[0] - self.radial_range[1] - self.pen.widthF()*2, 
+            self.positions[1] - self.radial_range[1] - self.pen.widthF()*2,
+            self.radial_range[1]*2 + self.pen.widthF()*4., 
+            self.radial_range[1]*2 + self.pen.widthF()*4.)
 
     def shape(self):
         '''
         Override the shape method
         '''
+        return self.path
+
+    def getPiePath(self):
+        '''
+        This will get the path for the extruded pie
+        graph item used by th epainter
+        '''
         path = QtGui.QPainterPath()
-        path.addRect(QtCore.QRectF(
-            self.positions[0] - self.dimensions[0]/2., 
-            self.positions[1] - self.dimensions[1]/2., 
-            self.dimensions[0], self.dimensions[1]))
+        path.moveTo(
+            np.cos(self.angle_range[0]* np.pi / 180.)*self.radial_range[0],
+            np.sin(self.angle_range[0]* np.pi / 180.)*self.radial_range[0])
+        path.arcTo(
+            -self.radial_range[0], -self.radial_range[0],
+            self.radial_range[0]*2., self.radial_range[0]*2.,
+            -self.angle_range[0], -(self.angle_range[1]-self.angle_range[0]))
+        path.lineTo(
+            np.cos(self.angle_range[1]* np.pi / 180.)*self.radial_range[1],
+            np.sin(self.angle_range[1]* np.pi / 180.)*self.radial_range[1])
+        path.arcTo(
+            -self.radial_range[1], -self.radial_range[1],
+            self.radial_range[1]*2., self.radial_range[1]*2.,
+            -self.angle_range[1], -(self.angle_range[0]-self.angle_range[1]))
+        path.closeSubpath()
+        
         return path

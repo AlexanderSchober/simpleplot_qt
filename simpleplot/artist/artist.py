@@ -72,7 +72,9 @@ class Artist():
 
         if not name_type in active_handlers:
             new_child = get_main_handler(name_type)
-            self.canvas._plot_root.addChild(new_child)
+            self.canvas._plot_model.insertRows(
+                len(self.canvas._plot_root._children), 1, 
+                [new_child], self.canvas._plot_root)
 
         active_handlers = [
             child._name for child in 
@@ -94,7 +96,7 @@ class Artist():
 
         if not "Items" in active_handlers:
             new_child = get_main_handler("Items")
-            self.canvas._plot_root.addChild(new_child)
+            self.canvas._plot_model.insertRows(0, 1, [new_child], self.canvas._plot_root)
 
         active_handlers = [
             child._name for child in 

@@ -27,14 +27,13 @@ from ...pyqtgraph                   import pyqtgraph as pg
 from ...pyqtgraph.pyqtgraph         import opengl as gl
 
 from ...models.parameter_class import ParameterHandler
-from .ellipse_view import EllipseView
+from .pie_view import PieView
 
-class EllipseItem(ParameterHandler):
+class PieItem(ParameterHandler):
     '''
     This item will be the graph item that is
     put an managed on its own
     '''
-
     def __init__(self,*args, **kwargs):
         '''
         Arrows can be initialized with any keyword arguments accepted by 
@@ -64,8 +63,13 @@ class EllipseItem(ParameterHandler):
             tags   = ['2D', '3D'],
             method = self.refresh)
         self.addParameter(
-            'Diameters', [2.,2.,1.],
-            names  = ['x','y','z'],
+            'Radial range',[1., 2.],
+            names = ['Inner', 'Outter'],
+            tags   = ['2D', '3D'],
+            method = self.refresh)
+        self.addParameter(
+            'Angular range',[45., 325.],
+            names = ['Inner', 'Outter'],
             tags   = ['2D', '3D'],
             method = self.refresh)
         self.addParameter(
@@ -111,11 +115,9 @@ class EllipseItem(ParameterHandler):
                 if self._mode == '2D':
                     self.setVisual()
                 elif self._mode == '3D':
-                    # self.drawGL()
                     pass
             else:
                 self.removeItems()
-                del self.draw_items
 
         else:
             if self['Visible'] and self._mode == '2D':
@@ -131,19 +133,20 @@ class EllipseItem(ParameterHandler):
             pen = QtGui.QPen()
             pen.setColor(self['Line'][2])
             pen.setWidthF(self['Line'][1])
-            self.draw_items[-1].pen = pen
+            self.draw_items[0].pen = pen
         else:
-            self.draw_items[-1].pen = QtCore.Qt.NoPen
+            self.draw_items[0].pen = QtCore.Qt.NoPen
 
         if self['Fill'][0]:
             brush = QtGui.QBrush(self['Fill'][1])
-            self.draw_items[-1].brush = brush
+            self.draw_items[0].brush = brush
         else:
-            self.draw_items[-1].brush = QtCore.Qt.NoBrush
+            self.draw_items[0].brush = QtCore.Qt.NoBrush
 
-        self.draw_items[-1].setData(
+        self.draw_items[0].setData(
             positions = self['Position'][:-1], 
-            diameters = self['Diameters'][:-1],
+            radial_range = self['Radial range'],
+            angle_range = self['Angular range'],
             angle = self['Angle'])
 
     def draw(self, target_surface = None):
@@ -157,7 +160,7 @@ class EllipseItem(ParameterHandler):
             self.setCurrentTags(['2D'])
             
         if self['Visible']:
-            self.draw_items = [EllipseView()]
+            self.draw_items = [PieView()]
             self.default_target.addItem(self.draw_items[0])
             self.setVisual()
 
@@ -180,6 +183,7 @@ class EllipseItem(ParameterHandler):
         if hasattr(self, 'draw_items'):
             for curve in self.draw_items:
                 self.default_target.removeItem(curve)
+            del self.draw_items
 
     def processRay(self, ray):
         '''

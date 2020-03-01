@@ -80,11 +80,11 @@ class doubleSpinBoxConstructor:
         if 'min' in self.manager.kwargs.keys():
             item.setMinimum(self.manager.kwargs['min'])
         else:
-            item.setMinimum(-1000)
+            item.setMinimum(-1000.)
         if 'max' in self.manager.kwargs.keys():
             item.setMaximum(self.manager.kwargs['max'])
         else:
-            item.setMaximum(1000)
+            item.setMaximum(1000.)
 
         if 'step' in self.manager.kwargs.keys():
             item.setSingleStep(self.manager.kwargs['step'])
@@ -97,6 +97,7 @@ class doubleSpinBoxConstructor:
     def updateInternals(self, value):
         '''
         '''
+        print('hey')
         self.manager._value = value
         self.manager._model.dataChanged.emit(
             self.manager.index(),
