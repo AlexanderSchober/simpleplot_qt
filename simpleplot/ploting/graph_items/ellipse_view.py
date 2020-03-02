@@ -22,9 +22,10 @@
 # *****************************************************************************
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from ...pyqtgraph import pyqtgraph as pg
 
-class EllipseView(pg.GraphicsObject):
+from .graph_view import GraphView
+
+class EllipseView(GraphView):
     '''
     This item will be the graph item that is
     put an managed on its own
@@ -34,49 +35,44 @@ class EllipseView(pg.GraphicsObject):
         '''
 
         '''
-        super().__init__(opts.get('parent', None))
-        
-        self.diameters = [1.,1.]
-        self.positions = [2.,2.]
-        self.angle      = 0.
-        self.brush     = QtGui.QBrush()
-        self.pen       = QtGui.QPen()
+        super().__init__(**opts)
 
-    def setData(self, positions = [1.,1.], diameters = [2.,2.], angle = 0.):
+        self._parameters = {}
+        self._parameters['diameters'] = [1.,1.]
+        self._parameters['positions'] = [2.,2.]
+        self._parameters['angle'] = 0.
+        self._parameters['brush'] = QtGui.QBrush()
+        self._parameters['pen'] = QtGui.QPen()
+        self._parameters['Z'] = 0
+        self._parameters['movable'] = False
+
+    def setData(self, **kwargs):
         '''
         Set the data for display
         '''
-        self.diameters = diameters
-        self.positions = positions
-        self.angle = angle
-        self.prepareGeometryChange()
-        self.update()
+        self._parameters.update(kwargs)
+        super().render()
 
     def paint(self, p, *args):
         '''
         override the paint method
         '''
-        
-        p.setRenderHint(QtGui.QPainter.HighQualityAntialiasing)
-        p.setBrush(self.brush)
-        p.setPen(self.pen)
-
-        p.translate(self.positions[0], self.positions[1])
-        p.rotate(self.angle)
+        super().inPainter(p, *args)
 
         p.drawEllipse(
             QtCore.QPointF(0.,0.), 
-            self.diameters[0], self.diameters[1])
+            self._parameters['diameters'][0], self._parameters['diameters'][1])
 
-        p.rotate(-self.angle)
-        p.translate(-self.positions[0], -self.positions[1])
+        super().outPainter(p, *args)
 
     def boundingRect(self):
         return  QtCore.QRectF(
-            self.positions[0] - self.diameters[0] - self.pen.widthF()*2, 
-            self.positions[1] - self.diameters[1] - self.pen.widthF()*2,
-            self.diameters[0]*2 + self.pen.widthF()*4., 
-            self.diameters[1]*2 + self.pen.widthF()*4.)
+            self._parameters['positions'][0] - self._parameters['diameters'][0] 
+            - self._parameters['pen'].widthF()*2, 
+            self._parameters['positions'][1] - self._parameters['diameters'][1] 
+            - self._parameters['pen'].widthF()*2,
+            self._parameters['diameters'][0]*2 + self._parameters['pen'].widthF()*4., 
+            self._parameters['diameters'][1]*2 + self._parameters['pen'].widthF()*4.)
 
     def shape(self):
         '''
@@ -84,6 +80,6 @@ class EllipseView(pg.GraphicsObject):
         '''
         path = QtGui.QPainterPath()
         path.addEllipse(
-            self.positions[0], self.positions[1], 
-            self.diameters[0], self.diameters[1])
+            self._parameters['positions'][0], self._parameters['positions'][1], 
+            self._parameters['diameters'][0], self._parameters['diameters'][1])
         return path

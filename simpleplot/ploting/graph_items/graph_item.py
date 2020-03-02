@@ -39,8 +39,7 @@ class GraphItem(ParameterHandler):
         the setStyle() method.
         '''
         super().__init__(args[0])
-        
-        self.initializeMain(**kwargs)
+
         self._mode = '2D'
         self.default_target = None
 
@@ -59,12 +58,54 @@ class GraphItem(ParameterHandler):
             tags   = ['2D', '3D'],
             method = self.refresh)
         self.addParameter(
+            'Movable', False,
+            tags   = ['2D'],
+            method = self.refresh)
+        self.addParameter(
             'Angle', 0.,
             tags   = ['2D', '3D'],
             method = self.refresh)
         self.addParameter(
             'Z', 0,
             tags   = ['2D'],
+            method = self.refresh)
+
+    def initializeVisual2D(self, **kwargs):
+        '''
+        This class will be the scatter plots. 
+        The arguments are given as kwargs 
+        '''
+        self.addParameter(
+            'Fill', [True, QtGui.QColor("blue")],
+            tags   = ['2D'],
+            method = self.refresh)
+        self.addParameter(
+            'Line', [True, 0.1, QtGui.QColor("black")],
+            names  = ["Visible", "Thickness", "Color"],
+            tags   = ['2D'],
+            method = self.refresh)
+
+    def initializeVisual3D(self, **kwargs):
+        '''
+        This class will be the scatter plots. 
+        The arguments are given as kwargs 
+        '''
+        self.addParameter(
+            'Draw faces', True, 
+            tags     = ['3D'],
+            method = self.refresh)
+        self.addParameter(
+            'Draw edges', False, 
+            tags     = ['3D'],
+            method = self.refresh)
+        self.addParameter(
+            'Draw smooth', True, 
+            tags     = ['3D'],
+            method = self.refresh)
+        self.addParameter(
+            'OpenGl mode', 'opaque',
+            choices = ['translucent', 'opaque', 'additive'],
+            tags   = ['3D'],
             method = self.refresh)
 
     def refresh(self):
@@ -94,6 +135,28 @@ class GraphItem(ParameterHandler):
         '''
         pass
 
+    def getPen(self):
+        '''
+        '''
+        if self['Line'][0]:
+            pen = QtGui.QPen()
+            pen.setColor(self['Line'][2])
+            pen.setWidthF(self['Line'][1])
+        else:
+            pen = QtCore.Qt.NoPen
+
+        return pen
+
+    def getBrush(self):
+        '''
+        '''
+        if self['Fill'][0]:
+            brush = QtGui.QBrush(self['Fill'][1])
+        else:
+            brush = QtCore.Qt.NoBrush
+            
+        return brush
+
     def draw(self, target_surface = None):
         '''
         Draw the objects.
@@ -117,4 +180,9 @@ class GraphItem(ParameterHandler):
                 self.default_target.removeItem(curve)
             del self.draw_items
 
+    def handleMove(self,coordinates:list):
+        '''
+        change the position silently
+        '''
+        self.items['Position'].updateValue(coordinates+[self['Position'][-1]], method = True)
     

@@ -41,7 +41,10 @@ class PieItem(GraphItem):
         '''
         super().__init__(args[0])
         
+        self.initializeMain(**kwargs)
         self.initialize(**kwargs)
+        self.initializeVisual2D(**kwargs)
+        self.initializeVisual3D(**kwargs)
         self._mode = '2D'
 
     def initialize(self, **kwargs):
@@ -59,62 +62,20 @@ class PieItem(GraphItem):
             names = ['Inner', 'Outter'],
             tags   = ['2D', '3D'],
             method = self.refresh)
-        self.addParameter(
-            'Fill', [True, QtGui.QColor("blue")],
-            tags   = ['2D'],
-            method = self.refresh)
-        self.addParameter(
-            'Line', [True, 0.1, QtGui.QColor("black")],
-            names  = ["Visible", "Thickness", "Color"],
-            tags   = ['2D'],
-            method = self.refresh)
-        self.addParameter(
-            'Draw faces', True, 
-            tags     = ['3D'],
-            method = self.refresh)
-        self.addParameter(
-            'Draw edges', False, 
-            tags     = ['3D'],
-            method = self.refresh)
-        self.addParameter(
-            'Draw smooth', True, 
-            tags     = ['3D'],
-            method = self.refresh)
-        self.addParameter(
-            'OpenGl mode', 'opaque',
-            choices = ['translucent', 'opaque', 'additive'],
-            tags   = ['3D'],
-            method = self.refresh)
-        self.addParameter(
-            'Representation', 'Spherical',
-            choices = ['Spherical', 'Circular'],
-            tags   = ['3D'],
-            method = self.refresh)
 
     def setVisual(self):
         '''
         Set the visual of the given shape element
         '''
-        if self['Line'][0]:
-            pen = QtGui.QPen()
-            pen.setColor(self['Line'][2])
-            pen.setWidthF(self['Line'][1])
-        else:
-            pen = QtCore.Qt.NoPen
-
-        if self['Fill'][0]:
-            brush = QtGui.QBrush(self['Fill'][1])
-        else:
-            brush = QtCore.Qt.NoBrush
-
         self.draw_items[0].setData(
             positions = self['Position'][:-1], 
             radial_range = self['Radial range'],
             angle_range = self['Angular range'],
             angle = self['Angle'], 
-            pen = pen,
-            brush = brush,
-            Z = self['Z'])
+            pen = super().getPen(),
+            brush = super().getBrush(),
+            Z = self['Z'],
+            movable = self['Movable'])
 
     def draw(self, target_surface = None):
         '''
@@ -129,6 +90,7 @@ class PieItem(GraphItem):
         if self['Visible']:
             self.draw_items = [PieView()]
             self.default_target.addItem(self.draw_items[0])
+            self.draw_items[0].moved.connect(self.handleMove)
             self.setVisual()
 
     def drawGL(self, target_view = None):

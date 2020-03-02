@@ -30,6 +30,7 @@ class GraphView(pg.GraphicsObject):
     This item will be the graph item that is
     put an managed on its own
     '''
+    moved = QtCore.pyqtSignal(list)
 
     def __init__(self, **opts):
         '''
@@ -73,3 +74,19 @@ class GraphView(pg.GraphicsObject):
         '''
         p.rotate(-self._parameters['angle'])
         p.translate(-self._parameters['positions'][0], -self._parameters['positions'][1])
+
+    def mousePressEvent(self,event):
+        '''
+        Overwrite the move behavior
+        '''
+        self._init_pos = [event.pos().x(), event.pos().y()]
+
+    def mouseMoveEvent(self,event):
+        '''
+        Overwrite the move behavior
+        '''
+        if self._parameters['movable']:
+            self.moved.emit([
+                event.pos().x()-self._init_pos[0] + self._parameters['positions'][0], 
+                event.pos().y()-self._init_pos[1] + self._parameters['positions'][1]])
+            self._init_pos = [event.pos().x(), event.pos().y()]

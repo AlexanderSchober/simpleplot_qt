@@ -22,9 +22,10 @@
 # *****************************************************************************
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from ...pyqtgraph import pyqtgraph as pg
 
-class RectangleView(pg.GraphicsObject):
+from .graph_view import GraphView
+
+class RectangleView(GraphView):
     '''
     This item will be the graph item that is
     put an managed on its own
@@ -34,51 +35,47 @@ class RectangleView(pg.GraphicsObject):
         '''
 
         '''
-        super().__init__(opts.get('parent', None))
-        
-        self.dimensions = [1.,1.]
-        self.positions  = [2.,2.]
-        self.angle      = 0.
-        self.brush      = QtGui.QBrush()
-        self.pen        = QtGui.QPen()
+        super().__init__(**opts)
 
-    def setData(self, positions = [1.,1.], dimensions = [2.,2.], angle = 0.):
+        self._parameters = {}
+        self._parameters['dimensions'] = [1.,1.]
+        self._parameters['positions'] = [2.,2.]
+        self._parameters['angle'] = 0.
+        self._parameters['brush'] = QtGui.QBrush()
+        self._parameters['pen'] = QtGui.QPen()
+        self._parameters['Z'] = 0
+        self._parameters['movable'] = False
+
+    def setData(self, **kwargs):
         '''
         Set the data for display
         '''
-        self.dimensions = dimensions
-        self.positions = positions
-        self.angle = angle
-        self.prepareGeometryChange()
-        self.update()
+        self._parameters.update(kwargs)
+        super().render()
 
     def paint(self, p, *args):
         '''
         override the paint method
         '''
-        p.setRenderHint(QtGui.QPainter.Antialiasing)
-        p.setBrush(self.brush)
-        p.setPen(self.pen)
-
-        p.translate(self.positions[0], self.positions[1])
-        p.rotate(self.angle)
+        super().inPainter(p, *args)
 
         rect = QtCore.QRectF(
-            - self.dimensions[0]/2., 
-            - self.dimensions[1]/2., 
-            self.dimensions[0], self.dimensions[1])
+            - self._parameters['dimensions'][0]/2., 
+            - self._parameters['dimensions'][1]/2., 
+            self._parameters['dimensions'][0], self._parameters['dimensions'][1])
         
         p.drawRect(rect)
 
-        p.rotate(-self.angle)
-        p.translate(-self.positions[0], -self.positions[1])
+        super().outPainter(p, *args)
 
     def boundingRect(self):
         return  QtCore.QRectF(
-            self.positions[0] - self.dimensions[0]/2. - self.pen.widthF()*2, 
-            self.positions[1] - self.dimensions[1]/2. - self.pen.widthF()*2,
-            self.dimensions[0] + self.pen.widthF()*4., 
-            self.dimensions[1] + self.pen.widthF()*4.)
+            self._parameters['positions'][0] - self._parameters['dimensions'][0]/2. 
+            - self._parameters['pen'].widthF()*2, 
+            self._parameters['positions'][1] - self._parameters['dimensions'][1]/2. 
+            - self._parameters['pen'].widthF()*2,
+            self._parameters['dimensions'][0] + self._parameters['pen'].widthF()*4., 
+            self._parameters['dimensions'][1] + self._parameters['pen'].widthF()*4.)
 
     def shape(self):
         '''
@@ -86,7 +83,7 @@ class RectangleView(pg.GraphicsObject):
         '''
         path = QtGui.QPainterPath()
         path.addRect(QtCore.QRectF(
-            self.positions[0] - self.dimensions[0]/2., 
-            self.positions[1] - self.dimensions[1]/2., 
-            self.dimensions[0], self.dimensions[1]))
+            self._parameters['positions'][0] - self._parameters['dimensions'][0]/2., 
+            self._parameters['positions'][1] - self._parameters['dimensions'][1]/2., 
+            self._parameters['dimensions'][0], self._parameters['dimensions'][1]))
         return path
