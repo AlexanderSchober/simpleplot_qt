@@ -638,7 +638,7 @@ def exampleItems():
     square['Dimension'] = 0.5
     
     rectangle['Position'] = [-2.,-1.,0.]
-    rectangle['Dimensions'] = [0.5,1.]
+    rectangle['Dimensions'] = [1.,1.]
     plot.setData(
         x = np.array([i for i in range(100)])/10,
         y = np.sin(np.array([i for i in range(100)])/10))

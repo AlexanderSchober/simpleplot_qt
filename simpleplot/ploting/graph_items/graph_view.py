@@ -51,8 +51,10 @@ class GraphView(pg.GraphicsObject):
         '''
         if self._parameters['movable']:
             self.setFlag(QtGui.QGraphicsItem.ItemIsMovable, True)
+            self.setFlag(QtGui.QGraphicsItem.ItemIsFocusable , True)
         else:
             self.setFlag(QtGui.QGraphicsItem.ItemIsMovable, False)
+            self.setFlag(QtGui.QGraphicsItem.ItemIsFocusable , False)
 
         self.setZValue(self._parameters['Z'])
         self.prepareGeometryChange()
@@ -87,6 +89,6 @@ class GraphView(pg.GraphicsObject):
         '''
         if self._parameters['movable']:
             self.moved.emit([
-                event.pos().x()-self._init_pos[0] + self._parameters['positions'][0], 
-                event.pos().y()-self._init_pos[1] + self._parameters['positions'][1]])
+                event.pos().x()-self._init_pos[0], 
+                event.pos().y()-self._init_pos[1]])
             self._init_pos = [event.pos().x(), event.pos().y()]

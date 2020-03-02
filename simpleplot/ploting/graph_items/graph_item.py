@@ -39,8 +39,6 @@ class GraphItem(ParameterHandler):
         the setStyle() method.
         '''
         super().__init__(args[0])
-
-        self._mode = '2D'
         self.default_target = None
 
     def initializeMain(self, **kwargs):
@@ -80,7 +78,7 @@ class GraphItem(ParameterHandler):
             tags   = ['2D'],
             method = self.refresh)
         self.addParameter(
-            'Line', [True, 0.1, QtGui.QColor("black")],
+            'Line', [True, 0.05, QtGui.QColor("black")],
             names  = ["Visible", "Thickness", "Color"],
             tags   = ['2D'],
             method = self.refresh)
@@ -107,6 +105,15 @@ class GraphItem(ParameterHandler):
             choices = ['translucent', 'opaque', 'additive'],
             tags   = ['3D'],
             method = self.refresh)
+
+    def resetSubdivision(self):
+        '''
+        Set the visual of the given shape element
+        '''
+        if self['Visible'] and self._mode == '2D':
+            self.draw()
+        elif self['Visible'] and self._mode == '3D':
+            self.drawGL()
 
     def refresh(self):
         '''
@@ -177,7 +184,11 @@ class GraphItem(ParameterHandler):
 
         if hasattr(self, 'draw_items'):
             for curve in self.draw_items:
-                self.default_target.removeItem(curve)
+                if isinstance(curve, list):
+                    for subcurve in curve:
+                        self.default_target.removeItem(subcurve)
+                else:
+                    self.default_target.removeItem(curve)
             del self.draw_items
 
     def handleMove(self,coordinates:list):

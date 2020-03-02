@@ -22,6 +22,7 @@
 # *****************************************************************************
 
 from PyQt5 import QtWidgets, QtGui, QtCore
+import numpy as np
 
 from ...pyqtgraph                   import pyqtgraph as pg
 from ...pyqtgraph.pyqtgraph         import opengl as gl
@@ -39,13 +40,12 @@ class RectangleItem(GraphItem):
         Arrows can be initialized with any keyword arguments accepted by 
         the setStyle() method.
         '''
-        super().__init__(args[0])
+        super().__init__(*args, **kwargs)
         
         self.initializeMain(**kwargs)
         self.initialize(**kwargs)
         self.initializeVisual2D(**kwargs)
         self.initializeVisual3D(**kwargs)
-        self._mode = '2D'
 
     def initialize(self, **kwargs):
         '''
@@ -53,23 +53,60 @@ class RectangleItem(GraphItem):
         The arguments are given as kwargs 
         '''
         self.addParameter(
-            'Dimensions', [2.,2.],
+            'Dimensions', [1.,1.],
             names  = ['x','y'],
             tags   = ['2D', '3D'],
             method = self.refresh)
+        self.addParameter(
+            'Subdivisions', [2,2],
+            names  = ['x','y'],
+            tags   = ['2D', '3D'],
+            method = self.resetSubdivision)
 
     def setVisual(self):
         '''
         Set the visual of the given shape element
         '''
-        self.draw_items[-1].setData(
-            positions = self['Position'][:-1], 
-            dimensions = self['Dimensions'],
-            angle = self['Angle'], 
-            pen = super().getPen(),
-            brush = super().getBrush(),
-            Z = self['Z'],
-            movable = self['Movable'])
+        parameters = {
+            'angle' : self['Angle'], 
+            'pen' : super().getPen(),
+            'brush' : super().getBrush(),
+            'Z' : self['Z'],
+            'movable' : self['Movable'],
+            'rot_center' : self['Position'],
+            'positions':[],
+            'dimensions':[]}
+
+        for i in range(self['Subdivisions'][0]):
+            for j in range(self['Subdivisions'][1]):
+                pos = [
+                    -self['Dimensions'][0]/2.+(i+0.5)*self['Dimensions'][0]
+                    /self['Subdivisions'][0],
+                    -self['Dimensions'][1]/2.+(j+0.5)*self['Dimensions'][1]
+                    /self['Subdivisions'][1]]
+
+                norm = np.sqrt(pos[0]**2+pos[1]**2)
+                if norm == 0.:
+                    parameters['positions'] = [
+                        self['Position'][0],
+                        self['Position'][1]]
+                    parameters['dimensions'] = [
+                        self['Dimensions'][0]/self['Subdivisions'][0],
+                        self['Dimensions'][1]/self['Subdivisions'][1]]
+                else:
+                    angle = np.arccos(pos[0]/norm)/np.pi*180.
+                    if np.arcsin(pos[1]/norm) < 0:
+                        angle = -angle 
+
+                    parameters['positions'] = [
+                        norm*np.cos((self['Angle']+angle)*np.pi/180.)+self['Position'][0],
+                        norm*np.sin((self['Angle']+angle)*np.pi/180.)+self['Position'][1]]
+                        
+                    parameters['dimensions'] = [
+                        self['Dimensions'][0]/self['Subdivisions'][0],
+                        self['Dimensions'][1]/self['Subdivisions'][1]]
+
+                self.draw_items[i][j].setData(**dict(parameters))
 
     def draw(self, target_surface = None):
         '''
@@ -83,9 +120,14 @@ class RectangleItem(GraphItem):
             
         if self['Visible']:
             self.draw_items = []
-            self.draw_items.append(RectangleView())
-            self.default_target.addItem(self.draw_items[-1])
-            self.draw_items[0].moved.connect(self.handleMove)
+            for i in range(self['Subdivisions'][0]):
+                temp = []
+                for j in range(self['Subdivisions'][1]):
+                    item = RectangleView()
+                    temp.append(item)
+                    self.default_target.addItem(item)
+                    item.moved.connect(self.handleMove)
+                self.draw_items.append(temp)
             self.setVisual()
 
     def drawGL(self, target_view = None):
@@ -100,3 +142,13 @@ class RectangleItem(GraphItem):
         if self['Visible']:
             self.draw_items = []
             self.default_target.addItem(self.draw_items[-1])
+
+    def handleMove(self,coordinates:list):
+        '''
+        change the position
+        '''
+        self.items['Position'].updateValue([
+            self['Position'][0]+coordinates[0],
+            self['Position'][1]+coordinates[1],
+            self['Position'][2]
+        ], method = True)

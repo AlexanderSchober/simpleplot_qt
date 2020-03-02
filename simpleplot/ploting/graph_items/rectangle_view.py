@@ -37,7 +37,6 @@ class RectangleView(GraphView):
         '''
         super().__init__(**opts)
 
-        self._parameters = {}
         self._parameters['dimensions'] = [1.,1.]
         self._parameters['positions'] = [2.,2.]
         self._parameters['angle'] = 0.

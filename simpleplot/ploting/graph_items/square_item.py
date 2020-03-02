@@ -22,6 +22,7 @@
 # *****************************************************************************
 
 from PyQt5 import QtWidgets, QtGui, QtCore
+import numpy as np
 
 from ...pyqtgraph                   import pyqtgraph as pg
 from ...pyqtgraph.pyqtgraph         import opengl as gl
@@ -51,16 +52,73 @@ class SquareItem(RectangleItem):
             names  = ['x','y'],
             tags   = ['2D', '3D'],
             method = self.refresh)
+        self.addParameter(
+            'Subdivisions', [2,2],
+            names  = ['x','y'],
+            tags   = ['2D', '3D'],
+            method = self.resetSubdivision)
 
     def setVisual(self):
         '''
         Set the visual of the given shape element
         '''
-        self.draw_items[-1].setData(
-            positions = self['Position'][:-1], 
-            dimensions = [self['Dimension'],self['Dimension']],
-            angle = self['Angle'], 
-            pen = super().getPen(),
-            brush = super().getBrush(),
-            Z = self['Z'],
-            movable = self['Movable'])
+        parameters = {
+            'angle' : self['Angle'], 
+            'pen' : super().getPen(),
+            'brush' : super().getBrush(),
+            'Z' : self['Z'],
+            'movable' : self['Movable'],
+            'rot_center' : self['Position']}
+
+        for i in range(self['Subdivisions'][0]):
+            for j in range(self['Subdivisions'][1]):
+                parameters['positions'] = [
+                    (self['Position'][0]-self['Dimension']/2.)
+                    +(i+0.5)*self['Dimension']/self['Subdivisions'][0],
+                    (self['Position'][1]-self['Dimension']/2.)
+                    +(j+0.5)*self['Dimension']/self['Subdivisions'][1]]
+                parameters['dimensions'] = [
+                        self['Dimension']/self['Subdivisions'][0],
+                        self['Dimension']/self['Subdivisions'][1]]
+                self.draw_items[i][j].setData(**parameters)
+
+        parameters = {
+            'angle' : self['Angle'], 
+            'pen' : super().getPen(),
+            'brush' : super().getBrush(),
+            'Z' : self['Z'],
+            'movable' : self['Movable'],
+            'rot_center' : self['Position'],
+            'positions' : [],
+            'dimensions' : []}
+
+        for i in range(self['Subdivisions'][0]):
+            for j in range(self['Subdivisions'][1]):
+                pos = [
+                    -self['Dimension']/2.+(i+0.5)*self['Dimension']
+                    /self['Subdivisions'][0],
+                    -self['Dimension']/2.+(j+0.5)*self['Dimension']
+                    /self['Subdivisions'][1]]
+
+                norm = np.sqrt(pos[0]**2+pos[1]**2)
+                if norm == 0.:
+                    parameters['positions'] = [
+                        self['Position'][0],
+                        self['Position'][1]]
+                    parameters['dimensions'] = [
+                        self['Dimension']/self['Subdivisions'][0],
+                        self['Dimension']/self['Subdivisions'][1]]
+                else:
+                    angle = np.arccos(pos[0]/norm)/np.pi*180.
+                    if np.arcsin(pos[1]/norm) < 0:
+                        angle = -angle 
+
+                    parameters['positions'] = [
+                        norm*np.cos((self['Angle']+angle)*np.pi/180.)+self['Position'][0],
+                        norm*np.sin((self['Angle']+angle)*np.pi/180.)+self['Position'][1]]
+                        
+                    parameters['dimensions'] = [
+                        self['Dimension']/self['Subdivisions'][0],
+                        self['Dimension']/self['Subdivisions'][1]]
+
+                self.draw_items[i][j].setData(**dict(parameters))

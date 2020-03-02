@@ -40,7 +40,7 @@ class EllipseItem(GraphItem):
         Arrows can be initialized with any keyword arguments accepted by 
         the setStyle() method.
         '''
-        super().__init__(args[0])
+        super().__init__(*args, **kwargs)
         
         self.initializeMain(**kwargs)
         self.initialize(**kwargs)

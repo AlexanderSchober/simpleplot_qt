@@ -38,7 +38,6 @@ class PieView(GraphView):
         '''
         super().__init__(**opts)
 
-        self._parameters = {}
         self._parameters['radial_range'] = [1.,1.]
         self._parameters['angle_range'] = [1.,1.]
         self._parameters['positions'] = [2.,2.]
