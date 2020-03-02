@@ -143,7 +143,7 @@ class GraphItem(ParameterHandler):
             pen.setColor(self['Line'][2])
             pen.setWidthF(self['Line'][1])
         else:
-            pen = QtCore.Qt.NoPen
+            pen = QtGui.QPen(QtCore.Qt.NoPen)
 
         return pen
 
@@ -153,8 +153,8 @@ class GraphItem(ParameterHandler):
         if self['Fill'][0]:
             brush = QtGui.QBrush(self['Fill'][1])
         else:
-            brush = QtCore.Qt.NoBrush
-            
+            brush = QtGui.QBrush(QtCore.Qt.NoBrush)
+
         return brush
 
     def draw(self, target_surface = None):
