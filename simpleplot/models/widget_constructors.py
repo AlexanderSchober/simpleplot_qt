@@ -97,7 +97,6 @@ class doubleSpinBoxConstructor:
     def updateInternals(self, value):
         '''
         '''
-        print('hey')
         self.manager._value = value
         self.manager._model.dataChanged.emit(
             self.manager.index(),

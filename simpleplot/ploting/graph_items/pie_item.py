@@ -26,10 +26,10 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from ...pyqtgraph                   import pyqtgraph as pg
 from ...pyqtgraph.pyqtgraph         import opengl as gl
 
-from ...models.parameter_class import ParameterHandler
+from .graph_item import GraphItem
 from .pie_view import PieView
 
-class PieItem(ParameterHandler):
+class PieItem(GraphItem):
     '''
     This item will be the graph item that is
     put an managed on its own
@@ -49,19 +49,6 @@ class PieItem(ParameterHandler):
         This class will be the scatter plots. 
         The arguments are given as kwargs 
         '''
-        self.addParameter(
-            'Visible', True, 
-            tags     = ['2D', '3D'],
-            method = self.refresh)
-        self.addParameter(
-            'Position', [2.,2.,0.],
-            names  = ['x','y','z'],
-            tags   = ['2D', '3D'],
-            method = self.refresh)
-        self.addParameter(
-            'Angle', 0.,
-            tags   = ['2D', '3D'],
-            method = self.refresh)
         self.addParameter(
             'Radial range',[1., 2.],
             names = ['Inner', 'Outter'],
@@ -104,27 +91,6 @@ class PieItem(ParameterHandler):
             tags   = ['3D'],
             method = self.refresh)
 
-    def refresh(self):
-        '''
-        Set the data of the image and then let the 
-        program decide which procedure to target Note
-        that this routine aims at updating the data only
-        '''
-        if hasattr(self, 'draw_items'):
-            if self['Visible']:
-                if self._mode == '2D':
-                    self.setVisual()
-                elif self._mode == '3D':
-                    pass
-            else:
-                self.removeItems()
-
-        else:
-            if self['Visible'] and self._mode == '2D':
-                self.draw()
-            elif self['Visible'] and self._mode == '3D':
-                self.drawGL()
-
     def setVisual(self):
         '''
         Set the visual of the given shape element
@@ -133,21 +99,22 @@ class PieItem(ParameterHandler):
             pen = QtGui.QPen()
             pen.setColor(self['Line'][2])
             pen.setWidthF(self['Line'][1])
-            self.draw_items[0].pen = pen
         else:
-            self.draw_items[0].pen = QtCore.Qt.NoPen
+            pen = QtCore.Qt.NoPen
 
         if self['Fill'][0]:
             brush = QtGui.QBrush(self['Fill'][1])
-            self.draw_items[0].brush = brush
         else:
-            self.draw_items[0].brush = QtCore.Qt.NoBrush
+            brush = QtCore.Qt.NoBrush
 
         self.draw_items[0].setData(
             positions = self['Position'][:-1], 
             radial_range = self['Radial range'],
             angle_range = self['Angular range'],
-            angle = self['Angle'])
+            angle = self['Angle'], 
+            pen = pen,
+            brush = brush,
+            Z = self['Z'])
 
     def draw(self, target_surface = None):
         '''
@@ -176,17 +143,3 @@ class PieItem(ParameterHandler):
         if self['Visible']:
             self.draw_items = []
             self.default_target.addItem(self.draw_items[-1])
-
-    def removeItems(self):
-        '''
-        '''
-        if hasattr(self, 'draw_items'):
-            for curve in self.draw_items:
-                self.default_target.removeItem(curve)
-            del self.draw_items
-
-    def processRay(self, ray):
-        '''
-        try to process the ray intersection
-        '''
-        pass

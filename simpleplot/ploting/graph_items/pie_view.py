@@ -25,59 +25,55 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from ...pyqtgraph import pyqtgraph as pg
 import numpy as np
 
-class PieView(pg.GraphicsObject):
+from .graph_view import GraphView
+
+class PieView(GraphView):
     '''
     This item will be the graph item that is
     put an managed on its own
     '''
-
     def __init__(self, **opts):
         '''
 
         '''
-        super().__init__(opts.get('parent', None))
-        
-        self.radial_range = [1.,1.]
-        self.angle_range = [1.,1.]
-        self.positions = [2.,2.]
-        self.angle = 0.
-        self.brush = QtGui.QBrush()
-        self.pen = QtGui.QPen()
+        super().__init__(**opts)
 
-    def setData(self, positions = [1.,1.], radial_range = [2.,2.], angle_range = [2.,2.], angle = 0.):
+        self._parameters = {}
+        self._parameters['radial_range'] = [1.,1.]
+        self._parameters['angle_range'] = [1.,1.]
+        self._parameters['positions'] = [2.,2.]
+        self._parameters['angle'] = 0.
+        self._parameters['brush'] = QtGui.QBrush()
+        self._parameters['pen'] = QtGui.QPen()
+        self._parameters['Z'] = 0
+        self._parameters['movable'] = False
+
+    def setData(self, **kwargs):
         '''
         Set the data for display
         '''
-        self.radial_range = radial_range
-        self.angle_range = angle_range
-        self.positions = positions
-        self.angle = angle
+        self._parameters.update(kwargs)
         self.path = self.getPiePath()
-        self.prepareGeometryChange()
-        self.update()
+        super().render()
 
     def paint(self, p, *args):
         '''
         override the paint method
         '''
-        p.setRenderHint(QtGui.QPainter.HighQualityAntialiasing)
-        p.setBrush(self.brush)
-        p.setPen(self.pen)
-
-        p.translate(self.positions[0], self.positions[1])
-        p.rotate(self.angle)
+        super().inPainter(p, *args)
 
         p.drawPath(self.path)
 
-        p.rotate(-self.angle)
-        p.translate(-self.positions[0], -self.positions[1])
+        super().outPainter(p, *args)
 
     def boundingRect(self):
         return  QtCore.QRectF(
-            self.positions[0] - self.radial_range[1] - self.pen.widthF()*2, 
-            self.positions[1] - self.radial_range[1] - self.pen.widthF()*2,
-            self.radial_range[1]*2 + self.pen.widthF()*4., 
-            self.radial_range[1]*2 + self.pen.widthF()*4.)
+            self._parameters['positions'][0] - self._parameters['radial_range'][1] 
+            - self._parameters['pen'].widthF()*2, 
+            self._parameters['positions'][1] - self._parameters['radial_range'][1] 
+            - self._parameters['pen'].widthF()*2,
+            self._parameters['radial_range'][1]*2 + self._parameters['pen'].widthF()*4., 
+            self._parameters['radial_range'][1]*2 + self._parameters['pen'].widthF()*4.)
 
     def shape(self):
         '''
@@ -92,19 +88,19 @@ class PieView(pg.GraphicsObject):
         '''
         path = QtGui.QPainterPath()
         path.moveTo(
-            np.cos(self.angle_range[0]* np.pi / 180.)*self.radial_range[0],
-            np.sin(self.angle_range[0]* np.pi / 180.)*self.radial_range[0])
+            np.cos(self._parameters['angle_range'][0]* np.pi / 180.)*self._parameters['radial_range'][0],
+            np.sin(self._parameters['angle_range'][0]* np.pi / 180.)*self._parameters['radial_range'][0])
         path.arcTo(
-            -self.radial_range[0], -self.radial_range[0],
-            self.radial_range[0]*2., self.radial_range[0]*2.,
-            -self.angle_range[0], -(self.angle_range[1]-self.angle_range[0]))
+            -self._parameters['radial_range'][0], -self._parameters['radial_range'][0],
+            self._parameters['radial_range'][0]*2., self._parameters['radial_range'][0]*2.,
+            -self._parameters['angle_range'][0], -(self._parameters['angle_range'][1]-self._parameters['angle_range'][0]))
         path.lineTo(
-            np.cos(self.angle_range[1]* np.pi / 180.)*self.radial_range[1],
-            np.sin(self.angle_range[1]* np.pi / 180.)*self.radial_range[1])
+            np.cos(self._parameters['angle_range'][1]* np.pi / 180.)*self._parameters['radial_range'][1],
+            np.sin(self._parameters['angle_range'][1]* np.pi / 180.)*self._parameters['radial_range'][1])
         path.arcTo(
-            -self.radial_range[1], -self.radial_range[1],
-            self.radial_range[1]*2., self.radial_range[1]*2.,
-            -self.angle_range[1], -(self.angle_range[0]-self.angle_range[1]))
+            -self._parameters['radial_range'][1], -self._parameters['radial_range'][1],
+            self._parameters['radial_range'][1]*2., self._parameters['radial_range'][1]*2.,
+            -self._parameters['angle_range'][1], -(self._parameters['angle_range'][0]-self._parameters['angle_range'][1]))
         path.closeSubpath()
         
         return path
