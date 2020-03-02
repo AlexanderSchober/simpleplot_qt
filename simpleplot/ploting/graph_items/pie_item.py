@@ -62,20 +62,42 @@ class PieItem(GraphItem):
             names = ['Inner', 'Outter'],
             tags   = ['2D', '3D'],
             method = self.refresh)
+        self.addParameter(
+            'Subdivisions', [2,2],
+            names  = ['Radial','Angular'],
+            tags   = ['2D', '3D'],
+            method = self.resetSubdivision)
 
     def setVisual(self):
         '''
         Set the visual of the given shape element
         '''
-        self.draw_items[0].setData(
-            positions = self['Position'][:-1], 
-            radial_range = self['Radial range'],
-            angle_range = self['Angular range'],
-            angle = self['Angle'], 
-            pen = super().getPen(),
-            brush = super().getBrush(),
-            Z = self['Z'],
-            movable = self['Movable'])
+        parameters = {
+            'angle' : self['Angle'], 
+            'pen' : super().getPen(),
+            'brush' : super().getBrush(),
+            'Z' : self['Z'],
+            'movable' : self['Movable'],
+            'positions' : self['Position'][:-1],
+            'radial_range' : [],
+            'angle_range' : []}
+            
+        for i in range(self['Subdivisions'][0]):
+            for j in range(self['Subdivisions'][1]):
+                parameters['angle_range'] = [
+                    self['Angular range'][0]+i*(self['Angular range'][1]-self['Angular range'][0])
+                    /self['Subdivisions'][0],
+                    self['Angular range'][0]+(i+1)*(self['Angular range'][1]-self['Angular range'][0])
+                    /self['Subdivisions'][0]]
+
+                parameters['radial_range'] = [
+                    self['Radial range'][0]+j*(self['Radial range'][1]-self['Radial range'][0])
+                    /self['Subdivisions'][1],
+                    self['Radial range'][0]+(j+1)*(self['Radial range'][1]-self['Radial range'][0])
+                    /self['Subdivisions'][1]
+                ]
+
+                self.draw_items[i][j].setData(**dict(parameters))
 
     def draw(self, target_surface = None):
         '''
@@ -88,9 +110,15 @@ class PieItem(GraphItem):
             self.setCurrentTags(['2D'])
             
         if self['Visible']:
-            self.draw_items = [PieView()]
-            self.default_target.addItem(self.draw_items[0])
-            self.draw_items[0].moved.connect(self.handleMove)
+            self.draw_items = []
+            for i in range(self['Subdivisions'][0]):
+                temp = []
+                for j in range(self['Subdivisions'][1]):
+                    item = PieView()
+                    temp.append(item)
+                    self.default_target.addItem(item)
+                    item.moved.connect(self.handleMove)
+                self.draw_items.append(temp)
             self.setVisual()
 
     def drawGL(self, target_view = None):

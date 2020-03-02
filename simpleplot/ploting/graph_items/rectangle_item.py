@@ -73,7 +73,6 @@ class RectangleItem(GraphItem):
             'brush' : super().getBrush(),
             'Z' : self['Z'],
             'movable' : self['Movable'],
-            'rot_center' : self['Position'],
             'positions':[],
             'dimensions':[]}
 

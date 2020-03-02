@@ -190,10 +190,14 @@ class GraphItem(ParameterHandler):
                 else:
                     self.default_target.removeItem(curve)
             del self.draw_items
-
+            
     def handleMove(self,coordinates:list):
         '''
-        change the position silently
+        change the position
         '''
-        self.items['Position'].updateValue(coordinates+[self['Position'][-1]], method = True)
+        self.items['Position'].updateValue([
+            self['Position'][0]+coordinates[0],
+            self['Position'][1]+coordinates[1],
+            self['Position'][2]
+        ], method = True)
     
