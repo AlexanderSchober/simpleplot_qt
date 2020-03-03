@@ -625,6 +625,7 @@ def exampleItems():
     square = ax.addItem("Square")
     rectangle = ax.addItem("Rectangle")
     pie = ax.addItem("Pie")
+    pie = ax.addItem("Triangle")
 
 
     plot = ax.addPlot('Scatter', Style = ['d','r','20'])

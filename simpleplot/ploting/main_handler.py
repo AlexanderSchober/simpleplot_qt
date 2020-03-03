@@ -37,6 +37,7 @@ from .graph_items.ellipse_item      import EllipseItem
 from .graph_items.rectangle_item    import RectangleItem
 from .graph_items.square_item       import SquareItem
 from .graph_items.pie_item          import PieItem
+from .graph_items.triangle_item     import TriangleItem
 
 from ..models.session_node          import SessionNode
 
@@ -85,7 +86,8 @@ class MainHandler(SessionNode):
             'Ellipse':EllipseItem,
             'Square':SquareItem,
             'Rectangle':RectangleItem,
-            'Pie':PieItem
+            'Pie':PieItem,
+            'Triangle':TriangleItem
         }
         
     def addChild(self,*args, **kwargs):

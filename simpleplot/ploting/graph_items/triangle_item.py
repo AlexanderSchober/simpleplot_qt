@@ -28,9 +28,9 @@ from ...pyqtgraph                   import pyqtgraph as pg
 from ...pyqtgraph.pyqtgraph         import opengl as gl
 
 from .graph_item import GraphItem
-from .rectangle_view import RectangleView
+from .triangle_view import TriangleView
 
-class RectangleItem(GraphItem):
+class TriangleItem(GraphItem):
     '''
     This item will be the graph item that is
     put an managed on its own
@@ -54,19 +54,9 @@ class RectangleItem(GraphItem):
         '''
         self.addParameter(
             'Dimensions', [1.,1.],
-            names  = ['x','y'],
+            names  = ['Base','Height'],
             tags   = ['2D', '3D'],
             method = self.refresh)
-        self.addParameter(
-            'Subdivisions', [2,2],
-            names  = ['x','y'],
-            tags   = ['2D', '3D'],
-            method = self.resetSubdivision)
-        self.addParameter(
-            'Subdivision dimensions', [True, 2.,2.],
-            names  = ['Fill', 'x','y'],
-            tags   = ['2D', '3D'],
-            method = self.resetSubdivision)
 
     def setVisual(self):
         '''
@@ -78,41 +68,10 @@ class RectangleItem(GraphItem):
             'brush' : super().getBrush(),
             'Z' : self['Z'],
             'movable' : self['Movable'],
-            'positions':[],
-            'dimensions':[]}
+            'positions': self['Position'][:-1],
+            'dimensions': self['Dimensions']}
 
-        for i in range(self['Subdivisions'][0]):
-            for j in range(self['Subdivisions'][1]):
-                pos = [
-                    -self['Dimensions'][0]/2.+(i+0.5)*self['Dimensions'][0]
-                    /self['Subdivisions'][0],
-                    -self['Dimensions'][1]/2.+(j+0.5)*self['Dimensions'][1]
-                    /self['Subdivisions'][1]]
-
-                norm = np.sqrt(pos[0]**2+pos[1]**2)
-                if norm == 0.:
-                    parameters['positions'] = [
-                        self['Position'][0],
-                        self['Position'][1]]
-                else:
-                    angle = np.arccos(pos[0]/norm)/np.pi*180.
-                    if np.arcsin(pos[1]/norm) < 0:
-                        angle = -angle 
-
-                    parameters['positions'] = [
-                        norm*np.cos((self['Angle']+angle)*np.pi/180.)+self['Position'][0],
-                        norm*np.sin((self['Angle']+angle)*np.pi/180.)+self['Position'][1]]
-                        
-                if self['Subdivision dimensions'][0]:
-                    parameters['dimensions'] = [
-                        self['Dimensions'][0]/self['Subdivisions'][0],
-                        self['Dimensions'][1]/self['Subdivisions'][1]]
-                else:
-                    parameters['dimensions'] = [
-                        self['Subdivision dimensions'][1],
-                        self['Subdivision dimensions'][2]]  
-
-                self.draw_items[i][j].setData(**dict(parameters))
+        self.draw_items[0].setData(**dict(parameters))
 
     def draw(self, target_surface = None):
         '''
@@ -125,15 +84,9 @@ class RectangleItem(GraphItem):
             self.setCurrentTags(['2D'])
             
         if self['Visible']:
-            self.draw_items = []
-            for i in range(self['Subdivisions'][0]):
-                temp = []
-                for j in range(self['Subdivisions'][1]):
-                    item = RectangleView()
-                    temp.append(item)
-                    self.default_target.addItem(item)
-                    item.moved.connect(self.handleMove)
-                self.draw_items.append(temp)
+            self.draw_items = [TriangleView()]
+            self.default_target.addItem(self.draw_items[0])
+            self.draw_items[0].moved.connect(self.handleMove)
             self.setVisual()
 
     def drawGL(self, target_view = None):
@@ -148,4 +101,3 @@ class RectangleItem(GraphItem):
         if self['Visible']:
             self.draw_items = []
             self.default_target.addItem(self.draw_items[-1])
-
