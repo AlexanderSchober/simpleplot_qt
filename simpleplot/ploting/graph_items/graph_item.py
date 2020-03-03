@@ -40,6 +40,7 @@ class GraphItem(ParameterHandler):
         '''
         super().__init__(args[0])
         self.default_target = None
+        self._mode = '2D'
 
     def initializeMain(self, **kwargs):
         '''

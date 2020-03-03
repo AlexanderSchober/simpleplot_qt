@@ -505,7 +505,8 @@ class ParameterValue(ParameterMaster, ParameterItem):
             Do th emethod linke dto this object
         '''
         self._value = value
-        self.parent().setString()
+        if hasattr(self.parent(),'setString'):
+            self.parent().setString()
         self._model.dataChanged.emit(QtCore.QModelIndex(),QtCore.QModelIndex())
 
         if 'method' in self.kwargs.keys() and method:
