@@ -154,6 +154,15 @@ class Artist():
             plot_item.parent()._children.index(plot_item),
             1, plot_item.parent())
 
+    def removeItem(self,plot_item):
+        '''
+        Remove an item from the handlers
+        '''
+        plot_item.removeItems()
+        self.canvas._plot_model.removeRows(
+            plot_item.parent()._children.index(plot_item),
+            1, plot_item.parent())
+
     def dispatchPlotDataChange(self, index):
         '''
 
