@@ -66,12 +66,15 @@ class RectangleItem(GraphItem):
             'Subdivision dimensions', [True, 2.,2.],
             names  = ['Fill', 'x','y'],
             tags   = ['2D', '3D'],
-            method = self.resetSubdivision)
+            method = self.setVisual)
 
     def setVisual(self):
         '''
         Set the visual of the given shape element
         '''
+        if len(self.draw_items) != self['Subdivisions'][0] or len(self.draw_items[0]) != self['Subdivisions'][1]:
+            self.resetSubdivision()
+            
         parameters = {
             'angle' : self['Angle'], 
             'pen' : super().getPen(),

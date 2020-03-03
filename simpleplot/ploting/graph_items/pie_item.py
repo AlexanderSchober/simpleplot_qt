@@ -71,12 +71,15 @@ class PieItem(GraphItem):
             'Subdivision dimensions', [True, 2.,10.],
             names  = ['Fill','Radial','Angular'],
             tags   = ['2D', '3D'],
-            method = self.resetSubdivision)
+            method = self.setVisual)
 
     def setVisual(self):
         '''
         Set the visual of the given shape element
         '''
+        if len(self.draw_items) != self['Subdivisions'][0] or len(self.draw_items[0]) != self['Subdivisions'][1]:
+            self.resetSubdivision()
+
         parameters = {
             'angle' : self['Angle'], 
             'pen' : super().getPen(),
