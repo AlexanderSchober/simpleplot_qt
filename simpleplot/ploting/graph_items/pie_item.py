@@ -67,6 +67,11 @@ class PieItem(GraphItem):
             names  = ['Radial','Angular'],
             tags   = ['2D', '3D'],
             method = self.resetSubdivision)
+        self.addParameter(
+            'Subdivision dimensions', [True, 2.,10.],
+            names  = ['Fill','Radial','Angular'],
+            tags   = ['2D', '3D'],
+            method = self.resetSubdivision)
 
     def setVisual(self):
         '''
@@ -84,18 +89,38 @@ class PieItem(GraphItem):
             
         for i in range(self['Subdivisions'][0]):
             for j in range(self['Subdivisions'][1]):
-                parameters['angle_range'] = [
-                    self['Angular range'][0]+i*(self['Angular range'][1]-self['Angular range'][0])
-                    /self['Subdivisions'][0],
-                    self['Angular range'][0]+(i+1)*(self['Angular range'][1]-self['Angular range'][0])
-                    /self['Subdivisions'][0]]
+                if self['Subdivision dimensions'][0]:
+                    parameters['angle_range'] = [
+                        self['Angular range'][0]+j
+                        *(self['Angular range'][1]-self['Angular range'][0])
+                        /self['Subdivisions'][1],
+                        self['Angular range'][0]+(j+1)
+                        *(self['Angular range'][1]-self['Angular range'][0])
+                        /self['Subdivisions'][1]]
 
-                parameters['radial_range'] = [
-                    self['Radial range'][0]+j*(self['Radial range'][1]-self['Radial range'][0])
-                    /self['Subdivisions'][1],
-                    self['Radial range'][0]+(j+1)*(self['Radial range'][1]-self['Radial range'][0])
-                    /self['Subdivisions'][1]
-                ]
+                    parameters['radial_range'] = [
+                        self['Radial range'][0]+i
+                        *(self['Radial range'][1]-self['Radial range'][0])
+                        /self['Subdivisions'][0],
+                        self['Radial range'][0]+(i+1)
+                        *(self['Radial range'][1]-self['Radial range'][0])
+                        /self['Subdivisions'][0]]
+                else:
+                    parameters['angle_range'] = [
+                        self['Angular range'][0]+(j+0.5)
+                        *(self['Angular range'][1]-self['Angular range'][0])
+                        /self['Subdivisions'][1]-self['Subdivision dimensions'][2]/2.,
+                        self['Angular range'][0]+(j+0.5)
+                        *(self['Angular range'][1]-self['Angular range'][0])
+                        /self['Subdivisions'][1]+self['Subdivision dimensions'][2]/2.]
+
+                    parameters['radial_range'] = [
+                        self['Radial range'][0]+(i+0.5)
+                        *(self['Radial range'][1]-self['Radial range'][0])
+                        /self['Subdivisions'][0]-self['Subdivision dimensions'][1]/2.,
+                        self['Radial range'][0]+(i+0.5)
+                        *(self['Radial range'][1]-self['Radial range'][0])
+                        /self['Subdivisions'][0]+self['Subdivision dimensions'][1]/2.]
 
                 self.draw_items[i][j].setData(**dict(parameters))
 

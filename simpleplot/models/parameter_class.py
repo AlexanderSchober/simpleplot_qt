@@ -478,8 +478,8 @@ class ParameterValue(ParameterMaster, ParameterItem):
     def retrieveData(self, editor, index):
         '''
         Get the data of the editor. This method is
-        propagated to our _contructor loaded with the
-        approriate widget
+        propagated to our constructor loaded with the
+        appropriate widget
 
         Parameters:
         - - - - - - - - - - - 

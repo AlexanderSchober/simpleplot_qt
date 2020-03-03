@@ -62,6 +62,11 @@ class RectangleItem(GraphItem):
             names  = ['x','y'],
             tags   = ['2D', '3D'],
             method = self.resetSubdivision)
+        self.addParameter(
+            'Subdivision dimensions', [True, 2.,2.],
+            names  = ['Fill', 'x','y'],
+            tags   = ['2D', '3D'],
+            method = self.resetSubdivision)
 
     def setVisual(self):
         '''
@@ -89,9 +94,6 @@ class RectangleItem(GraphItem):
                     parameters['positions'] = [
                         self['Position'][0],
                         self['Position'][1]]
-                    parameters['dimensions'] = [
-                        self['Dimensions'][0]/self['Subdivisions'][0],
-                        self['Dimensions'][1]/self['Subdivisions'][1]]
                 else:
                     angle = np.arccos(pos[0]/norm)/np.pi*180.
                     if np.arcsin(pos[1]/norm) < 0:
@@ -101,9 +103,14 @@ class RectangleItem(GraphItem):
                         norm*np.cos((self['Angle']+angle)*np.pi/180.)+self['Position'][0],
                         norm*np.sin((self['Angle']+angle)*np.pi/180.)+self['Position'][1]]
                         
+                if self['Subdivision dimensions'][0]:
                     parameters['dimensions'] = [
                         self['Dimensions'][0]/self['Subdivisions'][0],
                         self['Dimensions'][1]/self['Subdivisions'][1]]
+                else:
+                    parameters['dimensions'] = [
+                        self['Subdivision dimensions'][1],
+                        self['Subdivision dimensions'][2]]  
 
                 self.draw_items[i][j].setData(**dict(parameters))
 
