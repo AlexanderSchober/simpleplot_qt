@@ -72,6 +72,8 @@ class RectangleItem(GraphItem):
         '''
         Set the visual of the given shape element
         '''
+        if not hasattr(self, 'draw_items'):
+            self.resetSubdivision()
         if len(self.draw_items) != self['Subdivisions'][0] or len(self.draw_items[0]) != self['Subdivisions'][1]:
             self.resetSubdivision()
             

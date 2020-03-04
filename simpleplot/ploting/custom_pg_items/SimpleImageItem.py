@@ -36,6 +36,7 @@ class SimpleImageItem(pg.ImageItem):
         super().__init__(**kargs)
         self.x = None
         self.y = None
+        self._rectangles = []
 
     def width(self):
         if self.image is None:
@@ -133,44 +134,48 @@ class SimpleImageItem(pg.ImageItem):
         
         argb, alpha = fn.makeARGB(image, lut=lut, levels=levels)
         self.qimage = fn.makeQImage(argb, alpha, transpose=False)
+        self.bufferDraw()
 
-        pix_map = QtGui.QPixmap(
-            self.x[self.x.shape[0]-1]-(self.x[self.x.shape[0]-1]-self.x[self.x.shape[0]-2])/2 
-            + self.x[self.x.shape[0]-1]-self.x[self.x.shape[0]-2] 
-            - self.x[0]-(self.x[1]-self.x[0])/2,
-            self.y[self.y.shape[0]-1]-(self.y[self.y.shape[0]-1]-self.y[self.y.shape[0]-2])/2
-            + self.y[self.y.shape[0]-1]-self.y[self.y.shape[0]-2]
-            -self.y[0]-(self.y[1]-self.y[0])/2)
-        p = QtGui.QPainter(pix_map)
+        # pix_map = QtGui.QPixmap(1,1)
+        # p = QtGui.QPainter(pix_map)
+        # self.liveDraw(p)
+        # self.qimage = pix_map
+
+    def bufferDraw(self):
+        '''
+        This method is set to allow the draw of 
+        the elements live if necessary
+        '''
+        self._rectangles = []
 
         for i,j in [(i,j) for i in range(self.x.shape[0]) for j in range(self.y.shape[0])]:
             if i == 0:
-                x_0 = 0.
-                w   = self.x[1]-self.x[0]
+                w   = self.x[1] - self.x[0]
+                x_0 = self.x[0] - w/2
             elif i == self.x.shape[0] - 1:
-                x_0 = self.x[self.x.shape[0]-1]-(self.x[self.x.shape[0]-1]-self.x[self.x.shape[0]-2])/2 - self.x[0]-(self.x[1]-self.x[0])/2
-                w   = self.x[self.x.shape[0]-1]-self.x[self.x.shape[0]-2]
+                x_0 = self.x[i]-(self.x[i]-self.x[i-1])/2
+                w   = (self.x[i]-self.x[i-1])
             else:
-                x_0 = self.x[i]-(self.x[i]-self.x[i-1])/2 - self.x[0]-(self.x[1]-self.x[0])/2
+                x_0 = self.x[i]-(self.x[i]-self.x[i-1])/2
                 w   = (self.x[i]-self.x[i-1])/2 + (self.x[i+1]-self.x[i])/2
 
             if j == 0:
-                y_0 = 0.
                 h   = self.y[1]-self.y[0]
+                y_0 = -h/2.
             elif j == self.y.shape[0] - 1:
-                y_0 = self.y[self.y.shape[0]-1]-(self.y[self.y.shape[0]-1]-self.y[self.y.shape[0]-2])/2 - self.y[0]-(self.y[1]-self.y[0])/2
-                h   = self.y[self.y.shape[0]-1]-self.y[self.y.shape[0]-2]
+                y_0 = self.y[j]-(self.y[j]-self.y[j-1])/2
+                h   = (self.y[j]-self.y[j-1])
             else:
-                y_0 = self.y[j]-(self.y[j]-self.y[j-1])/2 - self.y[0]-(self.y[1]-self.y[0])/2
+                y_0 = self.y[j]-(self.y[j]-self.y[j-1])/2
                 h   = (self.y[j]-self.y[j-1])/2 + (self.y[j+1]-self.y[j])/2
 
-            p.setPen(QtCore.Qt.transparent)
-            p.setBrush(QtGui.QBrush(self.qimage.pixelColor(i,j)))
-            p.drawRect(QtCore.QRectF(x_0,y_0,w,h))
-        
-        self.qimage = pix_map
+            self._rectangles.append([
+                QtCore.QRectF(x_0,y_0,w,h),
+                QtCore.Qt.transparent,
+                QtGui.QBrush(self.qimage.pixelColor(i,j))])
 
     def paint(self, p, *args):
+        
 
         profile = debug.Profiler()
         if self.image is None:
@@ -184,16 +189,12 @@ class SimpleImageItem(pg.ImageItem):
             p.setCompositionMode(self.paintMode)
             profile('set comp mode')
 
-        # shape = self.image.shape[:2] if self.axisOrder == 'col-major' else self.image.shape[:2][::-1]
-        p.drawPixmap(
-            QtCore.QRectF(
-                np.amin(self.x),np.amin(self.y),
-                np.amax(self.x) - np.amin(self.x),np.amax(self.y) - np.amin(self.y)), 
-            self.qimage,
-            QtCore.QRectF(
-                0,0, np.amax(self.x) - np.amin(self.x),np.amax(self.y) - np.amin(self.y))
-            )
-        profile('p.drawImage')
+        for rectangle in self._rectangles:
+            p.setPen(rectangle[1])
+            p.setBrush(rectangle[2])
+            p.drawRect(rectangle[0])
+
+        # profile('p.drawImage')
         if self.border is not None:
             p.setPen(self.border)
             p.drawRect(self.boundingRect())
