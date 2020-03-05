@@ -74,8 +74,10 @@ class RectangleItem(GraphItem):
         '''
         if not hasattr(self, 'draw_items'):
             self.resetSubdivision()
+            return
         if len(self.draw_items) != self['Subdivisions'][0] or len(self.draw_items[0]) != self['Subdivisions'][1]:
             self.resetSubdivision()
+            return
             
         parameters = {
             'angle' : self['Angle'], 
