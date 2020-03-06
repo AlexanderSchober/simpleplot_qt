@@ -45,14 +45,40 @@ class Pointer(SessionNode):
     def __init__(self, canvas):
         SessionNode.__init__(
             self,name = 'Pointer elements', parent = canvas)
-        self.pointer_handler    = ParameterHandler(
-            name = 'Pointer', parent = self)
-        self.tick_handler       = ParameterHandler(
-            name = 'Ticks', parent = self)
-        self.label_handler       = ParameterHandler(
-            name = 'Label', parent = self)
+
         self.canvas = canvas
+        self.setUpPointerSpace()
         self.initialize()
+
+    def setUpPointerSpace(self):
+        '''
+        For performance, we will draw the pointer 
+        on another surface that will reside on top 
+        of the plot frame
+        '''
+        self._pointer_view = QtWidgets.QGraphicsView(self.canvas.plot_widget)
+        self._pointer_view.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        self._pointer_view.setStyleSheet("background: transparent")
+        self._pointer_view.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
+        self._pointer_view.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self._pointer_view.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self._pointer_view.setContentsMargins(0, 0, 0, 0)
+
+        self._pointer_scene = QtWidgets.QGraphicsScene()
+        self._pointer_scene.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
+        self._pointer_view.setScene(self._pointer_scene)
+
+        self.canvas.view.sigResized.connect(self.resizePointerSpace)
+
+        self._line_item = QtWidgets.QGraphicsLineItem()
+        self._pointer_scene.addItem(self._line_item)
+
+    def resizePointerSpace(self):
+        '''
+        The pointer space has to be resized when the initial
+        widget is
+        '''
+        self._pointer_view.setGeometry(self.canvas.plot_widget.geometry())
 
     def initialize(self):
         '''
@@ -78,6 +104,13 @@ class Pointer(SessionNode):
         self.label_component    = PointerObject(self)
         self.pointer_position   = PointerPosition(self)
     
+        self.pointer_handler    = ParameterHandler(
+            name = 'Pointer', parent = self)
+        self.tick_handler       = ParameterHandler(
+            name = 'Ticks', parent = self)
+        self.label_handler       = ParameterHandler(
+            name = 'Label', parent = self)
+
         self.pointer_handler.addParameter(
             'Color',  QtGui.QColor('black'),
             method = self.processParameters)
@@ -216,6 +249,12 @@ class Pointer(SessionNode):
         '''
         Refresh the local position of the cursor
         '''
+        pos = QtCore.QPointF(x,y)
+        pos = self.canvas.view.mapViewToDevice(pos)
+        pos = QtCore.QPoint(pos.x(), pos.y())
+        pos = self._pointer_view.mapToScene(pos)
+        self._line_item.setLine(pos.x()-10,pos.y()-10, pos.x()+10,pos.y()+10,)
+        
         if x == None or y == None:
             x = self.canvas.mouse.cursor_x 
             y = self.canvas.mouse.cursor_y

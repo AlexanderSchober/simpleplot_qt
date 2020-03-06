@@ -814,9 +814,9 @@ def example():
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
-    exampleScientificComboBox()
+    # exampleScientificComboBox()
     # startPlayGround()
-    # exampleItems()
+    exampleItems()
     # exampleMultiLinePlot()
     # exampleProjectionPlot()
     # exampleLinePlot()
