@@ -648,6 +648,26 @@ def exampleItems():
     widget.show()
     sys.exit(app.exec_())
 
+def exampleScientificComboBox():
+
+    from .gui_main.widgets.scientific_combobox import ScientificComboBox
+    #set upt the window and the plot widget
+    app 	        = QtWidgets.QApplication(sys.argv)
+    widget          = ScientificComboBox()
+
+    widget.addItem(0.54)
+    widget.addItem('1.54')
+    widget.addItem(02.54424523453453)
+    widget.addItem(4534534530.54)
+    widget.addItem(0.000000000000005)
+
+    def showProperties():
+        print(widget.currentIndex(),widget.currentText(),widget.currentData())
+    widget.currentIndexChanged.connect(showProperties)
+    #show widget
+    widget.show()
+    sys.exit(app.exec_())
+
 def example():
 
     #set upt the window and the plot widget
@@ -794,8 +814,9 @@ def example():
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
+    exampleScientificComboBox()
     # startPlayGround()
-    exampleItems()
+    # exampleItems()
     # exampleMultiLinePlot()
     # exampleProjectionPlot()
     # exampleLinePlot()
