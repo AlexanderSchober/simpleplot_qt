@@ -83,6 +83,7 @@ class Pointer(SessionNode):
         self._pointer_view.setScene(self._pointer_scene)
 
         self.canvas.view.sigStateChanged.connect(self.resizePointerSpace)
+        self.resizePointerSpace()
 
     def resizePointerSpace(self):
         '''
@@ -92,6 +93,7 @@ class Pointer(SessionNode):
         self._pointer_view.setFixedSize(self.canvas.plot_widget.size())
         self._pointer_view.setSceneRect(self.canvas.plot_widget.sceneRect())
         self.pointer_component.getRanges()
+        self.label_component.getRanges()
         self.draw()
 
     def initialize(self):
