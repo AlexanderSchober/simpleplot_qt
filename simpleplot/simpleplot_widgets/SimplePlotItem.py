@@ -26,6 +26,8 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from ..pyqtgraph.pyqtgraph.graphicsItems.PlotItem import *
 from ..pyqtgraph.pyqtgraph.WidgetGroup import WidgetGroup
+from ..pyqtgraph.pyqtgraph import Point
+import numpy as np
 
 #private dependencies
 from .plotConfigTemplate import *
