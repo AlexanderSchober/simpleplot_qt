@@ -540,7 +540,7 @@ def exampleDistPlot():
     multi_canvas    = MultiCanvasItem(
         widget = widget,        
         grid        = [[True]],
-        element_types = [['3D']],
+        element_types = [['2D']],
         x_ratios    = [1],
         y_ratios    = [1],
         background  = "b",
@@ -816,13 +816,13 @@ def example():
 if __name__ == '__main__':
     # exampleScientificComboBox()
     # startPlayGround()
-    exampleItems()
+    # exampleItems()
     # exampleMultiLinePlot()
     # exampleProjectionPlot()
     # exampleLinePlot()
     # example()
     # exampleSurfacePlot()
     # exampleVolumePlot()
-    # exampleDistPlot()
+    exampleDistPlot()
     # exampleCrystalPlot()
     # exampleStepPlot()
