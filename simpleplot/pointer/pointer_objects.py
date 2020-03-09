@@ -53,7 +53,7 @@ class PointerObject:
         '''
         Try to disconnect all methods
         '''
-        self.ranges = self.parent.canvas.draw_surface.viewRange()
+        self.ranges = self.parent.canvas.draw_surface.vb.viewRange()
 
         pos_min = QtCore.QPointF(self.ranges[0][0],self.ranges[1][0])
         pos_min = self.parent.canvas.view.mapViewToDevice(pos_min)
@@ -71,9 +71,15 @@ class PointerObject:
         '''
         Process the drawing position
         '''
-        pos = QtCore.QPointF(
-            self.parent.cursor_x,
-            self.parent.cursor_y)
+        x = self.parent.cursor_x
+        y = self.parent.cursor_y
+
+        if x < self.ranges[0][0]: x = self.ranges[0][0]
+        if x > self.ranges[0][1]: x = self.ranges[0][1]
+        if y < self.ranges[1][0]: y = self.ranges[1][0]
+        if y > self.ranges[1][1]: y = self.ranges[1][1]
+
+        pos = QtCore.QPointF(x,y)
         pos = self.parent.canvas.view.mapViewToDevice(pos)
         pos = QtCore.QPoint(pos.x()-2, pos.y()-2)
         pos = self.parent._pointer_view.mapToScene(pos)
