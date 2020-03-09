@@ -210,6 +210,7 @@ class Zoomer(ParameterHandler):
         '''
         This processes the zoom method
         ''' 
+        self.canvas.artist.pointer.unbindPointer()
         if self.start_pos[0] == self.end_pos[0] or self.start_pos[1] == self.end_pos[1]: 
             self.canvas.draw_surface.autoRange()
             #check for fixed
@@ -243,3 +244,6 @@ class Zoomer(ParameterHandler):
             self.canvas.draw_surface.setRange(
                 xRange = xRange,
                 yRange = yRange)
+
+        self.canvas.artist.pointer.bindPointer()
+        
