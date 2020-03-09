@@ -162,12 +162,10 @@ class Type_0_Labels(PointerObject):
 
         #add them to the target
         for component in self.label_comp:
-            # pen = QtGui.QPen()
-            # pen.setColor(self.parent.label_handler['Color'])
-            # component.setPen(pen)
+            component.setDefaultTextColor(self.parent.label_handler['Color'])
             component.setFont(self.parent.label_handler['Font'])
             self.parent._pointer_scene.addItem(component)
-
+            
     def move(self):
         '''
         Move with the cursor
