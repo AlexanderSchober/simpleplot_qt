@@ -3,6 +3,7 @@
 # part.
 
 import re
+import numpy as np
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 _float_re = re.compile(r'(([+-]?\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)')
