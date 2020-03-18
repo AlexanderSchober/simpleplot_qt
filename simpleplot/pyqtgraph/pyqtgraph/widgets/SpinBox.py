@@ -84,11 +84,11 @@ class SpinBox(QtGui.QAbstractSpinBox):
             'int': False, ## Set True to force value to be integer
             
             'suffix': '',
-            'siPrefix': False,   ## Set to True to display numbers with SI prefix (ie, 100pA instead of 1e-10A)
+            'siPrefix': True,   ## Set to True to display numbers with SI prefix (ie, 100pA instead of 1e-10A)
             
             'delay': 0.3, ## delay sending wheel update signals for 300ms
             
-            'delayUntilEditFinished': True,   ## do not send signals until text editing has finished
+            'delayUntilEditFinished': False,   ## do not send signals until text editing has finished
             
             'decimals': 6,
             

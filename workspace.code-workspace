@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"cSpell.words": [
+			"asarray"
+		],
+		"files.associations": {
+			"qwidget": "cpp",
+			"qlineedit": "cpp",
+			"qlistwidget": "cpp",
+			"*.ipp": "cpp"
+		}
+	}
+}

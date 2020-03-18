@@ -31,7 +31,7 @@ from ...pyqtgraph.pyqtgraph         import opengl as gl
 from ..custom_pg_items.SimplePlotDataItem import SimplePlotDataItem
 from ..custom_pg_items.SimpleErrorBarItem import SimpleErrorBarItem
 
-from ...model.parameter_class       import ParameterHandler 
+from ...models.parameter_class       import ParameterHandler 
 
 class ErrorPlot(ParameterHandler): 
     '''

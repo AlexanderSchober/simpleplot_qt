@@ -31,7 +31,7 @@ from ...pyqtgraph.pyqtgraph         import opengl as gl
 from ...pyqtgraph.pyqtgraph.graphicsItems.GradientEditorItem import GradientEditorItem
 
 from ..plot_geometries.shaders      import ShaderConstructor
-from ...model.parameter_class       import ParameterHandler
+from ...models.parameter_class       import ParameterHandler
 
 class IsoCurvePlot(ParameterHandler):  
     '''

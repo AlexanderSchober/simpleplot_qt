@@ -31,7 +31,15 @@ from .volume_plot_handler           import VolumePlotHandler
 from .distribution_plot_handler     import DistributionPlotHandler
 from .plot_items.vector_field_plot  import VectorFieldPlot
 from .crystal_plot_handler          import CrystalPlotHandler
-from ..model.node                   import SessionNode
+
+from .graph_items.circle_item       import CircleItem
+from .graph_items.ellipse_item      import EllipseItem
+from .graph_items.rectangle_item    import RectangleItem
+from .graph_items.square_item       import SquareItem
+from .graph_items.pie_item          import PieItem
+from .graph_items.triangle_item     import TriangleItem
+
+from ..models.session_node          import SessionNode
 
 def get_main_handler(select):
     '''
@@ -54,6 +62,8 @@ def get_main_handler(select):
         return MainHandler(select, VectorFieldPlot)
     elif select == 'Crystal':
         return MainHandler(select, CrystalPlotHandler)
+    elif select == 'Items':
+        return MainHandler(select)
     else:
         print('Could not find the fit class you are looking for. Error...')        
         return None
@@ -64,23 +74,36 @@ class MainHandler(SessionNode):
     scatter plots. 
     '''
 
-    def __init__(self, name, target_class):
+    def __init__(self, name, target_class = None):
         SessionNode.__init__(self,name)
         self.identifier     = 0
         self.target_class   = target_class
         self.name           = name
         self.type           = 'None'
+
+        self._item_dict = {
+            'Circle':CircleItem,
+            'Ellipse':EllipseItem,
+            'Square':SquareItem,
+            'Rectangle':RectangleItem,
+            'Pie':PieItem,
+            'Triangle':TriangleItem
+        }
         
     def addChild(self,*args, **kwargs):
         '''
         This will effectively add an element to the 
         plot_elements array. 
         '''
-        self._children.append(self.target_class(*args,**kwargs))
-        self._children[-1]._parent = self
+        if self.target_class == None:
+            new_child = self._item_dict[args[0]](*args,**kwargs)
+        else:
+            new_child = self.target_class(*args,**kwargs)
+
+        self._model.insertRows(len(self._children), 1, [new_child], self)
         return self._children[-1]
 
-    def removeItem(self, name = '', idx = None, target = None):
+    def removeItem(self):
         '''
         here we will ask the element in question to 
         remove one of its items and proceed to a clean
@@ -98,6 +121,15 @@ class MainHandler(SessionNode):
         #     self.plot_elements[idx].remove_items(target)
         #     del self.plot_elements[idx]
 
+    def removeItems(self):
+        '''
+        here we will ask the element in question to 
+        remove one of its items and proceed to a clean
+        removal. 
+        '''
+        for plot_element in self._children:
+            plot_element.removeItems()
+        
     def clear(self, target):
         '''
         Draw all the items onto the plot
@@ -139,4 +171,5 @@ class MainHandler(SessionNode):
         the result back as a hits
         '''
         for plot_element in self._children:
-            plot_element.processProjection(x,y,z)
+            if hasattr(plot_element, "processProjection"):
+                plot_element.processProjection(x,y,z)

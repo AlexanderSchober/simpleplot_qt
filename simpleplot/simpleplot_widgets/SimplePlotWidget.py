@@ -31,6 +31,7 @@ from ..pyqtgraph.pyqtgraph.WidgetGroup import WidgetGroup
 from .plotConfigTemplate import *
 
 class SimplePlotWidget(PlotWidget):
+    resized_signal = QtCore.pyqtSignal()
 
     def __init__(self, canvas):
         PlotWidget.__init__(self)
@@ -137,3 +138,7 @@ class SimplePlotWidget(PlotWidget):
         Enable or disable the context menu for this PlotItem.
         """
         self._menuEnabled = enableMenu
+
+    def resizeEvent(self, ev):
+        self.resized_signal.emit()
+        return super().resizeEvent(ev)

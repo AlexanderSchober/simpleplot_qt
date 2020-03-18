@@ -27,9 +27,10 @@ import numpy as np
 
 from ...pyqtgraph                   import pyqtgraph as pg
 from ...pyqtgraph.pyqtgraph         import opengl as gl
+from ..custom_pg_items.SimpleImageItem import SimpleImageItem
 
 from ..plot_geometries.shaders      import ShaderConstructor
-from ...model.parameter_class       import ParameterHandler 
+from ...models.parameter_class      import ParameterHandler 
 from ..plot_geometries.shaders      import ShaderConstructor
 
 class SurfacePlot(ParameterHandler): 
@@ -97,11 +98,11 @@ class SurfacePlot(ParameterHandler):
             if self['Visible']:
                 surface = None
                 for draw_item in self.draw_items:
-                    if isinstance(draw_item, pg.ImageItem) or isinstance(draw_item, gl.GLMeshItem):
+                    if isinstance(draw_item, SimpleImageItem) or isinstance(draw_item, gl.GLMeshItem):
                         surface = draw_item
                             
                 if self._mode == '2D':
-                    surface.setImage(self.parent()._plot_data.getData()[2])
+                    surface.setImage(self.parent()._plot_data.getData())
                     self.childFromName('Shader').runShader()
                     
                 elif self._mode == '3D':
@@ -119,7 +120,7 @@ class SurfacePlot(ParameterHandler):
 
             else:
                 for i in range(len(self.draw_items))[::-1]:
-                    if isinstance(self.draw_items[i], pg.ImageItem) or isinstance(self.draw_items[i], gl.GLMeshItem):
+                    if isinstance(self.draw_items[i], SimpleImageItem) or isinstance(self.draw_items[i], gl.GLMeshItem):
                         if self._mode == '2D':
                             self.default_target.draw_surface.removeItem(self.draw_items[i])
                         elif self._mode == '3D':
@@ -158,8 +159,8 @@ class SurfacePlot(ParameterHandler):
 
         if self['Visible']:
             self.draw_items = []
-            self.draw_items.append(pg.ImageItem())
-            self.draw_items[-1].setImage(self.parent()._plot_data.getData()[2])
+            self.draw_items.append(SimpleImageItem())
+            self.draw_items[-1].setImage(self.parent()._plot_data.getData())
             self.draw_items[-1].setZValue(-100)
             self.default_target.draw_surface.addItem(self.draw_items[-1])
             self.childFromName('Shader').runShader()

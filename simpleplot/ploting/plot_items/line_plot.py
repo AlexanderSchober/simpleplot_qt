@@ -31,9 +31,7 @@ from ...pyqtgraph.pyqtgraph         import opengl as gl
 from ..custom_pg_items.SimplePlotDataItem import SimplePlotDataItem
 from ..custom_pg_items.SimpleErrorBarItem import SimpleErrorBarItem
 
-from ...model.parameter_class       import ParameterHandler 
-
-
+from ...models.parameter_class       import ParameterHandler 
 from ..custom_pg_items.GLLinePlotItem import GLLinePlotItem
 
 class LinePlot(ParameterHandler): 
@@ -75,7 +73,7 @@ class LinePlot(ParameterHandler):
             The parameters passed on by the user that 
             will override the predefined values
         '''
-        style  = kwargs['Style'] if 'Style' in kwargs.keys() else []
+        style  = kwargs['Style'] if 'Style' in kwargs.keys() else ['-']
         color  = QtGui.QColor(kwargs['Color']) if 'Color' in kwargs.keys() else QtGui.QColor('blue')
 
         self.addParameter(
@@ -178,9 +176,11 @@ class LinePlot(ParameterHandler):
             else:
                 for i in range(len(self.draw_items))[::-1]:
                     if self._mode == '2D':
-                        self.default_target.draw_surface.removeItem(self.draw_items[i])
+                        self.default_target.draw_surface.removeItem(
+                            self.draw_items[i])
                     elif self._mode == '3D':
-                        self.default_target.view.removeItem(self.draw_items[i])
+                        self.default_target.view.removeItem(
+                            self.draw_items[i])
                 del self.draw_items
         else:
             if self['Visible'] and self._mode == '2D':
@@ -197,14 +197,14 @@ class LinePlot(ParameterHandler):
             self.default_target = target_surface
             self.setCurrentTags(['2D'])
 
-        self.draw_items = []
         if self['Visible']:
+            self.draw_items = []
             kwargs          = self._getDictionary()
             self.draw_items = [SimplePlotDataItem(**kwargs)]
             self.draw_items[0].setZValue(self['Depth'])
 
-        for curve in self.draw_items:
-            self.default_target.draw_surface.addItem(curve)
+            for curve in self.draw_items:
+                self.default_target.draw_surface.addItem(curve)
 
     def drawGL(self, target_view = None):
         '''
@@ -215,15 +215,15 @@ class LinePlot(ParameterHandler):
             self.default_target = target_view
             self.setCurrentTags(['3D'])
 
-        self.draw_items = []
         if self['Visible']:
+            self.draw_items = []
             kwargs = self._getDictionary()
             self.draw_items.append(GLLinePlotItem(**kwargs))
             self.draw_items[-1].setTransform(self.parent().transformer.getTransform())
             self.draw_items[-1].setGLOptions('translucent')
 
-        for curve in self.draw_items:
-            self.default_target.view.addItem(curve)
+            for curve in self.draw_items:
+                self.default_target.view.addItem(curve)
 
     def removeItems(self):
         '''

@@ -26,8 +26,8 @@ from ..pyqtgraph import pyqtgraph as pg
 from ..pyqtgraph.pyqtgraph import functions as fn
 from PyQt5 import QtGui,QtCore
 
-from ..model.parameter_node import ParameterNode
-from ..model.parameter_class import ParameterHandler 
+from ..models.parameter_node import ParameterNode
+from ..models.parameter_class import ParameterHandler 
 
 import numpy as np
 
@@ -210,10 +210,9 @@ class Zoomer(ParameterHandler):
         '''
         This processes the zoom method
         ''' 
+        self.canvas.artist.pointer.unbindPointer()
         if self.start_pos[0] == self.end_pos[0] or self.start_pos[1] == self.end_pos[1]: 
-            self.canvas.artist.pointer.unbindPointer()
             self.canvas.draw_surface.autoRange()
-
             #check for fixed
             if self['Zoom fixed'][0]:
                 self.canvas.draw_surface.setXRange(
@@ -224,8 +223,6 @@ class Zoomer(ParameterHandler):
                 self.canvas.draw_surface.setYRange(
                     self['Zoom fixed range'][2], 
                     self['Zoom fixed range'][3])
-
-            self.canvas.artist.pointer.bindPointer()
 
         else:
             #set possible ranges
@@ -244,8 +241,9 @@ class Zoomer(ParameterHandler):
                     self['Zoom fixed range'][3])
 
             #finally zoom
-            self.canvas.artist.pointer.unbindPointer()
             self.canvas.draw_surface.setRange(
                 xRange = xRange,
                 yRange = yRange)
-            self.canvas.artist.pointer.bindPointer()
+
+        self.canvas.artist.pointer.bindPointer()
+        

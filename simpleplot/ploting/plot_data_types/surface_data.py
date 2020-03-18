@@ -29,7 +29,7 @@ from ..plot_geometries.points   import Point
 from ..plot_geometries.shaders  import ShaderConstructor
 from ...pyqtgraph.pyqtgraph     import functions
 
-from ...model.node   import SessionNode
+from ...models.session_node   import SessionNode
 
 class SurfaceData(PlotData, SessionNode): 
     '''
@@ -55,14 +55,14 @@ class SurfaceData(PlotData, SessionNode):
         for i,value in enumerate(self._axes):
             if value in kwargs.keys():
                 if isinstance(kwargs[value],np.ndarray) or isinstance(kwargs[value],list):
-                    elements[i] = np.array(kwargs[value])
+                    elements[i] = np.array(kwargs[value]).astype(np.float)
                     changed[self._axes.index(value)] = True
 
         if elements[self._axes.index('z')] is None:
             if not self._data[self._axes.index('z')] is None:
                 elements[self._axes.index('z')] = self._data[self._axes.index('z')]  
             else:
-                elements[self._axes.index('z')] = np.zeros((1,1))
+                elements[self._axes.index('z')] = np.random.rand(5,5)
                 changed[self._axes.index('z')] = True
 
         if elements[self._axes.index('x')] is None:
@@ -214,7 +214,7 @@ class SurfaceData(PlotData, SessionNode):
         '''
         self._bounds = []
         for element in self._data:
-            self._bounds.append([np.amin(element), np.amax(element)])
+            self._bounds.append([np.amin(element.astype(np.float)), np.amax(element.astype(np.float))])
 
     def _buildVerticeMap(self):
         '''

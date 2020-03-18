@@ -23,7 +23,7 @@
 
 from PyQt5 import QtGui, QtCore
 
-from ..model.node                  import SessionNode
+from ..models.session_node import SessionNode
 from .plot_geometries.transformer  import Transformer
 
 class PlotHandler(SessionNode): 

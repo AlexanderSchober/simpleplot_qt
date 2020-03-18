@@ -27,8 +27,8 @@ from ..pyqtgraph import pyqtgraph as pg
 from ..pyqtgraph.pyqtgraph import opengl as gl
 from .custome_grid_item import GLGridItem
 
-from ..model.parameter_node import ParameterNode
-from ..model.parameter_class import ParameterHandler 
+from ..models.parameter_node import ParameterNode
+from ..models.parameter_class import ParameterHandler 
 
 class GridGl(ParameterNode): 
     def __init__(self, canvas):

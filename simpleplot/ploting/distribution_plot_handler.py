@@ -66,4 +66,4 @@ class DistributionPlotHandler(PlotHandler):
         return to the legend the items to be used
         '''
         # return SimpleItemSample([self.childFromName('Line'), self.childFromName('Scatter'), self.childFromName('Error')])
-        return []
+        return SimpleItemSample([])

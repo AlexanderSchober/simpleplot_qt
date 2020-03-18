@@ -42,17 +42,49 @@ class PointerObject:
         Try to disconnect all methods
         '''
         for component in self.pointer_comp:
-            self.parent.canvas.draw_surface.removeItem(component)
+            if not component.scene() is None:
+                component.scene().removeItem(component)
 
         for component in self.label_comp:
-            self.parent.canvas.draw_surface.removeItem(component)
+            if not component.scene() is None:
+                component.scene().removeItem(component)
 
-    def get_ranges(self):
+    def getRanges(self):
         '''
         Try to disconnect all methods
         '''
-        self.ranges = self.parent.canvas.draw_surface.viewRange()
+        self.ranges = self.parent.canvas.draw_surface.vb.viewRange()
 
+        pos_min = QtCore.QPointF(self.ranges[0][0],self.ranges[1][0])
+        pos_min = self.parent.canvas.view.mapViewToDevice(pos_min)
+        pos_min = QtCore.QPoint(pos_min.x(), pos_min.y()-2)
+        pos_min = self.parent._pointer_view.mapToScene(pos_min)
+
+        pos_max = QtCore.QPointF(self.ranges[0][1],self.ranges[1][1])
+        pos_max = self.parent.canvas.view.mapViewToDevice(pos_max)
+        pos_max = QtCore.QPoint(pos_max.x(), pos_max.y())
+        pos_max = self.parent._pointer_view.mapToScene(pos_max)
+
+        self.view_ranges = [[pos_min.x(),pos_max.x()],[pos_min.y(),pos_max.y()]]
+
+    def getPosition(self):
+        '''
+        Process the drawing position
+        '''
+        x = self.parent.cursor_x
+        y = self.parent.cursor_y
+
+        if x < self.ranges[0][0]: x = self.ranges[0][0]
+        if x > self.ranges[0][1]: x = self.ranges[0][1]
+        if y < self.ranges[1][0]: y = self.ranges[1][0]
+        if y > self.ranges[1][1]: y = self.ranges[1][1]
+
+        pos = QtCore.QPointF(x,y)
+        pos = self.parent.canvas.view.mapViewToDevice(pos)
+        pos = QtCore.QPoint(pos.x()-2, pos.y()-2)
+        pos = self.parent._pointer_view.mapToScene(pos)
+        return pos
+        
     def move(self):
         pass
 
@@ -62,107 +94,65 @@ class Type_0_Pointer(PointerObject):
         '''
         Type_0 cursor init
         '''
-
         PointerObject.__init__(self,parent)
         self.parent = parent
         self.pointer_comp = []
-
-        #set the pen
+        self.getRanges()
         self.parent.setPen()
-
-        #set the two inifinite lines
-        self.pointer_comp.append(pg.InfiniteLine(
-            angle   = 90, 
-            movable = False,
-            pen     = self.parent.pen))
-
-        self.pointer_comp.append(pg.InfiniteLine(
-            angle   = 00, 
-            movable = False,
-            pen     = self.parent.pen))
+        self.pointer_comp.append(QtGui.QGraphicsLineItem())
+        self.pointer_comp.append(QtGui.QGraphicsLineItem())
 
         #add them to the target
         for component in self.pointer_comp:
-
-            self.parent.canvas.draw_surface.addItem(component)
+            component.setPen(self.parent.pen)
+            self.parent._pointer_scene.addItem(component)
 
     def move(self):
         '''
         Move with the cursor
         '''
-        self.pointer_comp[0].setPos(self.parent.cursor_x)
-        self.pointer_comp[1].setPos(self.parent.cursor_y)
+        pos = self.getPosition()
+
+        self.pointer_comp[0].setLine(
+            pos.x(),self.view_ranges[1][0],
+            pos.x(),self.view_ranges[1][1])
+
+        self.pointer_comp[1].setLine(
+            self.view_ranges[0][0],pos.y(),
+            self.view_ranges[0][1],pos.y())
 
 class Type_1_Pointer(PointerObject):
     
     def __init__(self, parent):
         '''
-        Type_0 cursor init
+        Type_1 cursor init
         '''
-
         PointerObject.__init__(self,parent)
         self.parent = parent
         self.pointer_comp = []
-
-        #set the pen
+        self.getRanges()
         self.parent.setPen()
-        self.get_ranges()
+        self.pointer_comp.append(QtGui.QGraphicsLineItem())
+        self.pointer_comp.append(QtGui.QGraphicsLineItem())
 
-        #set the two infinite lines
-        self.pointer_comp.append(pg.PlotCurveItem(
-            x       = np.asarray([0,1]), 
-            y       = np.asarray([0,1]),
-            pen     = self.parent.pen))
-
-        self.pointer_comp.append(pg.PlotCurveItem(
-            x       = np.asarray([0,1]), 
-            y       = np.asarray([0,1]),
-            pen     = self.parent.pen))
-
-        p0 = pg.Point(0,0)
-        p1 = pg.Point(1,1)
-        ##############################################
         #add them to the target
         for component in self.pointer_comp:
-
-            self.parent.canvas.draw_surface.addItem(component)
+            component.setPen(self.parent.pen)
+            self.parent._pointer_scene.addItem(component)
 
     def move(self):
         '''
         Move with the cursor
         '''
+        pos = self.getPosition()
 
-        self.get_ranges()
+        self.pointer_comp[0].setLine(
+            pos.x()-self.parent.pointer_handler['Size'][0],pos.y(),
+            pos.x()+self.parent.pointer_handler['Size'][0],pos.y())
 
-        ##############################################
-        #perform the pixelsize
-
-        try:
-            p_0 = self.pointer_comp[0].mapToDevice(pg.Point(0,0))
-            p_1 = self.pointer_comp[0].mapToDevice(pg.Point(1,1))
-
-            self.pixel_size_x = 1 / abs(p_1.x() - p_0.x())
-            self.pixel_size_y = 1 / abs(p_1.y() - p_0.y())
-
-        except:
-            self.pixel_size_x = 0.1
-            self.pixel_size_y = 0.1
-
-        self.pointer_comp[0].setData(
-            np.asarray([
-                self.parent.cursor_x - int(self.parent.pointer_handler['Size'][0]) * self.pixel_size_x  ,
-                self.parent.cursor_x + int(self.parent.pointer_handler['Size'][0]) * self.pixel_size_x ]),
-            np.asarray([
-                self.parent.cursor_y,
-                self.parent.cursor_y]))
-
-        self.pointer_comp[1].setData(
-            np.asarray([
-                self.parent.cursor_x,
-                self.parent.cursor_x]),
-            np.asarray([    
-                self.parent.cursor_y - int(self.parent.pointer_handler['Size'][1]) * self.pixel_size_y ,
-                self.parent.cursor_y + int(self.parent.pointer_handler['Size'][1]) * self.pixel_size_y ]))
+        self.pointer_comp[1].setLine(
+            pos.x(),pos.y()-self.parent.pointer_handler['Size'][1],
+            pos.x(),pos.y()+self.parent.pointer_handler['Size'][1])
 
 class Type_0_Labels(PointerObject):
     
@@ -172,46 +162,44 @@ class Type_0_Labels(PointerObject):
         '''
         PointerObject.__init__(self,parent)
         self.parent = parent
-        self.label_comp = []
+        self.getRanges()
 
-        self.label_comp.append(pg.TextItem())
+        self.label_comp = []
+        self.label_comp.append(QtGui.QGraphicsTextItem())
 
         #add them to the target
         for component in self.label_comp:
+            component.setDefaultTextColor(self.parent.label_handler['Color'])
             component.setFont(self.parent.label_handler['Font'])
-            component.setColor(self.parent.label_handler['Color'])
-            self.parent.canvas.draw_surface.addItem(component)
-
+            self.parent._pointer_scene.addItem(component)
+            
     def move(self):
         '''
         Move with the cursor
         '''
         values = [
-            10**self.parent.cursor_x if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else self.parent.cursor_x,
-            10**self.parent.cursor_y if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else self.parent.cursor_y]
+            10**self.parent.cursor_x if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() 
+            else self.parent.cursor_x,
+            10**self.parent.cursor_y if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() 
+            else self.parent.cursor_y]
 
         text    = 'x = %0.'+str(self.parent.label_handler['Precision'][0])+'f'
         text   += ' y = %0.'+str(self.parent.label_handler['Precision'][2])+'f'
 
         #set the text to set the width
-        self.label_comp[0].setText(str(text)%(values[0],values[1]))
-
-        #get the current view rnage
-        self.get_ranges()
-        anchor = [0,0]
-
-        #do the checks and move the label around
+        self.label_comp[0].setPlainText(str(text)%(values[0],values[1]))
+        
+        rect = self.label_comp[0].boundingRect()
+        delta = [0,0]
         if self.parent.cursor_x > ( (self.ranges[0][1] - self.ranges[0][0]) / 2 + self.ranges[0][0]):
-            anchor[0] = 1
+            delta[0] = rect.width()
 
         if self.parent.cursor_y < ( (self.ranges[1][1] - self.ranges[1][0]) / 2 + self.ranges[1][0]):
-            anchor[1] = 1
-            
-        #set the anchor
-        self.label_comp[0].anchor = pg.Point(anchor)
+            delta[1] = rect.height()
 
         #do the move
-        self.label_comp[0].setPos(self.parent.cursor_x, self.parent.cursor_y)
+        pos = self.getPosition()
+        self.label_comp[0].setPos(pos.x()-delta[0], pos.y()-delta[1])
 
 class Type_1_Labels(PointerObject):
     
@@ -221,20 +209,22 @@ class Type_1_Labels(PointerObject):
         '''
         PointerObject.__init__(self,parent)
         self.parent = parent
+        self.getRanges()
 
         self.label_comp = []
-        self.label_comp.append(pg.TextItem())
-        self.label_comp[-1].setAngle(90)
-        self.label_comp.append(pg.TextItem())
-        self.label_comp[-1].setAngle(90)
-        self.label_comp.append(pg.TextItem())
-        self.label_comp.append(pg.TextItem())
+        self.label_comp.append(QtGui.QGraphicsTextItem())
+        self.label_comp.append(QtGui.QGraphicsTextItem())
+        self.label_comp.append(QtGui.QGraphicsTextItem())
+        self.label_comp.append(QtGui.QGraphicsTextItem())
+
+        self.label_comp[0].rotate(90)
+        self.label_comp[1].rotate(90)
 
         #add them to the target
         for component in self.label_comp:
+            component.setDefaultTextColor(self.parent.label_handler['Color'])
             component.setFont(self.parent.label_handler['Font'])
-            component.setColor(self.parent.label_handler['Color'])
-            self.parent.canvas.draw_surface.addItem(component)
+            self.parent._pointer_scene.addItem(component)
 
     def move(self):
         '''
@@ -245,40 +235,34 @@ class Type_1_Labels(PointerObject):
             10**self.parent.cursor_y if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else self.parent.cursor_y]
             
         #set the text to set the width
-        self.label_comp[0].setText(str('%0.'+str(self.parent.label_handler['Precision'][0])+'f ')%(values[0]))
-        self.label_comp[1].setText(str('%0.'+str(self.parent.label_handler['Precision'][1])+'f ')%(values[0]))
-        self.label_comp[2].setText(str('%0.'+str(self.parent.label_handler['Precision'][2])+'f ')%(values[1]))
-        self.label_comp[3].setText(str('%0.'+str(self.parent.label_handler['Precision'][3])+'f ')%(values[1]))
+        self.label_comp[0].setPlainText(
+            str('%0.'+str(self.parent.label_handler['Precision'][0])+'f ')%(values[0]))
+        self.label_comp[1].setPlainText(
+            str('%0.'+str(self.parent.label_handler['Precision'][1])+'f ')%(values[0]))
+        self.label_comp[2].setPlainText(
+            str('%0.'+str(self.parent.label_handler['Precision'][2])+'f ')%(values[1]))
+        self.label_comp[3].setPlainText(
+            str('%0.'+str(self.parent.label_handler['Precision'][3])+'f ')%(values[1]))
 
-        #get the current view rnage
-        self.get_ranges()
+        pos = self.getPosition()
 
-        anchor_top      = [0,0]
-        anchor_bot      = [1,0]
-        anchor_left     = [0,0]
-        anchor_right    = [1,0]
+        rect = self.label_comp[0].boundingRect()
+        delta = [0,0]
+        if self.parent.cursor_x >((self.ranges[0][1]-self.ranges[0][0])/2+self.ranges[0][0]):
+            delta[0] = 0
+        else: 
+            delta[0] = rect.width()
 
-        #do the checks and move the label around
-        if self.parent.cursor_x > ( (self.ranges[0][1] - self.ranges[0][0]) / 2 + self.ranges[0][0]):
-            anchor_top[1] = 1
-            anchor_bot[1] = 1
+        self.label_comp[0].setPos(pos.x()+delta[0], self.view_ranges[1][0]-rect.width())
+        self.label_comp[1].setPos(pos.x()+delta[0], self.view_ranges[1][1])
 
-        if self.parent.cursor_y < ( (self.ranges[1][1] - self.ranges[1][0]) / 2 + self.ranges[1][0]):
-            anchor_left[1] = 1
-            anchor_right[1] = 1
+        rect = self.label_comp[2].boundingRect()
+        delta = [0,0]
+        if self.parent.cursor_y <((self.ranges[1][1]-self.ranges[1][0])/2+self.ranges[1][0]):
+            delta[1] = rect.height()
 
-        #do the move
-        self.label_comp[0].anchor = pg.Point(anchor_top)
-        self.label_comp[0].setPos(self.parent.cursor_x, self.ranges[1][0])
-
-        self.label_comp[1].anchor = pg.Point(anchor_bot)
-        self.label_comp[1].setPos(self.parent.cursor_x, self.ranges[1][1])
-
-        self.label_comp[2].anchor = pg.Point(anchor_left)
-        self.label_comp[2].setPos(self.ranges[0][0], self.parent.cursor_y)
-
-        self.label_comp[3].anchor = pg.Point(anchor_right)
-        self.label_comp[3].setPos(self.ranges[0][1], self.parent.cursor_y)
+        self.label_comp[2].setPos(self.view_ranges[0][0], pos.y()-delta[1])
+        self.label_comp[3].setPos(self.view_ranges[0][1]-rect.width(), pos.y()-delta[1])
 
 
 class Type_2_Labels(PointerObject):
@@ -289,19 +273,22 @@ class Type_2_Labels(PointerObject):
         '''
         PointerObject.__init__(self,parent)
         self.parent = parent
+        self.getRanges()
+
         self.label_comp = []
+        self.label_comp.append(QtGui.QGraphicsTextItem())
+        self.label_comp.append(QtGui.QGraphicsTextItem())
+        self.label_comp.append(QtGui.QGraphicsTextItem())
+        self.label_comp.append(QtGui.QGraphicsTextItem())
 
-        self.label_comp.append(pg.TextItem())
-        self.label_comp.append(pg.TextItem())
-        self.label_comp.append(pg.TextItem())
-        self.label_comp[-1].setAngle(90)
-        self.label_comp.append(pg.TextItem())
-        self.label_comp[-1].setAngle(90)
+        self.label_comp[2].rotate(90)
+        self.label_comp[3].rotate(90)
 
+        #add them to the target
         for component in self.label_comp:
+            component.setDefaultTextColor(self.parent.label_handler['Color'])
             component.setFont(self.parent.label_handler['Font'])
-            component.setColor(self.parent.label_handler['Color'])
-            self.parent.canvas.draw_surface.addItem(component)
+            self.parent._pointer_scene.addItem(component)
 
     def move(self):
         '''
@@ -310,40 +297,33 @@ class Type_2_Labels(PointerObject):
         values = [
             10**self.parent.cursor_x if self.parent.canvas.draw_surface.ctrl.logXCheck.isChecked() else self.parent.cursor_x,
             10**self.parent.cursor_y if self.parent.canvas.draw_surface.ctrl.logYCheck.isChecked() else self.parent.cursor_y]
-
+            
         #set the text to set the width
-        self.label_comp[0].setText(str('%0.'+str(self.parent.label_handler['Precision'][0])+'f ')%(values[0]))
-        self.label_comp[1].setText(str('%0.'+str(self.parent.label_handler['Precision'][1])+'f ')%(values[0]))
-        self.label_comp[2].setText(str('%0.'+str(self.parent.label_handler['Precision'][2])+'f ')%(values[1]))
-        self.label_comp[3].setText(str('%0.'+str(self.parent.label_handler['Precision'][3])+'f ')%(values[1]))
+        self.label_comp[0].setPlainText(
+            str('%0.'+str(self.parent.label_handler['Precision'][0])+'f ')%(values[0]))
+        self.label_comp[1].setPlainText(
+            str('%0.'+str(self.parent.label_handler['Precision'][1])+'f ')%(values[0]))
+        self.label_comp[2].setPlainText(
+            str('%0.'+str(self.parent.label_handler['Precision'][2])+'f ')%(values[1]))
+        self.label_comp[3].setPlainText(
+            str('%0.'+str(self.parent.label_handler['Precision'][3])+'f ')%(values[1]))
 
-        #get the current view rnage
-        self.get_ranges()
+        pos = self.getPosition()
 
-        anchor_top      = [0,1]
-        anchor_bot      = [0,0]
+        rect = self.label_comp[0].boundingRect()
+        delta = [0,0]
+        if self.parent.cursor_x >((self.ranges[0][1]-self.ranges[0][0])/2+self.ranges[0][0]):
+            delta[0] = rect.width()
 
-        anchor_left     = [1,0]
-        anchor_right    = [1,1]
+        self.label_comp[0].setPos(pos.x()-delta[0], self.view_ranges[1][0]-rect.height())
+        self.label_comp[1].setPos(pos.x()-delta[0], self.view_ranges[1][1])
 
-        #do the checks and move the label around
-        if self.parent.cursor_x > ( (self.ranges[0][1] - self.ranges[0][0]) / 2 + self.ranges[0][0]):
-            anchor_top[0] = 1
-            anchor_bot[0] = 1
+        rect = self.label_comp[2].boundingRect()
+        delta = [0,0]
+        if self.parent.cursor_y >((self.ranges[1][1]-self.ranges[1][0])/2+self.ranges[1][0]):
+            delta[1] = 0
+        else:
+            delta[1] = -rect.width()
 
-        if self.parent.cursor_y < ( (self.ranges[1][1] - self.ranges[1][0]) / 2 + self.ranges[1][0]):
-            anchor_left[0] = 0
-            anchor_right[0] = 0
-
-        #do the move
-        self.label_comp[0].anchor = pg.Point(anchor_top)
-        self.label_comp[0].setPos(self.parent.cursor_x, self.ranges[1][0])
-
-        self.label_comp[1].anchor = pg.Point(anchor_bot)
-        self.label_comp[1].setPos(self.parent.cursor_x, self.ranges[1][1])
-
-        self.label_comp[2].anchor = pg.Point(anchor_left)
-        self.label_comp[2].setPos(self.ranges[0][0], self.parent.cursor_y)
-
-        self.label_comp[3].anchor = pg.Point(anchor_right)
-        self.label_comp[3].setPos(self.ranges[0][1], self.parent.cursor_y)
+        self.label_comp[2].setPos(self.view_ranges[0][0]+rect.height(), pos.y()+delta[1])
+        self.label_comp[3].setPos(self.view_ranges[0][1], pos.y()+delta[1])

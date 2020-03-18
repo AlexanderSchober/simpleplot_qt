@@ -29,7 +29,7 @@ from ..plot_geometries.points   import Point
 from ..plot_geometries.shaders  import ShaderConstructor
 from ...pyqtgraph.pyqtgraph     import functions
 
-from ...model.node   import SessionNode
+from ...models.session_node   import SessionNode
 
 class StepData(PlotData, SessionNode): 
     '''
@@ -55,7 +55,7 @@ class StepData(PlotData, SessionNode):
         for i,value in enumerate(self._axes):
             if value in kwargs.keys():
                 if isinstance(kwargs[value],np.ndarray) or isinstance(kwargs[value],list):
-                    elements[i] = np.array(kwargs[value])
+                    elements[i] = np.array(kwargs[value]).astype(np.float)
                     changed[self._axes.index(value)] = True
 
         if elements[self._axes.index('z')] is None:

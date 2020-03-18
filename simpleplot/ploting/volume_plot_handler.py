@@ -36,10 +36,7 @@ class VolumePlotHandler(PlotHandler):
     def __init__(self, **kwargs):
         '''
         '''
-        if 'Name' in kwargs.keys():
-            PlotHandler.__init__(self, kwargs['Name'])
-        else:
-            PlotHandler.__init__(self, 'No_name')
+        super().__init__(kwargs.get('Name', 'No Name'))
 
         self._plot_data = VolumeData()
         self.addChild(self._plot_data)

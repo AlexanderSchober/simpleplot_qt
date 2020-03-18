@@ -27,8 +27,8 @@ from ..pyqtgraph import pyqtgraph as pg
 import numpy as np
 import sys,os
 
-from ..model.node import SessionNode
-from ..model.parameter_class import ParameterHandler 
+from ..models.session_node import SessionNode
+from ..models.parameter_class import ParameterHandler 
 
 class Axes(SessionNode): 
     '''
@@ -61,6 +61,10 @@ class Axes(SessionNode):
             'Active',  [True, True, False, False],
             names  = ['left', 'bottom', 'right', 'top'],
             method = self.activateAxes)
+        self.general_handler.addParameter(
+            'Aspect ratio',  [False,1.],
+            names  = ['Locked', 'Value'],
+            method = self.setAspectRatio)
         self.general_handler.addParameter(
             'Grids', [False, False, 1.0],
             names  = ['x', 'y', 'alpha'],
@@ -143,6 +147,16 @@ class Axes(SessionNode):
                 self.locations[i], 
                 show = self.general_handler['Active'][i])
         self.setAxisStyle()
+
+    def setAspectRatio(self):
+        '''
+        Allow the user to set the aspect ratio of the 
+        axes
+        '''
+        self.canvas.view.setAspectLocked(
+            self.general_handler['Aspect ratio'][0],
+            self.general_handler['Aspect ratio'][1]
+        )
 
     def setGrid(self):
         '''

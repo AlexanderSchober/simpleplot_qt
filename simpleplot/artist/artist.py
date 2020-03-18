@@ -30,7 +30,7 @@ from .axes              import Axes
 from .axes_gl           import Axes3D
 from .legend            import Legend
 from .grid_gl           import GridGl
-from ..model.node       import SessionNode
+from ..models.session_node import SessionNode
 
 from ..ploting.main_handler import get_main_handler
 from ..pyqtgraph import pyqtgraph as pg
@@ -66,14 +66,45 @@ class Artist():
         selected items. if not a new instance will be
         generated and then fed into the handler system
         '''
-        active_handlers = [child._name for child in self.canvas._plot_root._children]
+        active_handlers = [
+            child._name for child in 
+            self.canvas._plot_root._children]
 
         if not name_type in active_handlers:
             new_child = get_main_handler(name_type)
-            self.canvas._plot_root.addChild(new_child)
+            self.canvas._plot_model.insertRows(
+                len(self.canvas._plot_root._children), 1, 
+                [new_child], self.canvas._plot_root)
 
-        active_handlers = [child._name for child in self.canvas._plot_root._children]
-        output = self.canvas._plot_root._children[active_handlers.index(name_type)].addChild(*args, **kwargs)
+        active_handlers = [
+            child._name for child in 
+            self.canvas._plot_root._children]
+
+        output = self.canvas._plot_root._children[
+            active_handlers.index(name_type)].addChild(*args, **kwargs)
+
+        self.canvas._plot_model.referenceModel()
+
+        return output
+
+    def addItem(self, name_type, *args, **kwargs):
+        '''
+        '''
+        active_handlers = [
+            child._name for child in 
+            self.canvas._plot_root._children]
+
+        if not "Items" in active_handlers:
+            new_child = get_main_handler("Items")
+            self.canvas._plot_model.insertRows(0, 1, [new_child], self.canvas._plot_root)
+
+        active_handlers = [
+            child._name for child in 
+            self.canvas._plot_root._children]
+
+        output = self.canvas._plot_root._children[
+            active_handlers.index("Items")].addChild(name_type,*args, **kwargs)
+
         self.canvas._plot_model.referenceModel()
 
         return output
@@ -114,21 +145,24 @@ class Artist():
             elif self.artist_type == '3D':
                 item.drawGL(self.canvas)
 
-    def removePlot(self,name_type, name = '', idx = None):
+    def removePlot(self,plot_item):
         '''
         Remove an item from the handlers
         '''
-        # active_handlers = [handler.name for handler in self.plot_handlers]
+        plot_item.removeItems()
+        self.canvas._plot_model.removeRows(
+            plot_item.parent()._children.index(plot_item),
+            1, plot_item.parent())
 
-        # if idx == None and name == '':
-        #     print("You can't remove nothing ...")
+    def removeItem(self,plot_item):
+        '''
+        Remove an item from the handlers
+        '''
+        plot_item.removeItems()
+        self.canvas._plot_model.removeRows(
+            plot_item.parent()._children.index(plot_item),
+            1, plot_item.parent())
 
-        # else:
-        #     self.plot_handlers[active_handlers.index(name_type)].removeItem(
-        #         name    = name, 
-        #         idx     = idx,
-        #         target  = self.canvas )
-            
     def dispatchPlotDataChange(self, index):
         '''
 
@@ -141,6 +175,8 @@ class Artist():
         selected items. if not a new instance will be
         generated and then fed into the handler system
         '''
+        for plot_handler in self.canvas._plot_root._children:
+            plot_handler.removeItems()
         for plot_handler in self.canvas._plot_root._children:
             plot_handler.draw(self.canvas)
 
@@ -163,7 +199,7 @@ class Artist():
         for plot_handler in self.canvas._plot_root._children:
             plot_handler.clear(self.canvas)
 
-    def addItem(self, location, item):
+    def addHistogramItem(self, location, item):
         '''
         Put a histogram on the layout
         The location is a string that will 
@@ -430,7 +466,3 @@ class Artist3DNode(SessionNode, Artist):
                         hits[idx][0][1],
                         hits[idx][0][2]))
         
-
-
-
-

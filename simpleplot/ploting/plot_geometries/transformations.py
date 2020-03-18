@@ -35,19 +35,8 @@ class Rotation:
     
     def __init__(self, axis, angle, origin = [0,0,0]):
         '''
-        ##############################################
-        This class we be initialised and setup to 
+        This class we be initialized and setup to 
         allow the rotation of elements. 
-        ———————
-        Input: 
-        - axis ([float x 3]) rotation axis
-        - angle (float) angle in degrees
-        - origin ([float x 3]) rotation axis origin
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         self.setParameters(axis, angle)
 
@@ -73,21 +62,11 @@ class Rotation:
 
     def apply(self, points):
         '''
-        ##############################################
         rotate the passed point element. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
 
         for point in points:
-
             coordinates = point.vec.tolist()
-
             result = np.dot(
                 self.t_t,
                 list(np.dot(
@@ -98,98 +77,50 @@ class Rotation:
                     )
                 )
                 +[1])
-
             point.setAbsolutePosition(*list(result))
 
 
     def applyNumpy(self, points):
         '''
-        ##############################################
         rotate the passed point element. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-
         for point in points:
-
             coordinates = point
-
             result = np.dot(
                 self.t_t,
                 list(np.dot(
                     self.rotation_m,
-                    np.dot(
-                        self.t,
-                        coordinates.tolist()+[1])
-                    )
-                )
+                    np.dot(self.t,coordinates.tolist()+[1])))
                 +[1])
-
             point[:] = result
 
 class Translation:
     
     def __init__(self, vector):
         '''
-        ##############################################
-        This class we be initialised and setup to 
+        This class we be initialized and setup to 
         allow the translation of elements. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-
         self.setParameters(vector)
 
     def setParameters(self, vector):
-
         self.vector     = vector
         self.t          = np.zeros((3,4))
         np.fill_diagonal(self.t,1)
         self.t[0:3,3]   = np.asarray(self.vector)[:]
         
-
     def apply(self, points):
         '''
-        ##############################################
         translate the passed point element. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
-
         for point in points:
-
             coordinates = point.vec.tolist()
-
             result = np.dot(self.t, coordinates+[1])
-
             point.setAbsolutePosition(*list(result))
 
     def applyNumpy(self, points):
         '''
-        ##############################################
         rotate the passed point element. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
 
         for point in points:
@@ -199,48 +130,22 @@ class Move(Translation):
     
     def __init__(self, point_0, point_1):
         '''
-        ##############################################
         Creates a translation from point 1 to 2
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         Translation.__init__(self,point_1.vec - point_0.vec)
-        
-
 
 class SphericalFit:
         
     def __init__(self, center = [0,0,0], radius = 1):
         '''
-        ##############################################
         Here we will simply set all points on a sphere
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         self.center = center
         self.radius = radius
         
     def apply(self, points):
         '''
-        ##############################################
         translate the passed point element. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         for point in points:
 
@@ -253,17 +158,9 @@ class CylinderFit:
         
     def __init__(self, center = [0,0,0], axis = [0,0,1], ref = [1,0,0]):
         '''
-        ##############################################
         This is the cylinder method that will take
         all points and depending on their angle will
         extend them.
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         self.center = center
         self.axis   = axis / sci_lin.norm(axis)
@@ -271,15 +168,7 @@ class CylinderFit:
         
     def apply(self, points):
         '''
-        ##############################################
         translate the passed point element. 
-        ———————
-        Input: -
-        ———————
-        Output: -
-        ———————
-        status: active
-        ##############################################
         '''
         for point in points:
 

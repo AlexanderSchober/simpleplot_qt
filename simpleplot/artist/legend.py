@@ -31,8 +31,8 @@ from ..pyqtgraph import pyqtgraph as pg
 from .SimplePlotlegendItem import SimplePlotLegendItem
 from ..ploting.custom_pg_items.SimpleErrorBarItem import SimpleErrorBarItem
 
-from ..model.parameter_node import ParameterNode
-from ..model.parameter_class import ParameterHandler 
+from ..models.parameter_node import ParameterNode
+from ..models.parameter_class import ParameterHandler 
 
 class Legend(ParameterHandler): 
     '''

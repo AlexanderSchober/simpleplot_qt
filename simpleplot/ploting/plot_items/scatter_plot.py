@@ -32,7 +32,7 @@ from ..custom_pg_items.SimplePlotDataItem import SimplePlotDataItem
 from ..custom_pg_items.SimpleErrorBarItem import SimpleErrorBarItem
 from ..custom_pg_items.GLScatterPlotItem  import GLScatterPlotItem
 
-from ...model.parameter_class       import ParameterHandler 
+from ...models.parameter_class       import ParameterHandler 
 from ..plot_geometries.transformer  import Transformer
 
 class ScatterPlot(ParameterHandler): 
@@ -173,7 +173,6 @@ class ScatterPlot(ParameterHandler):
         has been actualized
         '''
         if hasattr(self, 'draw_items'):
-
             if self['Visible'] and self._mode == '2D':
                 kwargs = self._getDictionary()
                 self.draw_items[0].setData(**kwargs)
@@ -184,9 +183,11 @@ class ScatterPlot(ParameterHandler):
             else:
                 for i in range(len(self.draw_items))[::-1]:
                     if self._mode == '2D':
-                        self.default_target.draw_surface.removeItem(self.draw_items[i])
+                        self.default_target.draw_surface.removeItem(
+                            self.draw_items[i])
                     elif self._mode == '3D':
-                        self.default_target.view.removeItem(self.draw_items[i])
+                        self.default_target.view.removeItem(
+                            self.draw_items[i])
                 del self.draw_items
         else:
             if self['Visible'] and self._mode == '2D':

@@ -31,8 +31,6 @@ from .plot_items.iso_curve_plot     import IsoCurvePlot
 from .plot_ray_handlers.ray_surface import SurfaceRayHandler
 from .plot_items.SimpleItemSample   import SimpleItemSample
 
-from .plot_geometries.transformer   import Transformer
-
 class SurfacePlotHandler(PlotHandler):
 
     def __init__(self, **kwargs):
@@ -58,18 +56,39 @@ class SurfacePlotHandler(PlotHandler):
         that this routine aims at updating the data only
         '''
         self['Data'].setData(**kwargs)
-        
+        self._setAutoScalling()
+
         for child in self._children:
             if hasattr(child, 'refresh'):
                 child.refresh()
         
-        self._model.dataChanged.emit(self._plot_data.index(),self._plot_data.index())
+        self._model.dataChanged.emit(
+            self._plot_data.index(),
+            self._plot_data.index())
+
+    def _setAutoScalling(self):
+        '''
+        Especially in opengl this function is vital 
+        to stay within the 100x100x100 box
+        '''
+        scaling = list(self.transformer['Scaling'])
+
+        for i in range(3):
+            if max(list(map(abs,self['Data'].getBounds()[i])))>50:
+                scaling[i] = 10/max(list(map(abs,self['Data'].getBounds()[i])))
+            elif max(list(map(abs,self['Data'].getBounds()[i])))<5:
+                scaling[i] = 10/max(list(map(abs,self['Data'].getBounds()[i])))
+
+        self.transformer['Scaling'] = scaling
 
     def legendItems(self):
         '''
         return to the legend the items to be used
         '''
-        return SimpleItemSample([self.childFromName('Line'), self.childFromName('Scatter'), self.childFromName('Error')])
+        return SimpleItemSample([
+            self.childFromName('Line'), 
+            self.childFromName('Scatter'), 
+            self.childFromName('Error')])
 
     def addProjectionItem(self, item, direction = 'x'):
         '''

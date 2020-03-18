@@ -28,8 +28,8 @@ from ..pyqtgraph import pyqtgraph as pg
 from .pointer_objects import *
 from .pointer_pos import * 
 
-from ..model.parameter_class import ParameterHandler
-from ..model.node import SessionNode
+from ..models.parameter_class import ParameterHandler
+from ..models.session_node import SessionNode
 
 class Pointer(SessionNode):
     '''
@@ -45,14 +45,56 @@ class Pointer(SessionNode):
     def __init__(self, canvas):
         SessionNode.__init__(
             self,name = 'Pointer elements', parent = canvas)
-        self.pointer_handler    = ParameterHandler(
-            name = 'Pointer', parent = self)
-        self.tick_handler       = ParameterHandler(
-            name = 'Ticks', parent = self)
-        self.label_handler       = ParameterHandler(
-            name = 'Label', parent = self)
+
         self.canvas = canvas
         self.initialize()
+        self.setUpPointerSpace()
+
+    def setUpPointerSpace(self):
+        '''
+        For performance, we will draw the pointer 
+        on another surface that will reside on top 
+        of the plot frame
+        '''
+        # Make sure the cavas has the right attributes
+        self.canvas.plot_widget.setContentsMargins(0, 0, 0, 0)
+        self.canvas.plot_widget.setViewportMargins(0, 0, 0, 0)
+        self.canvas.plot_widget.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+
+        #create the pointer view
+        self._pointer_view = QtWidgets.QGraphicsView(
+            self.canvas.plot_widget)        
+        self._pointer_view.setContentsMargins(0, 0, 0, 0)
+        self._pointer_view.setViewportMargins(0, 0, 0, 0)
+
+        self._pointer_view.setWindowFlags(
+            QtCore.Qt.FramelessWindowHint)
+        self._pointer_view.setStyleSheet(
+            "background: transparent")
+        self._pointer_view.setAttribute(
+            QtCore.Qt.WA_TransparentForMouseEvents)
+        self._pointer_view.setHorizontalScrollBarPolicy(
+            QtCore.Qt.ScrollBarAlwaysOff)
+        self._pointer_view.setVerticalScrollBarPolicy(
+            QtCore.Qt.ScrollBarAlwaysOff)
+
+        self._pointer_scene = QtWidgets.QGraphicsScene()
+        self._pointer_scene.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
+        self._pointer_view.setScene(self._pointer_scene)
+
+        self.canvas.view.sigStateChanged.connect(self.resizePointerSpace)
+        self.resizePointerSpace()
+
+    def resizePointerSpace(self):
+        '''
+        The pointer space has to be resized when the initial
+        widget is
+        '''
+        self._pointer_view.setFixedSize(self.canvas.plot_widget.size())
+        self._pointer_view.setSceneRect(self.canvas.plot_widget.sceneRect())
+        self.pointer_component.getRanges()
+        self.label_component.getRanges()
+        self.draw()
 
     def initialize(self):
         '''
@@ -78,6 +120,13 @@ class Pointer(SessionNode):
         self.label_component    = PointerObject(self)
         self.pointer_position   = PointerPosition(self)
     
+        self.pointer_handler    = ParameterHandler(
+            name = 'Pointer', parent = self)
+        self.tick_handler       = ParameterHandler(
+            name = 'Ticks', parent = self)
+        self.label_handler       = ParameterHandler(
+            name = 'Label', parent = self)
+
         self.pointer_handler.addParameter(
             'Color',  QtGui.QColor('black'),
             method = self.processParameters)
@@ -162,7 +211,6 @@ class Pointer(SessionNode):
             'color': self.pointer_handler['Color'],
             'width': self.pointer_handler['Thickness']})
         
-
     def setup(self):
         '''
         Set the environnement and select the right
@@ -227,15 +275,15 @@ class Pointer(SessionNode):
             
             try:
                 self.pointer_position.evaluate()
-                self.canvas.multi_canvas.bottom_selector.label.setText(
-                    str(
-                        "  x = %"+str(self.pointer_handler['Precision'])+"f"
-                        ", y = %"+str(self.pointer_handler['Precision'])+"f"
-                        ", z = %"+str(self.pointer_handler['Precision'])+"f"
-                        )%(
-                            10**self.cursor_x if self.canvas.draw_surface.ctrl.logXCheck.isChecked() else self.cursor_x,
-                            10**self.cursor_y if self.canvas.draw_surface.ctrl.logYCheck.isChecked() else self.cursor_y,
-                            self.cursor_z))
+            #     self.canvas.multi_canvas.bottom_selector.label.setText(
+            #         str(
+            #             "  x = %"+str(self.pointer_handler['Precision'])+"f"
+            #             ", y = %"+str(self.pointer_handler['Precision'])+"f"
+            #             ", z = %"+str(self.pointer_handler['Precision'])+"f"
+            #             )%(
+            #                 10**self.cursor_x if self.canvas.draw_surface.ctrl.logXCheck.isChecked() else self.cursor_x,
+            #                 10**self.cursor_y if self.canvas.draw_surface.ctrl.logYCheck.isChecked() else self.cursor_y,
+            #                 self.cursor_z))
             except:
                 pass
         

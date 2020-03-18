@@ -25,7 +25,7 @@ from PyQt5 import QtGui
 import numpy as np
 from ...pyqtgraph.pyqtgraph     import opengl as gl
 from ..custom_pg_items.GLLinePlotItem import GLLinePlotItem
-from ...model.parameter_class   import ParameterHandler 
+from ...models.parameter_class   import ParameterHandler 
 
 from .ray_intersec_lib import rayTriangleIntersection
 from .ray_intersec_lib import closestPointOnLine

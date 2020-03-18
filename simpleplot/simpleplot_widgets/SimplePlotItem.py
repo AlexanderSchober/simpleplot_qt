@@ -26,6 +26,8 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from ..pyqtgraph.pyqtgraph.graphicsItems.PlotItem import *
 from ..pyqtgraph.pyqtgraph.WidgetGroup import WidgetGroup
+from ..pyqtgraph.pyqtgraph import Point
+import numpy as np
 
 #private dependencies
 from .plotConfigTemplate import *
@@ -135,3 +137,31 @@ class SimplePlotItem(PlotItem):
             c.setFftMode(b)
         self.canvas.artist.zoomer.zoom()
         self.recomputeAverages()
+
+    def mouseMoveEvent(self, ev):
+        if self.lastMousePos is None:
+            self.lastMousePos = Point(ev.pos())
+        delta = Point(ev.pos() - QtCore.QPoint(*self.lastMousePos))
+        self.lastMousePos = Point(ev.pos())
+
+        QtGui.QGraphicsView.mouseMoveEvent(self, ev)
+        
+        if not self.mouseEnabled:
+            return
+        self.sigSceneMouseMoved.emit(self.mapToScene(ev.pos()))
+            
+        if self.clickAccepted:  ## Ignore event if an item in the scene has already claimed it.
+            return
+        
+        if ev.buttons() == QtCore.Qt.RightButton:
+            delta = Point(np.clip(delta[0], -50, 50), np.clip(-delta[1], -50, 50))
+            scale = 1.01 ** delta
+            self.scale(scale[0], scale[1], center=self.mapToScene(self.mousePressPos))
+            self.sigDeviceRangeChanged.emit(self, self.range)
+
+        elif ev.buttons() in [QtCore.Qt.MidButton, QtCore.Qt.LeftButton]:  ## Allow panning by left or mid button.
+            px = self.pixelSize()
+            tr = -delta * px
+            
+            self.translate(tr[0], tr[1])
+            self.sigDeviceRangeChanged.emit(self, self.range)

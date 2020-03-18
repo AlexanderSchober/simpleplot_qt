@@ -30,8 +30,8 @@ import sys
 from .custome_axis_item import GLAxisItem
 from .custome_tick_item import GLTickItem
 from .custome_label_item import GLLabelItem
-from ..model.node import SessionNode
-from ..model.parameter_class import ParameterHandler 
+from ..models.session_node import SessionNode
+from ..models.parameter_class import ParameterHandler 
 
 class Axes3D(SessionNode): 
     '''
@@ -76,33 +76,33 @@ class Axes3D(SessionNode):
             # self.canvas.view.addItem(self.label_list[-1])
 
         self.x_direction.addParameter(
-            'Auto',  True,
+            'Auto',  False,
             method = self.refreshAuto)
         self.y_direction.addParameter(
-            'Auto',  True,
+            'Auto',  False,
             method = self.refreshAuto)
         self.z_direction.addParameter(
-            'Auto',  True,
+            'Auto',  False,
             method = self.refreshAuto)
 
         self.x_direction.addParameter(
-            'Axis',  True,
+            'Axis',  False,
             method = self.setAxes)
         self.y_direction.addParameter(
-            'Axis',  True,
+            'Axis',  False,
             method = self.setAxes)
         self.z_direction.addParameter(
-            'Axis',  True,
+            'Axis',  False,
             method = self.setAxes)
 
         self.x_direction.addParameter(
-            'Ticks',  True,
+            'Ticks',  False,
             method = self.setTicks)
         self.y_direction.addParameter(
-            'Ticks',  True,
+            'Ticks',  False,
             method = self.setTicks)
         self.z_direction.addParameter(
-            'Ticks',  True,
+            'Ticks',  False,
             method = self.setTicks)
 
         # self.x_direction.addParameter(
