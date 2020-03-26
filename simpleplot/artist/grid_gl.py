@@ -204,9 +204,9 @@ class GridGl(ParameterNode):
         '''
         set the colors of the grid
         '''
-        self.grid_items[0].setColor(*self.handlers[0]['Color'].getRgbF())
-        self.grid_items[1].setColor(*self.handlers[1]['Color'].getRgbF())
-        self.grid_items[2].setColor(*self.handlers[2]['Color'].getRgbF())
+        self.grid_items[0].setColor(self.handlers[0]['Color'])
+        self.grid_items[1].setColor(self.handlers[1]['Color'])
+        self.grid_items[2].setColor(self.handlers[2]['Color'])
 
     def refreshAuto(self):
         '''

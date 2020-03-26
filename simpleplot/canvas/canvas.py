@@ -164,7 +164,6 @@ class CanvasNode(SessionNode):
         '''
         self.plot_widget = SimplePlotWidget(self)
         self.draw_surface = self.plot_widget.getPlotItem()
-        # self.plot_widget.setViewportUpdateMode(QtGui.QGraphicsView.FullViewportUpdate)
         self.view = self.draw_surface.getViewBox()
         self.grid_layout.addWidget(self.plot_widget, 1, 1)
         self.artist = Artist2DNode(name = '2D Artist', parent = self, canvas = self)

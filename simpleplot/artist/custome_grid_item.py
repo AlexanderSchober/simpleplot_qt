@@ -38,7 +38,7 @@ class GLGridItem(gl.GLGridItem):
         gl.GLGridItem.__init__(self, *args, glOptions='opaque', **kwargs)
         self._color = [1,1,1,0.3]
 
-    def setColor(self, r,g,b,a):
+    def setColor(self, color):
         '''
         Set the color in which the plot will be drawn
 
@@ -49,7 +49,7 @@ class GLGridItem(gl.GLGridItem):
         b : int blue
 
         '''
-        self._color = [r,g,b,a]
+        self._color = color
         self.update()
 
     def setSize(self, x=[0.,1.], y=[0.,1.], z=[0.,1.], size = None):
@@ -77,7 +77,7 @@ class GLGridItem(gl.GLGridItem):
         xs,ys,zs = self.spacing()
         xvals = np.arange(x[0] - xs*0.001, x[1] + xs*0.001, xs) 
         yvals = np.arange(y[0] - ys*0.001, y[1] + ys*0.001, ys) 
-        glColor4f(*self._color)
+        glColor4f(*self._color.getRgbF())
         for x in xvals:
             glVertex3f(x, yvals[0], 0)
             glVertex3f(x, yvals[-1], 0)

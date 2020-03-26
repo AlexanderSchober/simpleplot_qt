@@ -385,7 +385,7 @@ def exampleSurfacePlot():
 
     ax.draw()
     histogram = surface.childFromName('Surface').childFromName('Shader').getHistogramItem()
-    ax.addItem('right', histogram)
+    ax.addHistogramItem('right', histogram)
     
     #show widget
     widget.show()
@@ -819,10 +819,10 @@ if __name__ == '__main__':
     # exampleItems()
     # exampleMultiLinePlot()
     # exampleProjectionPlot()
-    # exampleLinePlot()
+    exampleLinePlot()
     # example()
     # exampleSurfacePlot()
     # exampleVolumePlot()
-    exampleDistPlot()
+    # exampleDistPlot()
     # exampleCrystalPlot()
     # exampleStepPlot()

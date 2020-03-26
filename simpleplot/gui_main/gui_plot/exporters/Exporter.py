@@ -3,6 +3,8 @@ from ....pyqtgraph.pyqtgraph.Qt import QtGui, QtCore, QtSvg
 from ....pyqtgraph.pyqtgraph.python2_3 import asUnicode, basestring
 from ....pyqtgraph.pyqtgraph.GraphicsScene import GraphicsScene
 import os, re
+from functools import partial
+
 LastExportDirectory = None
 
 
@@ -32,7 +34,7 @@ class Exporter(object):
         """Return the parameters used to configure this exporter."""
         raise Exception("Abstract method must be overridden in subclass.")
         
-    def export(self, fileName=None, toBytes=False, copy=False):
+    def export(self,canvas_item, fileName=None, toBytes=False, copy=False):
         """
         If *fileName* is None, pop-up a file dialog.
         If *toBytes* is True, return a bytes object rather than writing to file.
@@ -40,7 +42,7 @@ class Exporter(object):
         """
         raise Exception("Abstract method must be overridden in subclass.")
 
-    def fileSaveDialog(self, filter=None, opts=None):
+    def fileSaveDialog(self,canvas_item, filter=None, opts=None):
         ## Show a file dialog, call self.export(fileName) when finished.
         if opts is None:
             opts = {}
@@ -58,10 +60,10 @@ class Exporter(object):
             self.fileDialog.setDirectory(exportDir)
         self.fileDialog.show()
         self.fileDialog.opts = opts
-        self.fileDialog.fileSelected.connect(self.fileSaveFinished)
+        self.fileDialog.fileSelected.connect(partial(self.fileSaveFinished, canvas_item))
         return
         
-    def fileSaveFinished(self, fileName):
+    def fileSaveFinished(self,canvas_item, fileName):
         fileName = asUnicode(fileName)
         global LastExportDirectory
         LastExportDirectory = os.path.split(fileName)[0]
@@ -74,7 +76,7 @@ class Exporter(object):
             if ext != selectedExt:
                 fileName = fileName + '.' + selectedExt.lstrip('.')
         
-        self.export(fileName=fileName, **self.fileDialog.opts)
+        self.export(canvas_item, fileName=fileName, **self.fileDialog.opts)
         
     def getScene(self):
         if isinstance(self.item, GraphicsScene):

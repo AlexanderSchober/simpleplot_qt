@@ -42,7 +42,7 @@ class PrintExporter(Exporter):
     def parameters(self):
         return self.params
     
-    def export(self, fileName=None):
+    def export(self,canvas_item, fileName=None):
         printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
         dialog = QtGui.QPrintDialog(printer)
         dialog.setWindowTitle("Print Document")

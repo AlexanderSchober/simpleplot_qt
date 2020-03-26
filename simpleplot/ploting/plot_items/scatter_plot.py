@@ -76,7 +76,7 @@ class ScatterPlot(ParameterHandler):
             will override the predefined values
         '''
         style           = kwargs['Style'] if 'Style' in kwargs.keys() else []
-        options         = ['o', 'd', 's', 't']
+        options         = ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']
         scatter_bool    = [option in style for option in options]
 
         symbol = options[scatter_bool.index(True)] if any(scatter_bool) else 'o'
@@ -100,6 +100,7 @@ class ScatterPlot(ParameterHandler):
             method  = self.refresh)
         self.addParameter(
             'Type', symbol ,
+            choices = options,
             names   = options,
             tags     = ['2D'],
             method  = self.refresh)
@@ -209,7 +210,7 @@ class ScatterPlot(ParameterHandler):
             kwargs          = self._getDictionary()
             self.draw_items = [SimplePlotDataItem(**kwargs)]
             self.draw_items[-1].setZValue(self['Depth'])
-            self.draw_items[-1].scatter.opts['useCache'] = False
+            self.draw_items[-1].scatter.opts['useCache'] = True
 
             for curve in self.draw_items:
                 self.default_target.draw_surface.addItem(curve)
