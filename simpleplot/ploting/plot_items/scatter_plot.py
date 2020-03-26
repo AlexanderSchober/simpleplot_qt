@@ -210,7 +210,7 @@ class ScatterPlot(ParameterHandler):
             kwargs          = self._getDictionary()
             self.draw_items = [SimplePlotDataItem(**kwargs)]
             self.draw_items[-1].setZValue(self['Depth'])
-            self.draw_items[-1].scatter.opts['useCache'] = True
+            self.draw_items[-1].scatter.opts['useCache'] = False
 
             for curve in self.draw_items:
                 self.default_target.draw_surface.addItem(curve)
