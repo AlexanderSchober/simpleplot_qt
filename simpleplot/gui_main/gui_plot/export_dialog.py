@@ -67,8 +67,8 @@ class ExportDialog(QtGui.QWidget):
                     scene_item = scene_item.parentItem()
                 self.updateItemList(select=scene_item)
             
-            self.scene.addItem(self.selectBox)
-            self.selectBox.setVisible(True)
+            # self.scene.addItem(self.selectBox)
+            # self.selectBox.setVisible(True)
 
         elif item.handler['Type'] == '3D':
             self.current_type = '3D'
@@ -109,11 +109,11 @@ class ExportDialog(QtGui.QWidget):
             return
         if item.gitem is self.scene and self.current_type == '2D':
             newBounds = self.canvas_item.view.viewRect()
-            self.selectBox.setRect(newBounds)
+            # self.selectBox.setRect(newBounds)
         elif self.current_type == '2D':
             newBounds = item.gitem.sceneBoundingRect()
-            self.selectBox.setRect(newBounds)
-        self.selectBox.show()
+            # self.selectBox.setRect(newBounds)
+        # self.selectBox.show()
         self.updateFormatList()
         
     def updateFormatList(self):
@@ -149,9 +149,9 @@ class ExportDialog(QtGui.QWidget):
         self.ui.copyBtn.setEnabled(exp.allowCopy)
         
     def exportClicked(self):
-        self.selectBox.hide()
+        # self.selectBox.hide()
         self.currentExporter.export(self.canvas_item)
         
     def copyClicked(self):
-        self.selectBox.hide()
+        # self.selectBox.hide()
         self.currentExporter.export(copy=True)
