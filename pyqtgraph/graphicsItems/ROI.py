@@ -2,7 +2,7 @@
 """
 ROI.py -  Interactive graphics items for GraphicsView (ROI widgets)
 Copyright 2010  Luke Campagnola
-Distributed under MIT/X11 license. See license.txt for more infomation.
+Distributed under MIT/X11 license. See license.txt for more information.
 
 Implements a series of graphics items which display movable/scalable/rotatable shapes
 for use as region-of-interest markers. ROI class automatically handles extraction 
@@ -428,6 +428,7 @@ class ROI(GraphicsObject):
 
     def handleMoveStarted(self):
         self.preMoveState = self.getState()
+        self.sigRegionChangeStarted.emit(self)
     
     def addTranslateHandle(self, pos, axes=None, item=None, name=None, index=None):
         """
@@ -711,10 +712,10 @@ class ROI(GraphicsObject):
                 
         if hover:
             self.setMouseHover(True)
-            self.sigHoverEvent.emit(self)
             ev.acceptClicks(QtCore.Qt.LeftButton)  ## If the ROI is hilighted, we should accept all clicks to avoid confusion.
             ev.acceptClicks(QtCore.Qt.RightButton)
             ev.acceptClicks(QtCore.Qt.MidButton)
+            self.sigHoverEvent.emit(self)
         else:
             self.setMouseHover(False)
 
@@ -928,6 +929,7 @@ class ROI(GraphicsObject):
             
             if h['type'] == 'rf':
                 h['item'].setPos(self.mapFromScene(p1))  ## changes ROI coordinates of handle
+                h['pos'] = self.mapFromParent(p1)
                 
         elif h['type'] == 'sr':
             if h['center'][0] == h['pos'][0]:
@@ -1553,7 +1555,7 @@ class RectROI(ROI):
             self.addScaleHandle([0.5, 1], [0.5, center[1]])
 
 class LineROI(ROI):
-    """
+    r"""
     Rectangular ROI subclass with scale-rotate handles on either side. This
     allows the ROI to be positioned as if moving the ends of a line segment.
     A third handle controls the width of the ROI orthogonal to its "line" axis.
@@ -1667,7 +1669,7 @@ class MultiRectROI(QtGui.QGraphicsObject):
         ms = min([r.shape[axes[1]] for r in rgns])
         sl = [slice(None)] * rgns[0].ndim
         sl[axes[1]] = slice(0,ms)
-        rgns = [r[sl] for r in rgns]
+        rgns = [r[tuple(sl)] for r in rgns]
         #print [r.shape for r in rgns], axes
         
         return np.concatenate(rgns, axis=axes[0])
