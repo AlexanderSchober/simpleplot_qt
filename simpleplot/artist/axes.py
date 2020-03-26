@@ -225,6 +225,8 @@ class Axes(SessionNode):
                     tickLength = self.tick_handler['Length'][i],
                     tickTextOffset = self.tick_handler['Offset'][i])
                 self.axes_list[i].tickFont = self.tick_handler['Font'][i]
+                self.axes_list[i].setTextPen(
+                    self.general_handler['Color'][i])
             else:
                 self.axes_list[i].setStyle( tickLength = 1 )
 
