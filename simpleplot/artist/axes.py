@@ -215,7 +215,7 @@ class Axes(SessionNode):
         for i in range(len(self.tick_handler['Active'])):
             if self.general_handler['Active'][i]:
                 self.axes_list[i].setPen(
-                    color = self.general_handler['Color'][i],
+                    self.general_handler['Color'][i],
                     width = self.general_handler['Thickness'][i])
             else:
                 pass

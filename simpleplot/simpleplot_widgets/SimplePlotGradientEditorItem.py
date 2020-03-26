@@ -1,15 +1,15 @@
+# -*- coding: utf-8 -*-
+import operator
 import weakref
 import numpy as np
 from ..pyqtgraph.pyqtgraph.Qt import QtGui, QtCore
-from ..pyqtgraph.pyqtgraph.python2_3 import sortList
+from ..pyqtgraph.pyqtgraph.Qt import QtGui, QtCore
 from ..pyqtgraph.pyqtgraph import functions as fn
 from ..pyqtgraph.pyqtgraph.graphicsItems.GraphicsObject import GraphicsObject
 from ..pyqtgraph.pyqtgraph.graphicsItems.GraphicsWidget import GraphicsWidget
 from ..pyqtgraph.pyqtgraph.widgets.SpinBox import SpinBox
 from ..pyqtgraph.pyqtgraph.pgcollections import OrderedDict
 from ..pyqtgraph.pyqtgraph.colormap import ColorMap
-from ..pyqtgraph.pyqtgraph.python2_3 import cmp
-
 
 __all__ = ['TickSliderItem', 'GradientEditorItem']
 
@@ -352,8 +352,7 @@ class TickSliderItem(GraphicsWidget):
     def listTicks(self):
         """Return a sorted list of all the Tick objects on the slider."""
         ## public
-        ticks = list(self.ticks.items())
-        sortList(ticks, lambda a,b: cmp(a[1], b[1]))  ## see pyqtgraph.python2_3.sortList
+        ticks = sorted(self.ticks.items(), key=operator.itemgetter(1))
         return ticks
 
 
