@@ -25,7 +25,8 @@ class ImageExporter(Exporter):
             scene = item.scene()
         else:
             scene = item
-        bgbrush = scene.views()[0].backgroundBrush()
+        # bgbrush = scene.views()[0].backgroundBrush()
+        bgbrush = QtGui.QBrush()
         bg = bgbrush.color()
         if bgbrush.style() == QtCore.Qt.NoBrush:
             bg.setAlpha(0)
@@ -53,7 +54,7 @@ class ImageExporter(Exporter):
     def parameters(self):
         return self.params
     
-    def export(self, fileName=None, toBytes=False, copy=False):
+    def export(self,canvas_item, fileName=None, toBytes=False, copy=False):
         if fileName is None and not toBytes and not copy:
             if QT_LIB in ['PySide', 'PySide2']:
                 filter = ["*."+str(f) for f in QtGui.QImageWriter.supportedImageFormats()]
@@ -64,7 +65,7 @@ class ImageExporter(Exporter):
                 if p in filter:
                     filter.remove(p)
                     filter.insert(0, p)
-            self.fileSaveDialog(filter=filter)
+            self.fileSaveDialog(canvas_item,filter=filter)
             return
             
         targetRect = QtCore.QRect(0, 0, self.params['width'], self.params['height'])

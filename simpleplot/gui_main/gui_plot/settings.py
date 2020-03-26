@@ -79,6 +79,7 @@ class PreferenceWidget(Ui_settings_widget):
             multi_canvas._model)
         self.export_widget.ui.expSubplot.currentIndexChanged.connect(
             self._selectExportCanvas)
+        self._selectExportCanvas(0)
         self.io_layout.addWidget(self.export_widget)
 
     def _initialize(self):

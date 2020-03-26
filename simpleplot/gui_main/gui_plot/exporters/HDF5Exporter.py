@@ -41,7 +41,7 @@ class HDF5Exporter(Exporter):
     def parameters(self):
         return self.params
     
-    def export(self, fileName=None):
+    def export(self,canvas_item, fileName=None):
         if not HAVE_HDF5:
             raise RuntimeError("This exporter requires the h5py package, "
                                "but it was not importable.")
@@ -50,7 +50,7 @@ class HDF5Exporter(Exporter):
             raise Exception("Must have a PlotItem selected for HDF5 export.")
         
         if fileName is None:
-            self.fileSaveDialog(filter=["*.h5", "*.hdf", "*.hd5"])
+            self.fileSaveDialog(canvas_item, filter=["*.h5", "*.hdf", "*.hd5"])
             return
         dsname = self.params['Name']
         fd = h5py.File(fileName, 'a') # forces append to file... 'w' doesn't seem to "delete/overwrite"

@@ -13,7 +13,7 @@ __all__ = ['CSVExporter']
     
     
 class CSVExporter(Exporter):
-    Name = "CSV from plot data"
+    Name = "CSV from curves"
     windows = []
     def __init__(self, item, canvas_type):
         Exporter.__init__(self, item)
@@ -23,69 +23,126 @@ class CSVExporter(Exporter):
         self.params = Parameter(name='params', type='group', children=[
             {'name': 'separator', 'type': 'list', 'value': 'comma', 'values': ['comma', 'tab']},
             {'name': 'precision', 'type': 'int', 'value': 10, 'limits': [0, None]},
-            {'name': 'columnMode', 'type': 'list', 'values': ['(x,y) per plot', '(x,y,y,y) for all plots']}
+            {'name': 'columnMode', 'type': 'list', 'values': ['(x,y) per plot', '(x,y,y,y) for all plots', '(x,y,e) per plot', '(x,y,e,y,e,y,e) for all plots']}
         ])
         
     def parameters(self):
         return self.params
     
-    def export(self, fileName=None):
-        
-        if not isinstance(self.item, PlotItem):
-            raise Exception("Must have a PlotItem selected for CSV export.")
-        
+    def export(self,canvas_item, fileName=None):
+
         if fileName is None:
-            self.fileSaveDialog(filter=["*.csv", "*.tsv"])
+            self.fileSaveDialog(canvas_item,filter=["*.csv", "*.tsv"])
             return
 
-        fd = open(fileName, 'w')
+        if canvas_item._plot_root.childFromName("Scatter") == None: 
+            return
+        else:
+            scatter_items = canvas_item._plot_root.childFromName("Scatter")._children
+
         data = []
+        error = []
+        names = []
+        append_all_x = (
+            self.params['columnMode'] == '(x,y) per plot'
+            or self.params['columnMode'] == '(x,y,e) per plot')
+        append_errors = (
+            self.params['columnMode'] == '(x,y,e) per plot'
+            or self.params['columnMode'] == '(x,y,e,y,e,y,e) for all plots'
+        )
         header = []
 
-        appendAllX = self.params['columnMode'] == '(x,y) per plot'
+        for i,scatter_item in enumerate(scatter_items):
+            data.append(scatter_item['Data'].getData())
+            names.append(scatter_item._name)
 
-        for i, c in enumerate(self.item.curves):
-            cd = c.getData()
-            if cd[0] is None:
-                continue
-            data.append(cd)
-            if hasattr(c, 'implements') and c.implements('plotData') and c.name() is not None:
-                name = c.name().replace('"', '""') + '_'
-                xName, yName = '"'+name+'x"', '"'+name+'y"'
+            if i == 0 or append_all_x:
+                temp_header = [
+                    scatter_item._name + " (x)",
+                    scatter_item._name + " (y)"]
             else:
-                xName = 'x%04d' % i
-                yName = 'y%04d' % i
-            if appendAllX or i == 0:
-                header.extend([xName, yName])
+                temp_header = [
+                    scatter_item._name + " (y)"]
+            temp_error = []
+            if append_errors and not scatter_item['Data'].getError() is None:
+                get_error = scatter_item['Data'].getError()
+                if 'width' in get_error.keys():
+                    temp_header.append(scatter_item._name + " (ex)")
+                    if isinstance(get_error['width'], list):
+                        temp_error.append(get_error['width'])
+                    else:
+                        temp_error.append([get_error['width'] for e in data[-1][0]])
+                if 'right' in get_error.keys():
+                    temp_header.append(scatter_item._name + " (ex+)")
+                    if isinstance(get_error['right'], list):
+                        temp_error.append(get_error['right'])
+                    else:
+                        temp_error.append([get_error['right'] for e in data[-1][0]])
+                if 'left' in get_error.keys():
+                    temp_header.append(scatter_item._name + " (ex-)")
+                    if isinstance(get_error['left'], list):
+                        temp_error.append(get_error['left'])
+                    else:
+                        temp_error.append([get_error['left'] for e in data[-1][0]])
+                if 'height' in get_error.keys():
+                    temp_header.append(scatter_item._name + " (ey)")
+                    if isinstance(get_error['height'], list):
+                        temp_error.append(get_error['height'])
+                    else:
+                        temp_error.append([get_error['height'] for e in data[-1][0]])
+                if 'top' in get_error.keys():
+                    temp_header.append(scatter_item._name + " (ey+)")
+                    if isinstance(get_error['top'], list):
+                        temp_error.append(get_error['top'])
+                    else:
+                        temp_error.append([get_error['top'] for e in data[-1][0]])
+                if 'bottom' in get_error.keys():
+                    temp_header.append(scatter_item._name + " (ey-)")
+                    if isinstance(get_error['bottom'], list):
+                        temp_error.append(get_error['bottom'])
+                    else:
+                        temp_error.append([get_error['bottom'] for e in data[-1][0]])
+                error.append(temp_error)
             else:
-                header.extend([yName])
+                error.append(None)
+
+            header.extend(temp_header)
 
         if self.params['separator'] == 'comma':
             sep = ','
         else:
             sep = '\t'
-            
-        fd.write(sep.join(header) + '\n')
-        i = 0
-        numFormat = '%%0.%dg' % self.params['precision']
-        numRows = max([len(d[0]) for d in data])
-        for i in range(numRows):
-            for j, d in enumerate(data):
-                # write x value if this is the first column, or if we want x 
-                # for all rows
-                if appendAllX or j == 0:
-                    if d is not None and i < len(d[0]):
-                        fd.write(numFormat % d[0][i] + sep)
+
+        with open(fileName, 'w') as fd:
+            fd.write(sep.join(header) + '\n')
+            i = 0
+            numFormat = '%%0.%dg' % self.params['precision']
+            numRows = max([len(d[0]) for d in data])
+            for i in range(numRows):
+                for j, d in enumerate(data):
+                    # write x value if this is the first column, or if we want
+                    # x for all rows
+                    if append_all_x or j == 0:
+                        if d is not None and i < len(d[0]):
+                            fd.write(numFormat % d[0][i] + sep)
+                        else:
+                            fd.write(' %s' % sep)
+
+                    # write y value
+                    if d is not None and i < len(d[1]):
+                        fd.write(numFormat % d[1][i] + sep)
                     else:
                         fd.write(' %s' % sep)
-                
-                # write y value 
-                if d is not None and i < len(d[1]):
-                    fd.write(numFormat % d[1][i] + sep)
-                else:
-                    fd.write(' %s' % sep)
-            fd.write('\n')
-        fd.close()
+
+                    # write error value
+                    if append_errors and not error[j] is None :
+                        if i < len(d[1]):
+                            for e in error[j]:
+                                fd.write(numFormat % e[i] + sep)
+                        else:
+                            for e in error[j]:
+                                fd.write(' %s' % sep)
+                fd.write('\n')
 
 CSVExporter.register()        
                 

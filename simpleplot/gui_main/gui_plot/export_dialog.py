@@ -54,25 +54,27 @@ class ExportDialog(QtGui.QWidget):
             return
         if item.handler['Type'] == '2D':
             self.current_type = '2D'
-            item = item.plot_widget
-            self.scene = item
+            self.canvas_item = item
+            self.scene = item.plot_widget
+            scene_item = self.scene
 
-            if item is not None:
+            if scene_item is not None:
                 ## Select next exportable parent of the item originally clicked on
-                while not isinstance(item, ViewBox) and not isinstance(item, PlotItem) and item is not None:
-                    item = item.parentItem()
+                while not isinstance(scene_item, ViewBox) and not isinstance(scene_item, PlotItem) and scene_item is not None:
+                    scene_item = scene_item.parentItem()
                 ## if this is a ViewBox inside a PlotItem, select the parent instead.
-                if isinstance(item, ViewBox) and isinstance(item.parentItem(), PlotItem):
-                    item = item.parentItem()
-                self.updateItemList(select=item)
+                if isinstance(scene_item, ViewBox) and isinstance(scene_item.parentItem(), PlotItem):
+                    scene_item = scene_item.parentItem()
+                self.updateItemList(select=scene_item)
             
             self.scene.addItem(self.selectBox)
             self.selectBox.setVisible(True)
 
         elif item.handler['Type'] == '3D':
             self.current_type = '3D'
-            item = item.view
-            self.updateItemList(select=item)
+            self.canvas_item = item
+            self.scene = item.view
+            self.updateItemList(select=self.scene)
 
     def updateItemList(self, select=None):
         self.ui.itemTree.clear()
@@ -106,7 +108,7 @@ class ExportDialog(QtGui.QWidget):
         if item is None:
             return
         if item.gitem is self.scene and self.current_type == '2D':
-            newBounds = self.scene.views()[0].viewRect()
+            newBounds = self.canvas_item.view.viewRect()
             self.selectBox.setRect(newBounds)
         elif self.current_type == '2D':
             newBounds = item.gitem.sceneBoundingRect()
@@ -148,7 +150,7 @@ class ExportDialog(QtGui.QWidget):
         
     def exportClicked(self):
         self.selectBox.hide()
-        self.currentExporter.export()
+        self.currentExporter.export(self.canvas_item)
         
     def copyClicked(self):
         self.selectBox.hide()
