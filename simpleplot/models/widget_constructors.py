@@ -374,3 +374,45 @@ class fontWidgetConstructor:
         '''
         return self.manager._model.font_picker.currentFont()
 
+class pathDialogConstructor:
+    '''
+    '''
+    def __init__(self, parent = None): 
+        self.manager = parent
+        
+    def create(self,parent, value = None, index = None):
+        self._index = QtCore.QModelIndex(index)
+        item = QtWidgets.QWidget(parent)
+        self.path = value
+        self.updateInternals()
+        return item
+
+    def setEditorData(self,editor):
+        pass
+
+    def updateInternals(self):
+        '''
+        '''
+        if 'mode' in self.manager.kwargs.keys() and self.manager.kwargs['mode'] == 'getFile':
+            self.manager._value = QtWidgets.QFileDialog.getOpenFileName(
+                None,
+                'Select a file to laod:',
+                self.path,
+                ';;'.join(self.manager.kwargs['filetypes'])
+            )[0]
+        
+        self.path = self.manager._value
+        self.manager._model.dataChanged.emit(
+            self.manager.index(),
+            self.manager.index())
+
+        if 'method' in self.manager.kwargs.keys():
+            self.manager.kwargs['method']()
+
+        self.manager.parent().setString()
+
+    def retrieveData(self, editor):
+        '''
+        '''
+        return self.path
+

@@ -47,7 +47,7 @@ def startPlayGround():
     data_item = data_node.addDataItem()
 
     from .core.io.io_data_import import IODataLoad
-    loader = IODataLoad(data_item.data_item, r"/home/alexander/Desktop/example.txt")
+    loader = IODataLoad(data_item.data_item, r"~/home/alexander/Desktop/example.txt")
     loader.load("txt")
 
     behavior = [
@@ -451,7 +451,6 @@ def exampleStepPlot():
     #show widget
     widget.show()
     sys.exit(app.exec_())
-
 
 def exampleVolumePlot():
     #set upt the window and the plot widget

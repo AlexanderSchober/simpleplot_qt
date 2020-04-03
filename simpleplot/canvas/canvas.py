@@ -94,6 +94,11 @@ class CanvasNode(SessionNode):
         self.handler.addParameter(
             'Vertical spacing', 1,
             method = self._setVerticalSpacing)
+        self.handler.addParameter(
+            'Configuration path', '',
+            filetypes = ['JSON (*.json)'],
+            mode = 'getFile',
+            method = self._configurationPathSet)
 
         self._plot_root  = SessionNode('Root', None) 
         self._plot_model = PlotModel(self._plot_root, self.multi_canvas)
@@ -207,6 +212,14 @@ class CanvasNode(SessionNode):
     def mouseDrag(self,event):
         self.mouse.drag(event)
 
+    def _configurationPathSet(self):
+        '''
+        Checks what to do with the cofiguration path
+        This will be usefull when reloading graphs and
+        saving their visual state and setting the default
+        '''
+        print('Changed the path: ', self.handler['Configuration path'])
+        
     def generateDefaultConfiguration(self):
         '''
         Saves the configuration to file 

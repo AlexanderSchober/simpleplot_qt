@@ -69,7 +69,7 @@ class HDF5Exporter(Exporter):
             data.append(d[1])
 
 
-        fdata = numpy.array(data).astype('double')
+        fdata = np.array(data).astype('double')
         dset = fd.create_dataset(dsname, data=fdata)
         fd.close()
 

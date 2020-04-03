@@ -38,6 +38,7 @@ from .widget_constructors import colorWidgetConstructor
 from .widget_constructors import fontWidgetConstructor
 from .widget_constructors import checkBoxConstructor
 from .widget_constructors import gradientConstructor 
+from .widget_constructors import pathDialogConstructor 
 
 from ..simpleplot_widgets.SimplePlotGradientEditorItem import GradientEditorItem
 
@@ -434,10 +435,12 @@ class ParameterValue(ParameterMaster, ParameterItem):
             self._constructor = doubleSpinBoxConstructor(self)
             self._value = float(self._value)
         elif type(value) == str:
-            if not 'choices' in kwargs.keys():
-                self._constructor = lineEditConstructor(self)
-            else:
+            if 'choices' in kwargs.keys():
                 self._constructor = comboBoxConstructor(self)
+            elif 'filetypes' in kwargs.keys():
+                self._constructor = pathDialogConstructor(self)
+            else:
+                self._constructor = lineEditConstructor(self)
         elif type(value) == QtGui.QColor:
             self._constructor = colorWidgetConstructor(self)
         elif type(value) == QtGui.QFont:
