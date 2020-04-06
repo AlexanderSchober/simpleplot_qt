@@ -23,7 +23,16 @@
 
 from setuptools import setup, find_packages
 import simpleplot
-setup(
+import os
+
+def change_permissions_recursive(path, mode):
+    for root, dirs, files in os.walk(path, topdown=False):
+        for dir_path in [os.path.join(root,d) for d in dirs]:
+            os.chmod(dir_path, mode)
+        for file_path in [os.path.join(root, f) for f in files]:
+            os.chmod(file_path, mode)
+
+installation = setup(
     name = 'SimplePlot',
     version =simpleplot.__version__,
     license = 'GPL',
@@ -46,3 +55,20 @@ setup(
         'Topic :: Scientific/Engineering :: Human Machine Interfaces'
     ],
 )
+
+import site
+import glob
+site_package_path = site.getsitepackages()[0]
+search = os.path.sep.join(site_package_path.split(os.path.sep)+['SimplePlot*'])
+simpleplot_package_path = glob.glob(search)[0]
+os.mkdir(os.path.sep.join([simpleplot_package_path] + ['simpleplot'] + ['ressources'] + ['settings']))
+
+os.mkdir(os.path.sep.join([simpleplot_package_path] + ['simpleplot'] + ['ressources'] + ['settings'] + ['canvas']))
+os.mkdir(os.path.sep.join([simpleplot_package_path] + ['simpleplot'] + ['ressources'] + ['settings'] + ['canvas'] + ['default']))
+os.mkdir(os.path.sep.join([simpleplot_package_path] + ['simpleplot'] + ['ressources'] + ['settings'] + ['canvas'] + ['user_defined']))
+
+os.mkdir(os.path.sep.join([simpleplot_package_path] + ['simpleplot'] + ['ressources'] + ['settings'] + ['plot'] ))
+os.mkdir(os.path.sep.join([simpleplot_package_path] + ['simpleplot'] + ['ressources'] + ['settings'] + ['plot'] + ['default']))
+os.mkdir(os.path.sep.join([simpleplot_package_path] + ['simpleplot'] + ['ressources'] + ['settings'] + ['plot'] + ['user_defined']))
+
+change_permissions_recursive(os.path.sep.join([simpleplot_package_path] +['simpleplot']+ ['ressources'] + ['settings'] ), 0o777)
