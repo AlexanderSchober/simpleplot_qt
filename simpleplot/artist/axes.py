@@ -79,8 +79,9 @@ class Axes(SessionNode):
             method = self.setAxisStyle)
         self.general_handler.addParameter(
             'Color', [
-                QtGui.QColor('b'),QtGui.QColor('b'),
-                QtGui.QColor('b'),QtGui.QColor('b')],
+                QtGui.QColor('#808080'),QtGui.QColor('#808080'),
+                QtGui.QColor('#808080'),QtGui.QColor('#808080')],
+            names  = ['left', 'bottom', 'right', 'top'],
             method = self.setAxisStyle)
 
         self.tick_handler.addParameter(
@@ -122,8 +123,8 @@ class Axes(SessionNode):
             method = self.setLabel)
         self.label_handler.addParameter(
             'Color',  [
-                QtGui.QColor('b'),QtGui.QColor('b'),
-                QtGui.QColor('b'),QtGui.QColor('b')],
+                QtGui.QColor('#808080'),QtGui.QColor('#808080'),
+                QtGui.QColor('#808080'),QtGui.QColor('#808080')],
             names  = ['left', 'bottom', 'right', 'top'],
             method = self.setLabel)   
 

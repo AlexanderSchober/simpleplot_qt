@@ -128,7 +128,7 @@ class Pointer(SessionNode):
             name = 'Label', parent = self)
 
         self.pointer_handler.addParameter(
-            'Color',  QtGui.QColor('black'),
+            'Color',  QtGui.QColor('#808080'),
             method = self.processParameters)
         self.pointer_handler.addParameter(
             'Thickness', 3,
@@ -168,7 +168,7 @@ class Pointer(SessionNode):
             choices = ['0','1', '2'],
             method = self.processParameters)
         self.label_handler.addParameter(
-            'Color',  QtGui.QColor('black'),
+            'Color',  QtGui.QColor('#808080'),
             method = self.processParameters)
         self.label_handler.addParameter(
             'Scientific',  [False,False,False,False],
@@ -187,7 +187,7 @@ class Pointer(SessionNode):
             'Thickness', 5,
             method = self.processParameters)
         self.tick_handler.addParameter(
-            'Color',  QtGui.QColor('blue'),
+            'Color',  QtGui.QColor('#808080'),
             method = self.processParameters)
         self.tick_handler.addParameter(
             'Offset',  0,

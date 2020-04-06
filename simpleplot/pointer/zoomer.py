@@ -66,7 +66,7 @@ class Zoomer(ParameterHandler):
         self.addParameter(
             'Zoom precision', 3)
         self.addParameter(
-            'Zoom box', [QtGui.QColor(50,50,50,255),QtGui.QColor(50,50,50,100),1],
+            'Zoom box', [QtGui.QColor(80,80,80,255),QtGui.QColor(80,80,80,100),1],
             names = ['Pen color','Brush color', 'Pen thickness'],
             method = self._initRect)
 
