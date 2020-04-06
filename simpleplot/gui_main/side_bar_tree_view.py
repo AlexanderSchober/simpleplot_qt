@@ -32,6 +32,7 @@ class SidebarTreeView(QtWidgets.QTreeView):
         super(SidebarTreeView, self).__init__(*args, **kwargs)
 
         self.setMouseTracking(True)
+        self.setAutoScroll(False)
         
         self._hover_buttons = [
             QtWidgets.QPushButton(self.viewport()),
