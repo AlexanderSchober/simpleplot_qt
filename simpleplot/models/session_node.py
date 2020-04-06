@@ -1,6 +1,7 @@
 #import general
 from PyQt5 import QtWidgets, QtGui, QtCore
 import json
+import os
 
 class SessionNode(QtGui.QStandardItem):
     
@@ -136,6 +137,7 @@ class SessionNode(QtGui.QStandardItem):
         output = self.save()
         with open(path, 'w') as f:
             json.dump(output, f)
+        os.chmod(path, 0o777)
 
     def load(self, input_dict):
         '''

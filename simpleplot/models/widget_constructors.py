@@ -383,7 +383,7 @@ class pathDialogConstructor:
     def create(self,parent, value = None, index = None):
         self._index = QtCore.QModelIndex(index)
         item = QtWidgets.QWidget(parent)
-        self.path = value
+        self.path = self.manager._value
         self.updateInternals()
         return item
 
@@ -394,14 +394,13 @@ class pathDialogConstructor:
         '''
         '''
         if 'mode' in self.manager.kwargs.keys() and self.manager.kwargs['mode'] == 'getFile':
-            self.manager._value = QtWidgets.QFileDialog.getOpenFileName(
-                None,
-                'Select a file to laod:',
-                self.path,
-                ';;'.join(self.manager.kwargs['filetypes'])
-            )[0]
-        
-        self.path = self.manager._value
+            temp_path = QtWidgets.QFileDialog.getOpenFileName(
+                None,'Select a file to laod:',
+                self.path,';;'.join(self.manager.kwargs['filetypes']))[0]
+
+        if not temp_path == 'None' and not temp_path == '':
+            self.path = temp_path
+        self.manager._value = self.path
         self.manager._model.dataChanged.emit(
             self.manager.index(),
             self.manager.index())
@@ -414,5 +413,5 @@ class pathDialogConstructor:
     def retrieveData(self, editor):
         '''
         '''
-        return self.path
+        return self.manager._value
 

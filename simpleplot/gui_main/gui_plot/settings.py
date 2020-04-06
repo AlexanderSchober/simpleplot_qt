@@ -21,16 +21,14 @@
 #
 # *****************************************************************************
 
-
-
-
 from PyQt5 import QtGui,QtCore,QtWidgets
 from functools import partial
 
-from ...pyqtgraph import pyqtgraph as pg
-from .setting_widget_ui import Ui_settings_widget
-from ...models.delegates  import ParameterDelegate
-from .export_dialog     import ExportDialog
+from ...pyqtgraph           import pyqtgraph as pg
+from .setting_widget_ui     import Ui_settings_widget
+from ...models.delegates    import ParameterDelegate
+from .export_dialog         import ExportDialog
+from ..side_bar_tree_view   import SidebarTreeView
 
 import sys
 import numpy as np
@@ -40,28 +38,23 @@ class PreferenceWidget(Ui_settings_widget):
         self.multi_canvas = multi_canvas
         self._initialize()
 
+        self.canvas_tree_view = SidebarTreeView(self.canvas_tab)
+        self.canvas_tree_view.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
+        self.verticalLayout_2.addWidget(self.canvas_tree_view)
+
         self.canvas_tree_view.setModel(multi_canvas._model)
         self.canvas_tree_view.collapsed.connect(self._resizeTree)
         self.canvas_tree_view.expanded.connect(self._resizeTree)
+
         self.delegate = ParameterDelegate()
-        
-        self.canvas_tree_view.setItemDelegate(
-            self.delegate)
-        self.plot_tree_view.setItemDelegate(
-            self.delegate)
-        
-        self.canvas_select.setModel(
-            multi_canvas._model)
-        self.canvas_select.currentIndexChanged.connect(
-            self._selectCanvas)
+        self.canvas_tree_view.setItemDelegate(self.delegate)
+        self.plot_tree_view.setItemDelegate(self.delegate)
 
+        self.canvas_select.setModel(multi_canvas._model)
+        self.canvas_select.currentIndexChanged.connect(self._selectCanvas)
         self._selectCanvas(0)
-
-        self.plot_tree_view.collapsed.connect(
-            self._resizePlotTree)
-        self.plot_tree_view.expanded.connect(
-            self._resizePlotTree)
-
+        self.plot_tree_view.collapsed.connect(self._resizePlotTree)
+        self.plot_tree_view.expanded.connect(self._resizePlotTree)
         self._resizePlotTree()
         self._resizeTree()
 
@@ -81,6 +74,14 @@ class PreferenceWidget(Ui_settings_widget):
             self._selectExportCanvas)
         self._selectExportCanvas(0)
         self.io_layout.addWidget(self.export_widget)
+
+        
+        # self._save_canvas_button = QtWidgets.QPushButton("Save")
+        # self._load_canvas_button = QtWidgets.QPushButton("Load")
+        # temp_horizontal_layout = QtWidgets.QHBoxLayout()
+        # temp_horizontal_layout.addWidget(self._save_canvas_button)
+        # temp_horizontal_layout.addWidget(self._load_canvas_button)
+        
 
     def _initialize(self):
         '''
@@ -114,78 +115,30 @@ class PreferenceWidget(Ui_settings_widget):
         '''
         When the combobox is activated the selected canvas
         plot items should be displayed in the treeview
+
+        Parameters:
+        - - - - - - - - - - - 
+        index : int
+            The value of the cnvas in the index to export
         '''
         try:
-            self.plot_tree_view.setModel(self.multi_canvas._rootNode._children[index]._plot_model)
+            self.plot_tree_view.setModel(
+                self.multi_canvas._rootNode._children[index]._plot_model)
         except:
             pass
-
-    def _updateTable(self):
-        '''
-        Put the elements into the table widget
-        '''
-        index = self.plot_tree_view.selectedIndexes()[0]
-        item  = index.model().getNode(index)
-
-        if item.type == 'Scatter':
-            self.header     = []
-            self.data_list  = []
-
-            if not isinstance(item.x_data, type(None)):
-                self.header.append('x')
-                self.data_list.append(item.x_data.tolist())
-            if not isinstance(item.y_data, type(None)):
-                self.header.append('y')
-                self.data_list.append(item.y_data.tolist())
-            if not isinstance(item.z_data, type(None)):
-                self.header.append('z')
-                self.data_list.append(item.z_data.tolist())
-            if not isinstance(item.parameters['Error'][0], type(None)):
-                for key in item.parameters['Error'][0].keys():
-                    if key in ['top', 'bottom', 'width', 'height']:
-                        self.header.append(key)
-                        values = item.parameters['Error'][0][key]
-                        if isinstance(values, float) or isinstance(values, int):
-                            self.data_list.append([item.parameters['Error'][0][key] for i in range(len(self.data_list[0]))])
-                        else:
-                            self.data_list.append(item.parameters['Error'][0][key])
-
-            self.data_list = np.array(self.data_list).transpose().tolist()
-            self.rows = [e for e in range(len(self.data_list))]
-
-        elif item.type == 'Surface':
-            self.header     = []
-            self.data_list  = []
-
-            if not isinstance(item.x_data, type(None)):
-                self.header = np.around(item.x_data, 4).tolist()
-            else:
-                self.header = [i for i in range(item.z_data.shape[0])]
-
-            if not isinstance(item.y_data, type(None)):
-                self.rows = np.around(item.y_data, 4).tolist()
-            else:
-                self.rows = [i for i in range(item.z_data.shape[1])]
-
-            self.data_list = item.z_data.tolist()
-
-        else:
-            self.header     = []
-            self.data_list  = []
-            self.rows       = []
-
-        self.data_model = DataTableModel(
-            self,self.data_list, 
-            self.header,self.rows)
-
-        self.plot_data_view.setModel(self.data_model)
 
     def _selectExportCanvas(self, index):
         '''
         send the currently selected subplot top the 
         export manager
+
+        Parameters:
+        - - - - - - - - - - - 
+        index : int
+            The value of the cnvas in the index to export
         '''
-        self.export_widget.refreshSubplot(self.multi_canvas._rootNode._children[index])
+        self.export_widget.refreshSubplot(
+            self.multi_canvas._rootNode._children[index])
 
 class DataTableModel(QtCore.QAbstractTableModel):
     def __init__(self, parent, data_list, col_header,row_header, *args):

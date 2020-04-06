@@ -67,12 +67,16 @@ class SidebarTreeView(QtWidgets.QTreeView):
             return
 
         rect = self.visualRect(self.indexAt(event.pos()))
-
+        rect.setX(0)
+        rect.setWidth(self.viewport().width())
         position  = QtCore.QPoint(rect.x()+rect.width(), rect.y())
         for button in self._hover_buttons[::-1]:
             if button.isVisible():
                 position = QtCore.QPoint(position.x() - rect.height(), position.y())
-                button.setGeometry(position.x(), position.y(), rect.height(), rect.height())
+                button.setFlat(True) #mac minimum size restriction
+                button.setGeometry(
+                    position.x(), position.y(), 
+                    rect.height(), rect.height())
 
     def _hideAllHoverButtons(self):
         '''

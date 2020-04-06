@@ -46,42 +46,42 @@ def startPlayGround():
     data_node = project_item.childFromName('Datasets')
     data_item = data_node.addDataItem()
 
-    from .core.io.io_data_import import IODataLoad
-    loader = IODataLoad(data_item.data_item, r"~/home/alexander/Desktop/example.txt")
-    loader.load("txt")
+    # from .core.io.io_data_import import IODataLoad
+    # loader = IODataLoad(data_item.data_item, r"~/home/alexander/Desktop/example.txt")
+    # loader.load("txt")
 
-    behavior = [
-        ['[ dim_1 ]', 'Variable 0', 0], 
-        ['[ dim_2 ]', 'Variable 1', 0], 
-        ['Data axis n. 0', 'x', 0]]
+    # behavior = [
+    #     ['[ dim_1 ]', 'Variable 0', 0], 
+    #     ['[ dim_2 ]', 'Variable 1', 0], 
+    #     ['Data axis n. 0', 'x', 0]]
 
-    from .models.project_node import FitLinkItem, FitItem
-    data_link_item  = FitLinkItem()
-    data_injector   = data_link_item.data_injector
-    data_injector.setDataSource(data_item.data_item)
-    data_injector.setBehavior(
-        behavior, 
-        ['x','Variable 0', 'Variable 1'])
-    new_fit_item    = FitItem(link_item = data_injector) 
+    # from .models.project_node import FitLinkItem, FitItem
+    # data_link_item  = FitLinkItem()
+    # data_injector   = data_link_item.data_injector
+    # data_injector.setDataSource(data_item.data_item)
+    # data_injector.setBehavior(
+    #     behavior, 
+    #     ['x','Variable 0', 'Variable 1'])
+    # new_fit_item    = FitItem(link_item = data_injector) 
 
-    target = None
-    for widget in QtWidgets.QApplication.topLevelWidgets():
-        if widget.__class__.__name__ == "MainWindow":
-            target = widget
-    if target == None: return
+    # target = None
+    # for widget in QtWidgets.QApplication.topLevelWidgets():
+    #     if widget.__class__.__name__ == "MainWindow":
+    #         target = widget
+    # if target == None: return
 
-    target_model = target._model
-    target_model.insertRows(
-        data_item.childCount(), 1,
-        [data_link_item], data_item
-    )
-    target_model.insertRows(
-        project_item.childFromName("Analysis").childCount(), 
-        1, [new_fit_item], 
-        project_item.childFromName("Analysis")
-    )
+    # target_model = target._model
+    # target_model.insertRows(
+    #     data_item.childCount(), 1,
+    #     [data_link_item], data_item
+    # )
+    # target_model.insertRows(
+    #     project_item.childFromName("Analysis").childCount(), 
+    #     1, [new_fit_item], 
+    #     project_item.childFromName("Analysis")
+    # )
     
-    data_injector.addFitTarget(new_fit_item)
+    # data_injector.addFitTarget(new_fit_item)
 
     #set the import
     # import_window = window._sidebar.addDataTxt(target.childFromName("Datasets"))

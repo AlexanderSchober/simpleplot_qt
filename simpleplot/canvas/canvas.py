@@ -62,6 +62,7 @@ class CanvasNode(SessionNode):
         
         #set the locals from keywords
         self.multi_canvas   = kwargs['multi_canvas']
+        self._ignore_path_change = False
         self._initialize(**kwargs)
         self._buildSupport()
         self._buildGraph()
@@ -74,7 +75,7 @@ class CanvasNode(SessionNode):
         '''
         self.mouse = Mouse(self)
 
-        self.handler        = ParameterHandler(
+        self.handler = ParameterHandler(
             name = 'Canvas options', 
             parent = self) 
 
@@ -218,64 +219,119 @@ class CanvasNode(SessionNode):
         This will be usefull when reloading graphs and
         saving their visual state and setting the default
         '''
-        print('Changed the path: ', self.handler['Configuration path'])
+        if os.path.exists(self.handler['Configuration path']) and not self._ignore_path_change:
+            self._ignore_path_change = True
+            temp_path = self.handler['Configuration path']
+            self.loadFromFile(self.handler['Configuration path'])
+            self.handler.items['Configuration path'].updateValue(temp_path, False)
+            self._ignore_path_change = False
         
+    def _manageDefaultConfiguration(self):
+        '''
+        This method will have a look if the default configuration is present
+        for this Canavas type and then generate it if need be
+        '''
+        path_default  = os.path.sep.join(
+            os.path.dirname(__file__).split(os.path.sep)[:-1]
+            + ['ressources'] + ['settings'] + ['canvas']
+            + ['default'] + [self.handler['Type']+'_canvas.json'])
+        
+        if not os.path.exists(path_default):
+            self.generateDefaultConfiguration()
+
+        path_user  = os.path.sep.join(
+            os.path.dirname(__file__).split(os.path.sep)[:-1]
+            + ['ressources'] + ['settings'] + ['canvas']
+            + ['user_defined'] + [self.handler['Type']+'_canvas.json'])
+        
+        if not os.path.exists(path_user):
+            self.generateUserConfiguration()
+
+        self.handler['Configuration path'] = path_user
+
     def generateDefaultConfiguration(self):
         '''
-        Saves the configuration to file 
-        while the path depends on the type
+        Saves the general default configuration for the plot 
+        type that we ghave here. Note that the default
+        configuration gets generated once on the first launch 
+        and is then fixed
         '''
-        path  = os.path.sep.join(
+        path_default  = os.path.sep.join(
             os.path.dirname(__file__).split(os.path.sep)[:-1]
-            + ['ressources']
-            + ['settings']
-            + ['canvas']
-            + ['default']
-            + [self.handler['Type']+'_canvas.json'])
+            + ['ressources'] + ['settings'] + ['canvas']
+            + ['default'] + [self.handler['Type']+'_canvas.json'])
 
-        self.saveToFile(path)
+        self.saveToFile(path_default)
+
+    def generateUserConfiguration(self):
+        '''
+        Saves the current configuration as the user configuration 
+        to be used for all future plots. This can be usefull if
+        somone like all th ebackgrounds to be black for example
+        '''
+        path_user  = os.path.sep.join(
+            os.path.dirname(__file__).split(os.path.sep)[:-1]
+            + ['ressources'] + ['settings'] + ['canvas']
+            + ['user_defined'] + [self.handler['Type']+'_canvas.json'])
+
+        self.saveToFile(path_user)
+        self.handler['Configuration path'] = path_user
 
     def saveConfiguration(self):
         '''
         Saves the configuration to file 
         while the path depends on the type
         '''
-        path  = os.path.sep.join(
-            os.path.dirname(__file__).split(os.path.sep)[:-1]
-            + ['ressources']
-            + ['settings']
-            + ['canvas']
-            + ['user_defined']
-            + [self.handler['Type']+'_canvas.json'])
+        path_external  = QtWidgets.QFileDialog.getSaveFileName(
+            None, 'Set the output file', '', 'JSON (*.json)')[0]
 
-        self.saveToFile(path)
+        if not path_external == '':
+            self.saveToFile(path_external)
+            self.handler['Configuration path'] = path_external
+
+    def loadConfiguration(self):
+        '''
+        Loads a configuration
+        '''
+        path_external  = QtWidgets.QFileDialog.getOpenFileName(
+            None, 'Set the output file', '', 'JSON (*.json)')[0]
+
+        if not path_external == '':
+            self.handler['Configuration path'] = path_external
 
     def loadDefaultConfiguration(self):
         '''
-        Saves the configuration to file 
-        while the path depends on the type
+        Loads the default user configuration to clean 
+        all current editing
         '''
-        path  = os.path.sep.join(
+        path_user  = os.path.sep.join(
             os.path.dirname(__file__).split(os.path.sep)[:-1]
-            + ['ressources']
-            + ['settings']
-            + ['canvas']
-            + ['default']
-            + [self.handler['Type']+'_canvas.json'])
+            + ['ressources'] + ['settings'] + ['canvas']
+            + ['user_defined'] + [self.handler['Type']+'_canvas.json'])
 
-        self.loadFromFile(path)
+        self.handler['Configuration path'] = path_user
 
-    def loadUserConfiguration(self):
+    def setHoverButtons(self, button_list):
         '''
-        Saves the configuration to file 
-        while the path depends on the type
+        Set up all the hover button functionalities
         '''
-        path  = os.path.sep.join(
-            os.path.dirname(__file__).split(os.path.sep)[:-1]
-            + ['ressources']
-            + ['settings']
-            + ['canvas']
-            + ['user_defined']
-            + [self.handler['Type']+'_canvas.json'])
+        button_list[0].setVisible(True)
+        button_list[0].setText("")
+        button_list[0].setIcon(
+            button_list[0].style().standardIcon(QtGui.QStyle.SP_DialogSaveButton))
+        button_list[0].clicked.connect(self.saveConfiguration)
+        button_list[0].setToolTip("Save configuration")
 
-        self.loadFromFile(path)
+        button_list[1].setVisible(True)
+        button_list[1].setText("")
+        button_list[1].setIcon(
+            button_list[1].style().standardIcon(QtGui.QStyle.SP_DialogOpenButton))
+        button_list[1].clicked.connect(self.loadConfiguration)
+        button_list[1].setToolTip("Load configuration")
+
+        button_list[2].setVisible(True)
+        button_list[2].setText("")
+        button_list[2].setIcon(
+            button_list[2].style().standardIcon(QtGui.QStyle.SP_DialogResetButton))
+        button_list[2].clicked.connect(self.loadDefaultConfiguration)
+        button_list[2].setToolTip("Reset configuration")

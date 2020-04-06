@@ -144,7 +144,7 @@ class PlotModel(QtCore.QAbstractItemModel):
         if not index.parent().internalPointer() is None:
             return index.parent().internalPointer().child(index.row())
         else:
-            return None
+            return self.getNode(index)
 
     """INPUTS: int, int, QModelIndex"""
     def insertRows(self, position, rows, items, parentNode):

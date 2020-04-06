@@ -156,9 +156,9 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
                         **kwargs),i,j]
 
         self._model = PlotModel(
-            self._rootNode, self, 
-            max([4,len(self.x_ratios), 
-            len(self.y_ratios)])+2)
+            self._rootNode, self, 2)
+
+        self._forceConfigurations()
 
     def _initialise(self):
         '''
@@ -180,6 +180,20 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
             choices = ['All']+self.subplot_names,
             method = self._selectPlot)
 
+    def _forceConfigurations(self):
+        '''
+        Force al the default configurations on the 
+        sub canvas items
+        '''
+        grid_loop = [
+            (i, j)
+            for i in range(len(self.grid))
+            for j in range(len(self.grid[0]))]
+
+        for i,j in grid_loop:
+            if not self.canvas_nodes[i][j][0] is None:
+                self.canvas_nodes[i][j][0]._manageDefaultConfiguration()
+
     def _placeObjects(self):
         '''
         This method aims at placing all the Canvas 
@@ -193,9 +207,7 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
             for j in range(len(self.grid[0]))]
 
         for i,j in grid_loop:
-            if self.canvas_nodes[i][j][0] == None:
-                pass
-            else:
+            if not self.canvas_nodes[i][j][0] is None:
                 self.addWidget(
                     self.canvas_nodes[i][j][0].widget, 
                     self.canvas_nodes[i][j][1], 
