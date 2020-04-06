@@ -24,7 +24,8 @@
 #import dependencies
 from PyQt5      import QtWidgets, QtGui, QtCore
 from OpenGL     import GL
-from copy       import deepcopy
+from functools  import partial
+
 import numpy    as np
 import os
 
@@ -96,10 +97,13 @@ class CanvasNode(SessionNode):
             'Vertical spacing', 1,
             method = self._setVerticalSpacing)
         self.handler.addParameter(
-            'Configuration path', '',
+            'Config. path', '',
             filetypes = ['JSON (*.json)'],
             mode = 'getFile',
             method = self._configurationPathSet)
+        self.handler.addParameter(
+            'Actively write config.', False,
+            method = self._configurationActiveSet)
 
         self._plot_root  = SessionNode('Root', None) 
         self._plot_model = PlotModel(self._plot_root, self.multi_canvas)
@@ -219,13 +223,33 @@ class CanvasNode(SessionNode):
         This will be usefull when reloading graphs and
         saving their visual state and setting the default
         '''
-        if os.path.exists(self.handler['Configuration path']) and not self._ignore_path_change:
+        if os.path.exists(self.handler['Config. path']) and not self._ignore_path_change:
             self._ignore_path_change = True
-            temp_path = self.handler['Configuration path']
-            self.loadFromFile(self.handler['Configuration path'])
-            self.handler.items['Configuration path'].updateValue(temp_path, False)
+            temp_path = self.handler['Config. path']
+            self.loadFromFile(self.handler['Config. path'])
+            self.handler.items['Config. path'].updateValue(temp_path, False)
             self._ignore_path_change = False
         
+    def _configurationActiveSet(self):
+        '''
+        This will tell the model to either follow the
+        changes of the active configuration and write them 
+        on file or not
+        '''
+        if self.handler['Actively write config.']:
+            self.model().dataChanged.connect(self._saveToCurrent)
+        else:
+            try:
+                self.model().dataChanged.disconnect(self._saveToCurrent)
+            except:
+                pass
+
+    def _saveToCurrent(self):
+        '''
+        Saves to the current file
+        '''
+        self.saveToFile(self.handler['Config. path'])
+
     def _manageDefaultConfiguration(self):
         '''
         This method will have a look if the default configuration is present
@@ -247,7 +271,7 @@ class CanvasNode(SessionNode):
         if not os.path.exists(path_user):
             self.generateUserConfiguration()
 
-        self.handler['Configuration path'] = path_user
+        self.handler['Config. path'] = path_user
 
     def generateDefaultConfiguration(self):
         '''
@@ -275,7 +299,7 @@ class CanvasNode(SessionNode):
             + ['user_defined'] + [self.handler['Type']+'_canvas.json'])
 
         self.saveToFile(path_user)
-        self.handler['Configuration path'] = path_user
+        self.handler['Config. path'] = path_user
 
     def saveConfiguration(self):
         '''
@@ -287,7 +311,7 @@ class CanvasNode(SessionNode):
 
         if not path_external == '':
             self.saveToFile(path_external)
-            self.handler['Configuration path'] = path_external
+            self.handler['Config. path'] = path_external
 
     def loadConfiguration(self):
         '''
@@ -297,7 +321,7 @@ class CanvasNode(SessionNode):
             None, 'Set the output file', '', 'JSON (*.json)')[0]
 
         if not path_external == '':
-            self.handler['Configuration path'] = path_external
+            self.handler['Config. path'] = path_external
 
     def loadDefaultConfiguration(self):
         '''
@@ -309,7 +333,7 @@ class CanvasNode(SessionNode):
             + ['ressources'] + ['settings'] + ['canvas']
             + ['user_defined'] + [self.handler['Type']+'_canvas.json'])
 
-        self.handler['Configuration path'] = path_user
+        self.handler['Config. path'] = path_user
 
     def setHoverButtons(self, button_list):
         '''
