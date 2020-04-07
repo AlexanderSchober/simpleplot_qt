@@ -121,7 +121,9 @@ class CanvasNode(SessionNode):
 
     def _buildSupport(self):
         '''
-        build the support base of the code
+        This will build the Qt support widget, including the 
+        transparent scene used to place objects on top and avoid
+        excessive redrawing.
         '''
         self.widget = CanvasWidget()
         self.widget.setSizePolicy(QtWidgets.QSizePolicy(
@@ -174,29 +176,89 @@ class CanvasNode(SessionNode):
         '''
         _populate the ui elements on the grid
         '''
+        # Set up the plot widget
         self.plot_widget = SimplePlotWidget(self)
+        self.plot_widget.setContentsMargins(0, 0, 0, 0)
+        self.plot_widget.setViewportMargins(0, 0, 0, 0)
+        self.plot_widget.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+
+        # Reference the elements
         self.draw_surface = self.plot_widget.getPlotItem()
         self.view = self.draw_surface.getViewBox()
         self.grid_layout.addWidget(self.plot_widget, 1, 1)
+        self._buildOverlay()
 
+        #insert the artist
         self._artist = Artist2DNode(name = '2D Artist', canvas = self)
         self.model().insertRows(len(self._children)-1,1,[self._artist], self)
-
         self._artist.setup()
 
     def _populate3D(self):
         '''
         populate the ui elements on the grid
         '''
-        self.view = MyGLViewWidget(self)
-        self.grid_layout.addWidget(self.view, 1, 1)
-        self.plot_widget = self.view
-        self.draw_surface = self.view
+        # Set up the plot widget
+        self.plot_widget = MyGLViewWidget(self)
+        self.plot_widget.setContentsMargins(0, 0, 0, 0)
+        self.plot_widget.setViewportMargins(0, 0, 0, 0)
+        self.plot_widget.setWindowFlags(QtCore.Qt.FramelessWindowHint)
 
+        # Reference the elements
+        self.view = self.plot_widget
+        self.grid_layout.addWidget(self.view, 1, 1)
+        self.draw_surface = self.view
+        self._buildOverlay()
+
+        #insert the artist
         self._artist = Artist3DNode('3D Artist', canvas = self)
         self.model().insertRows(len(self._children)-1,1,[self._artist], self)
-
         self._artist.setup()
+
+    def _buildOverlay(self):
+        '''
+        This method will build an overlay over the current
+        plot widget and then make its dimensions fit
+        '''
+        # Create the QGraphics overlay view
+        self._overlay_view = QtWidgets.QGraphicsView(self.plot_widget)        
+        self._overlay_view.setContentsMargins(0, 0, 0, 0)
+        self._overlay_view.setViewportMargins(0, 0, 0, 0)
+        self._overlay_view.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        self._overlay_view.setStyleSheet("background: transparent")
+        self._overlay_view.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
+        self._overlay_view.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self._overlay_view.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+
+        # Create the QGraphics scene to go with it
+        self._overlay_scene = QtWidgets.QGraphicsScene()
+        self._overlay_scene.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
+        self._overlay_view.setScene(self._overlay_scene)
+
+        #connect it all
+        self.view.sigStateChanged.connect(self.resizeOverlaySpace)
+        self.resizeOverlaySpace()
+
+    def resizeOverlaySpace(self):
+        '''
+        The dimensions of the overlay should be adapted at this point
+        '''
+        self._overlay_view.setFixedSize(self.plot_widget.size())
+        self._overlay_view.setSceneRect(self.plot_widget.sceneRect())
+
+        if hasattr(self, '_artist'):
+            self._artist.redrawOverlay()
+
+    def overlayView(self):
+        '''
+        The getter method for the overlay view
+        '''
+        return self._overlay_view
+
+    def overlayScene(self):
+        '''
+        The getter method for the overlay scene
+        '''
+        return self._overlay_scene
 
     def _setBackground(self):
         '''

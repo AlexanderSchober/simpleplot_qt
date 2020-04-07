@@ -58,12 +58,12 @@ class PointerObject:
         pos_min = QtCore.QPointF(self.ranges[0][0],self.ranges[1][0])
         pos_min = self.parent.canvas.view.mapViewToDevice(pos_min)
         pos_min = QtCore.QPoint(pos_min.x(), pos_min.y()-2)
-        pos_min = self.parent._pointer_view.mapToScene(pos_min)
+        pos_min = self.parent.canvas.overlayView().mapToScene(pos_min)
 
         pos_max = QtCore.QPointF(self.ranges[0][1],self.ranges[1][1])
         pos_max = self.parent.canvas.view.mapViewToDevice(pos_max)
         pos_max = QtCore.QPoint(pos_max.x(), pos_max.y())
-        pos_max = self.parent._pointer_view.mapToScene(pos_max)
+        pos_max = self.parent.canvas.overlayView().mapToScene(pos_max)
 
         self.view_ranges = [[pos_min.x(),pos_max.x()],[pos_min.y(),pos_max.y()]]
 
@@ -82,7 +82,7 @@ class PointerObject:
         pos = QtCore.QPointF(x,y)
         pos = self.parent.canvas.view.mapViewToDevice(pos)
         pos = QtCore.QPoint(pos.x()-2, pos.y()-2)
-        pos = self.parent._pointer_view.mapToScene(pos)
+        pos = self.parent.canvas.overlayView().mapToScene(pos)
         return pos
         
     def move(self):
@@ -105,7 +105,7 @@ class Type_0_Pointer(PointerObject):
         #add them to the target
         for component in self.pointer_comp:
             component.setPen(self.parent.pen)
-            self.parent._pointer_scene.addItem(component)
+            self.parent.canvas.overlayScene().addItem(component)
 
     def move(self):
         '''
@@ -138,7 +138,7 @@ class Type_1_Pointer(PointerObject):
         #add them to the target
         for component in self.pointer_comp:
             component.setPen(self.parent.pen)
-            self.parent._pointer_scene.addItem(component)
+            self.parent.canvas.overlayScene().addItem(component)
 
     def move(self):
         '''
@@ -171,7 +171,7 @@ class Type_0_Labels(PointerObject):
         for component in self.label_comp:
             component.setDefaultTextColor(self.parent.label_handler['Color'])
             component.setFont(self.parent.label_handler['Font'])
-            self.parent._pointer_scene.addItem(component)
+            self.parent.canvas.overlayScene().addItem(component)
             
     def move(self):
         '''
@@ -224,7 +224,7 @@ class Type_1_Labels(PointerObject):
         for component in self.label_comp:
             component.setDefaultTextColor(self.parent.label_handler['Color'])
             component.setFont(self.parent.label_handler['Font'])
-            self.parent._pointer_scene.addItem(component)
+            self.parent.canvas.overlayScene().addItem(component)
 
     def move(self):
         '''
@@ -288,7 +288,7 @@ class Type_2_Labels(PointerObject):
         for component in self.label_comp:
             component.setDefaultTextColor(self.parent.label_handler['Color'])
             component.setFont(self.parent.label_handler['Font'])
-            self.parent._pointer_scene.addItem(component)
+            self.parent.canvas.overlayScene().addItem(component)
 
     def move(self):
         '''

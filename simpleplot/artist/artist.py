@@ -303,6 +303,13 @@ class Artist2DNode(SessionNode, Artist):
             plot_handler.draw(self.canvas)
         self.zoomer.zoom()
 
+    def redrawOverlay(self):
+        '''
+        Redraw items that have been put onto the 
+        overlay of the plot widget
+        '''
+        self.pointer.resizePointerSpace()
+
     def clear(self):
         '''
         Interactive plotting software needs the
@@ -419,6 +426,12 @@ class Artist3DNode(SessionNode, Artist):
         self.axes.refreshAuto()
         self.grid.refreshAuto()
 
+    def redrawOverlay(self):
+        '''
+        Redraw items that have been put onto the 
+        overlay of the plot widget
+        '''
+        
     def setup(self):
         '''
         Once all elements are created it is possible 

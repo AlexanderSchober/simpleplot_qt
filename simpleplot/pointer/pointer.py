@@ -48,50 +48,12 @@ class Pointer(SessionNode):
 
         self.canvas = canvas
         self.initialize()
-        self.setUpPointerSpace()
-
-    def setUpPointerSpace(self):
-        '''
-        For performance, we will draw the pointer 
-        on another surface that will reside on top 
-        of the plot frame
-        '''
-        # Make sure the cavas has the right attributes
-        self.canvas.plot_widget.setContentsMargins(0, 0, 0, 0)
-        self.canvas.plot_widget.setViewportMargins(0, 0, 0, 0)
-        self.canvas.plot_widget.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-
-        #create the pointer view
-        self._pointer_view = QtWidgets.QGraphicsView(
-            self.canvas.plot_widget)        
-        self._pointer_view.setContentsMargins(0, 0, 0, 0)
-        self._pointer_view.setViewportMargins(0, 0, 0, 0)
-
-        self._pointer_view.setWindowFlags(
-            QtCore.Qt.FramelessWindowHint)
-        self._pointer_view.setStyleSheet(
-            "background: transparent")
-        self._pointer_view.setAttribute(
-            QtCore.Qt.WA_TransparentForMouseEvents)
-        self._pointer_view.setHorizontalScrollBarPolicy(
-            QtCore.Qt.ScrollBarAlwaysOff)
-        self._pointer_view.setVerticalScrollBarPolicy(
-            QtCore.Qt.ScrollBarAlwaysOff)
-
-        self._pointer_scene = QtWidgets.QGraphicsScene()
-        self._pointer_scene.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
-        self._pointer_view.setScene(self._pointer_scene)
-
-        self.canvas.view.sigStateChanged.connect(self.resizePointerSpace)
-        self.resizePointerSpace()
 
     def resizePointerSpace(self):
         '''
         The pointer space has to be resized when the initial
         widget is
         '''
-        self._pointer_view.setFixedSize(self.canvas.plot_widget.size())
-        self._pointer_view.setSceneRect(self.canvas.plot_widget.sceneRect())
         self.pointer_component.getRanges()
         self.label_component.getRanges()
         self.draw()
