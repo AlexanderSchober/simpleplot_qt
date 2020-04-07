@@ -40,8 +40,8 @@ class SimplePlotLegendItem(LegendItem):
         self.text_color     = (0,0,0,255)
         self.text_width     = 100
         self.text_size      = '8pt'
-        self.box_width          = 0
-        self.box_height         = 0
+        self.box_width      = 0
+        self.box_height     = 0
 
     def paint(self, p, *args):
         '''
@@ -170,5 +170,5 @@ class SimplePlotLegendItem(LegendItem):
             sample.close()                          # remove from drawing
             self.layout.removeItem(label)
             label.close()
-        self.updateSize()    
+        # self.updateSize()    
 

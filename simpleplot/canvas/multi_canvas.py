@@ -119,8 +119,9 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         '''
         self.icon_dim           = 25
         self.subplot_names      = []
-        self._rootNode          = SessionNode("Root", None)
-        
+        self._rootNode          = SessionNode('Root', None)
+        self._model             = PlotModel(self._rootNode, self, 2)
+
         self.canvas_nodes = [
             [None 
             for i in range(len(self.grid[0]))] 
@@ -137,26 +138,27 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
 
             elif self.element_types  ==  None or self.element_types[i][j] == '2D':
                 self.subplot_names.append("Subplot ("+str(i)+", "+str(j)+")")
-                self.canvas_nodes[i][j]=[
-                    CanvasNode(
-                        "Subplot ("+str(i)+", "+str(j)+")", self._rootNode,
+                temp_node = CanvasNode(
+                        name            = "Subplot ("+str(i)+", "+str(j)+")",
                         multi_canvas    = self,
                         idx             = len(self.canvas_nodes),
                         Type            = '2D',
-                        **kwargs),i,j]
+                        **kwargs)
+                self._model.appendRow(temp_node,self._rootNode)
+                self.canvas_nodes[i][j]=[temp_node,i,j]
+                temp_node.buildGraph()
 
             elif self.element_types[i][j] == '3D':
                 self.subplot_names.append("Subplot ("+str(i)+", "+str(j)+")")
-                self.canvas_nodes[i][j]=[
-                    CanvasNode(
-                        "Subplot ("+str(i)+", "+str(j)+")", self._rootNode,
+                temp_node = CanvasNode(
+                        name            = "Subplot ("+str(i)+", "+str(j)+")",
                         multi_canvas    = self,
                         idx             = len(self.canvas_nodes),
                         Type            = '3D',
-                        **kwargs),i,j]
-
-        self._model = PlotModel(
-            self._rootNode, self, 2)
+                        **kwargs)
+                self._model.appendRow(temp_node,self._rootNode)
+                self.canvas_nodes[i][j]=[temp_node,i,j]
+                temp_node.buildGraph()
 
         self._forceConfigurations()
 
@@ -165,9 +167,8 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         Build the parameter class linked to 
         the session model
         '''
-        self.handler        = ParameterHandler(
-            name = 'Multi-canvas options', 
-            parent = self._rootNode) 
+        self.handler = ParameterHandler(
+            name = 'Multi-canvas options') 
             
         self.handler.addParameter(
             'x_ratios', self.x_ratios,
@@ -179,6 +180,8 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
             'Select', 'All',
             choices = ['All']+self.subplot_names,
             method = self._selectPlot)
+
+        self._model.appendRow(self.handler, self._rootNode)
 
     def _forceConfigurations(self):
         '''
@@ -273,7 +276,7 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         Return the artist of a subplot
         similar to matplotlib
         '''
-        return self.canvas_nodes[i][j][0].artist
+        return self.canvas_nodes[i][j][0].artist()
 
 
     def link(self, ax , bx , variableIn = 'x', variableOut = 'x'):

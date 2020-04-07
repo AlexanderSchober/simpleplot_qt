@@ -162,6 +162,36 @@ class PlotModel(QtCore.QAbstractItemModel):
 
         return success
 
+    def appendRow(self,item, parent_node):
+        '''
+        Simple function that allows to append an
+        item to a parent node without all the unecessary
+        semanthic
+        
+        INPUT
+        -------------
+        item : SessionNode (derivate)
+            The item to be inserted
+
+        parent_node : SessionNode (derivate)
+            The parent node item to be inserted into
+            
+        '''
+
+        success = False
+        position = len(parent_node._children)
+        self.beginInsertRows(
+            parent_node.index(), 
+            position, position)
+        
+        item.referenceModel(self)
+        success = parent_node.insertChild(position, item)
+        
+        self.endInsertRows()
+        self.referenceModel()
+
+        return success
+
     # """INPUTS: int, int, QModelIndex"""
     def removeRows(self, position, rows, parentNode):
         success = False

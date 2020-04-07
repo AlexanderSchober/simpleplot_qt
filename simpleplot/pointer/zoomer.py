@@ -135,7 +135,7 @@ class Zoomer(ParameterHandler):
         self.canvas.multi_canvas.bottom_selector.label.repaint()
 
         if drag_start:
-            self.canvas.artist.pointer.unbindPointer()
+            self.canvas.artist().pointer.unbindPointer()
 
         if drag_end:
             self.start_pos  = [x[0], y[0]]
@@ -179,7 +179,7 @@ class Zoomer(ParameterHandler):
         End the zoom method and kill all the listeners
         ''' 
         if self.reset_pos[0] == ev.x() or self.reset_pos[1] == ev.y():
-            self.canvas.artist.pointer.unbindPointer()
+            self.canvas.artist().pointer.unbindPointer()
             self.canvas.draw_surface.autoRange()
 
             #check for fixed
@@ -193,7 +193,7 @@ class Zoomer(ParameterHandler):
                     self['Zoom fixed range'][2], 
                     self['Zoom fixed range'][3])
 
-            self.canvas.artist.pointer.bindPointer()
+            self.canvas.artist().pointer.bindPointer()
             self.start_pos = self.reset_pos
             self.end_pos   = [ev.x(), ev.y()]
 
@@ -210,7 +210,7 @@ class Zoomer(ParameterHandler):
         '''
         This processes the zoom method
         ''' 
-        self.canvas.artist.pointer.unbindPointer()
+        self.canvas.artist().pointer.unbindPointer()
         if self.start_pos[0] == self.end_pos[0] or self.start_pos[1] == self.end_pos[1]: 
             self.canvas.draw_surface.autoRange()
             #check for fixed
@@ -245,5 +245,5 @@ class Zoomer(ParameterHandler):
                 xRange = xRange,
                 yRange = yRange)
 
-        self.canvas.artist.pointer.bindPointer()
+        self.canvas.artist().pointer.bindPointer()
         

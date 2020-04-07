@@ -233,7 +233,7 @@ class Artist2DNode(SessionNode, Artist):
     and all plot elements.
     '''
 
-    def __init__(self,name, parent,  canvas = None):
+    def __init__(self,name = '', parent = None,  canvas = None):
 
         #internal element identifier
         SessionNode.__init__(self, name, parent)
@@ -367,7 +367,7 @@ class Artist3DNode(SessionNode, Artist):
     the subplot reference. It is linked to the drawing region
     and all plot elements.
     '''
-    def __init__(self,name, parent,  canvas = None):
+    def __init__(self, name = '', parent = None,  canvas = None):
         SessionNode.__init__(self, name, parent)
         Artist.__init__(self, canvas)
 

@@ -44,7 +44,7 @@ from ..simpleplot_widgets.SimpleCanvasWidget        import CanvasWidget
 
 class CanvasNode(SessionNode):
 
-    def __init__(self, name, parent, **kwargs):        
+    def __init__(self, name = '', parent = None, **kwargs):        
         '''
         The canvas _initializes as a widget and will 
         then be fed the layout of the Grid layout. 
@@ -60,13 +60,10 @@ class CanvasNode(SessionNode):
         - heigh is the heigh of the element
         '''
         SessionNode.__init__(self,name, parent)
-        
-        #set the locals from keywords
-        self.multi_canvas   = kwargs['multi_canvas']
+        self.multi_canvas = kwargs['multi_canvas']
         self._ignore_path_change = False
         self._initialize(**kwargs)
         self._buildSupport()
-        self._buildGraph()
 
     def _initialize(self, **kwargs):
         '''
@@ -79,7 +76,6 @@ class CanvasNode(SessionNode):
         self.handler = ParameterHandler(
             name = 'Canvas options', 
             parent = self) 
-
         self.handler.addParameter(
             'Type', kwargs['Type'],
             choices = ['2D', '3D'],
@@ -110,6 +106,12 @@ class CanvasNode(SessionNode):
         self._item_root  = SessionNode('Root', None) 
         self._item_model = PlotModel(self._item_root, self.multi_canvas)
 
+    def artist(self)->Artist2DNode:
+        '''
+        returns the artist to the asker
+        '''
+        return self._artist
+
     def _hideCanvas(self):
         '''
         Hides the canvas from the subplot view
@@ -129,7 +131,7 @@ class CanvasNode(SessionNode):
         self.grid_layout.setContentsMargins(0,0,0,0)
         self.widget.setLayout(self.grid_layout)
 
-    def _buildGraph(self):
+    def buildGraph(self):
         '''
         build the graph depending on the type
         '''
@@ -151,7 +153,7 @@ class CanvasNode(SessionNode):
         self._populate()
         self._model.referenceModel()
         self._setBackground()
-        self.artist.draw()
+        self._artist.draw()
         self._model.referenceModel()
 
     def _populate(self):
@@ -159,8 +161,8 @@ class CanvasNode(SessionNode):
         General populate method that will check the 
         chosen state and try to redraw all.
         '''
-        if hasattr(self, 'artist'):
-            self.artist.disconnect()
+        if hasattr(self, '_artist'):
+            self._artist.disconnect()
 
         if self.handler['Type'] == '2D':
             self._populate2D()
@@ -176,9 +178,11 @@ class CanvasNode(SessionNode):
         self.draw_surface = self.plot_widget.getPlotItem()
         self.view = self.draw_surface.getViewBox()
         self.grid_layout.addWidget(self.plot_widget, 1, 1)
-        self.artist = Artist2DNode(name = '2D Artist', parent = self, canvas = self)
-        self.artist.setup()
-        self.artist.zoomer.listen()
+
+        self._artist = Artist2DNode(name = '2D Artist', canvas = self)
+        self.model().insertRows(len(self._children)-1,1,[self._artist], self)
+
+        self._artist.setup()
 
     def _populate3D(self):
         '''
@@ -188,8 +192,11 @@ class CanvasNode(SessionNode):
         self.grid_layout.addWidget(self.view, 1, 1)
         self.plot_widget = self.view
         self.draw_surface = self.view
-        self.artist = Artist3DNode('3D Artist', parent = self, canvas = self)
-        self.artist.setup()
+
+        self._artist = Artist3DNode('3D Artist', canvas = self)
+        self.model().insertRows(len(self._children)-1,1,[self._artist], self)
+
+        self._artist.setup()
 
     def _setBackground(self):
         '''
