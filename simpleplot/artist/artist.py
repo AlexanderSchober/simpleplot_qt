@@ -59,6 +59,16 @@ class Artist():
         Template to be overwritten
         '''
 
+    def setOverlayElements(self):
+        '''
+        This nethod allows to time the placement of the 
+        overlay elements defined within the artist. For 
+        now this corresponds to the legend and the 
+        pointer
+        '''
+        self.pointer    = Pointer(self.canvas)
+        self.legend     = Legend(self.canvas)
+
     def addPlot(self, name_type, *args, **kwargs):
         '''
         This method will go through the plot handlers
@@ -246,10 +256,8 @@ class Artist2DNode(SessionNode, Artist):
         self.axes       = Axes(self.canvas)
         # self.mouse      = Mouse(self.canvas)
         # self.Keyboard   = KeyboardClass.Keyboard(self.Canvas,Multi = self.Multi)
-        self.pointer    = Pointer(self.canvas)
         self.zoomer     = Zoomer(self.canvas)
         self.measurer   = Measurer(self.canvas)
-        self.legend     = Legend(self.canvas)
         # self.Modifier   = ModificationClass.Modify(self.Canvas)
         # self.Title      = None #TitleClass.TitleClass(self.Canvas)
         self.connect()
@@ -288,8 +296,6 @@ class Artist2DNode(SessionNode, Artist):
         for plot_handler in self.canvas._plot_root._children:
             plot_handler.draw(self.canvas)
 
-        self.legend.tearLegendDown()
-        self.legend.buildLegend()
         self.zoomer.zoom()
 
     def redraw(self):
@@ -321,11 +327,16 @@ class Artist2DNode(SessionNode, Artist):
 
         self.legend.tearLegendDown()
 
-    def setup(self):
+    def setOverlayElements(self):
         '''
-        Once all elements are created it is possible 
-        to set up the functionalities. 
+        This nethod allows to time the placement of the 
+        overlay elements defined within the artist. For 
+        now this corresponds to the legend and the 
+        pointer
         '''
+        self.pointer    = Pointer(self.canvas)
+        self.legend     = Legend(self.canvas)
+
         try:
             self.pointer.unbindPointer()
         except:
@@ -431,13 +442,16 @@ class Artist3DNode(SessionNode, Artist):
         Redraw items that have been put onto the 
         overlay of the plot widget
         '''
-        
-    def setup(self):
-        '''
-        Once all elements are created it is possible 
-        to set up the functionalities. 
-        '''
         pass
+    
+    def setOverlayElements(self):
+        '''
+        This nethod allows to time the placement of the 
+        overlay elements defined within the artist. For 
+        now this corresponds to the legend and the 
+        pointer
+        '''
+        self.legend     = Legend(self.canvas)
 
     def set_mode(self, idx):
         '''

@@ -42,6 +42,7 @@ class MyGLViewWidget(gl.GLViewWidget):
     ''' 
     Override GLViewWidget with enhanced behavior and Atom integration.
     '''
+    resized_signal = QtCore.pyqtSignal()
     sigUpdate = QtCore.pyqtSignal()
     rayUpdate = QtCore.pyqtSignal()
     
@@ -381,3 +382,7 @@ class MyGLViewWidget(gl.GLViewWidget):
         Set the canvas background
         '''
         self.setBackgroundColor(color)
+
+    def resizeEvent(self, ev):
+        self.resized_signal.emit()
+        return super().resizeEvent(ev)

@@ -38,10 +38,10 @@ class GraphicsWidgetAnchor(object):
         
         if self.__parent is not parent:
             if self.__parent is not None:
-                self.__parent.geometryChanged.disconnect(self.__geometryChanged)
+                self.__parent.viewport().geometryChanged.disconnect(self.__geometryChanged)
                 
             self.__parent = parent
-            parent.geometryChanged.connect(self.__geometryChanged)
+            parent.viewport().geometryChanged.connect(self.__geometryChanged)
         
         self.__itemAnchor = itemPos
         self.__parentAnchor = parentPos
@@ -64,10 +64,11 @@ class GraphicsWidgetAnchor(object):
         """
         pos = Point(pos)
         br = self.mapRectToParent(self.boundingRect()).translated(pos - self.pos())
-        pbr = self.parentItem().boundingRect()
+        pbr = self.parentItem().sceneRect()
         anchorPos = [0,0]
         parentPos = Point()
         itemPos = Point()
+
         if abs(br.left() - pbr.left()) < abs(br.right() - pbr.right()):
             anchorPos[0] = 0
             parentPos[0] = pbr.left()

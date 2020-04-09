@@ -132,6 +132,15 @@ class LinePlot(ParameterHandler):
 
         self.fill_brush = pg.mkBrush(self['Fill color'])
 
+    def getLegendDictionary(self)->dict:
+        '''
+        Send out the dictionary for the legend
+        '''
+        self._setVisual()
+        kwargs = {}
+        kwargs['pen']   = self.line_pen
+        return kwargs
+
     def _getDictionary(self):
         '''
         Build the dictionary used for plotting

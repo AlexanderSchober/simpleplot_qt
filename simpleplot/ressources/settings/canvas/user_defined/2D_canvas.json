@@ -1,0 +1,1 @@
+{"Canvas options": {"Type": ["Type", "str", "2D"], "Show": ["Show", "bool", true], "Background": ["Background", "color", [255, 255, 255, 255]], "Horizontal spacing": ["Horizontal spacing", "int", 1], "Vertical spacing": ["Vertical spacing", "int", 1], "Config. path": ["Config. path", "str", ""], "Actively write config.": ["Actively write config.", "bool", false]}}

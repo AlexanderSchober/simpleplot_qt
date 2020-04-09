@@ -140,6 +140,18 @@ class ScatterPlot(ParameterHandler):
         self.symbol_brush = pg.mkBrush(
             self['Fill color'])
 
+    def getLegendDictionary(self)->dict:
+        '''
+        Send out the dictionary for the legend
+        '''
+        self._setVisual()
+        kwargs = {}
+        kwargs['symbolPen']     = self.symbol_pen
+        kwargs['symbolBrush']   = self.symbol_brush
+        kwargs['symbolSize']    = self['Size']
+        kwargs['symbol']        = self['Type']
+        return kwargs
+
     def _getDictionary(self):
         '''
         Build the dictionary used for plotting
@@ -162,9 +174,9 @@ class ScatterPlot(ParameterHandler):
         elif self._mode == '3D':
             data = self.parent()._plot_data.getData(['x','y','z'])
             
-            kwargs['pos']   = np.vstack(data).transpose()
-            kwargs['color'] = self['Line color'].getRgbF()
-            kwargs['size']  = self['Size']
+            kwargs['pos']           = np.vstack(data).transpose()
+            kwargs['color']         = self['Line color'].getRgbF()
+            kwargs['size']          = self['Size']
 
         return kwargs
 

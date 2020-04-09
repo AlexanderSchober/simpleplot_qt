@@ -104,6 +104,7 @@ class Type_0_Pointer(PointerObject):
 
         #add them to the target
         for component in self.pointer_comp:
+            component.ignore_for_mouse = True
             component.setPen(self.parent.pen)
             self.parent.canvas.overlayScene().addItem(component)
 
@@ -137,6 +138,7 @@ class Type_1_Pointer(PointerObject):
 
         #add them to the target
         for component in self.pointer_comp:
+            component.ignore_for_mouse = True
             component.setPen(self.parent.pen)
             self.parent.canvas.overlayScene().addItem(component)
 
@@ -169,6 +171,7 @@ class Type_0_Labels(PointerObject):
 
         #add them to the target
         for component in self.label_comp:
+            component.ignore_for_mouse = True
             component.setDefaultTextColor(self.parent.label_handler['Color'])
             component.setFont(self.parent.label_handler['Font'])
             self.parent.canvas.overlayScene().addItem(component)
@@ -222,6 +225,7 @@ class Type_1_Labels(PointerObject):
 
         #add them to the target
         for component in self.label_comp:
+            component.ignore_for_mouse = True
             component.setDefaultTextColor(self.parent.label_handler['Color'])
             component.setFont(self.parent.label_handler['Font'])
             self.parent.canvas.overlayScene().addItem(component)
@@ -286,6 +290,7 @@ class Type_2_Labels(PointerObject):
 
         #add them to the target
         for component in self.label_comp:
+            component.ignore_for_mouse = True
             component.setDefaultTextColor(self.parent.label_handler['Color'])
             component.setFont(self.parent.label_handler['Font'])
             self.parent.canvas.overlayScene().addItem(component)

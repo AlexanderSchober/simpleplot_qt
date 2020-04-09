@@ -200,7 +200,8 @@ class Mouse:
             self.released.remove(ev.button())
         except:
             pass
-        self.pressed.append(ev.button())
+        if not ev.button() in self.pressed: 
+            self.pressed.append(ev.button())
         self.evaluatePress(ev)
     
     def release(self,ev):

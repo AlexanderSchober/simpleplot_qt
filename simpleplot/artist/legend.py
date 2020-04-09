@@ -43,46 +43,58 @@ class Legend(ParameterHandler):
     def __init__(self, canvas):
         ParameterHandler.__init__(self,name = 'Legend', parent = canvas)
 
-        self.legend_item = SimplePlotLegendItem()
-        self.legend_item.setParentItem(canvas.draw_surface)
         self.canvas = canvas
+        self.legend_item = SimplePlotLegendItem()
         self._initialize()
-        self.legend_item.pos_updated.connect(self._updatePos)
-        
+        self.putLegend()
+
     def _initialize(self):
         '''
         initialise the legend parameter structure
         '''
         self.addParameter(
             'Active', True,
-            method = self._manageLegend)
+            method  = self._manageLegend)
         self.addParameter(
-            'Position', 'Top-right',
-            choices  = [ 'Top-left', 'Top-right', 'Bot-left', 'Bot-right', 'Custom'],
-            method = self._setOffset)
+            'Anchor point', 'top-right',
+            choices = [ 'top-left', 'top-right', 'bot-left', 'bot-right'],
+            method  = self._setPosition)
         self.addParameter(
-            'Custom position', [10, 10],
-            names  = ['x', 'y'],
-            method = self._setOffset)
+            'Relative position', [10, 10],
+            names   = ['x', 'y'],
+            method  = self._setPosition)
         self.addParameter(
             'Text length',  130,
-            method = self._setTextLength)
+            method  = self._setTextLength)
+        self.addParameter(
+            'Text justify',  'left',
+            choices = ['left', 'center', 'right'],
+            method  = self._setTextJustify)
         self.addParameter(
             'Pen color',QtGui.QColor(100,100,100,alpha = 255),
-            method = self._setPen)
+            method  = self._setPen)
         self.addParameter(
             'Brush color',QtGui.QColor(100,100,100,alpha = 50),
-            method = self._setBrush)
+            method  = self._setBrush)
         self.addParameter(
             'Text color',QtGui.QColor(0,0,0,alpha = 50),
-            method = self._setTextColor)
+            method  = self._setTextColor)
         self.addParameter(
             'Text size',  9,
-            method = self._setTextSize)
+            method  = self._setTextSize)
+        self.addParameter(
+            'Icon size',  20,
+            method  = self._setIconSize)
+        self.addParameter(
+            'Margins',  [5, 5, 5, 5, 2, 2],
+            names   = ['left-outer', 'right-outer', 'top-outer', 'bot-outter', 'between-h.','between-v.'],
+            method  = self._setMargins)
 
+    def putLegend(self):
+        '''
+        '''
+        self.canvas.overlayScene().addItem(self.legend_item)
         self.runAll()
-        self.legend_item._refreshText()
-        self.canvas.plot_widget.sceneObj.update()
 
     def buildLegend(self):
         '''
@@ -109,40 +121,27 @@ class Legend(ParameterHandler):
         else:
             self.tearLegendDown()
 
-    def _setOffset(self):
+    def _setPosition(self):
         '''
-        Set the legend offset
+        Set the position of the whole element at 
+        the same time ans the anchor position
         '''
-        self.canvas.plot_widget.sceneObj.update()
-        if self['Position'] == 'Top-left':
-            position = [10,10]
-        elif self['Position'] == 'Top-right':
-            position = [self.canvas.widget.width()-self.legend_item.box_width-10,10]
-        if self['Position'] == 'Bot-left':
-            position = [10,self.canvas.widget.height()-self.legend_item.box_height-10]
-        elif self['Position'] == 'Bot-right':
-            position = [
-                self.canvas.widget.width()-self.legend_item.box_width-10,
-                self.canvas.widget.height()-self.legend_item.box_height-10]
-        elif self['Position'] == 'Custom':
-            position = self['Position']
-        
-        self.legend_item.setOffset(position)
-        self.canvas.plot_widget.sceneObj.update()
+        self.legend_item.setPosition(
+            self['Anchor point'],
+            self['Relative position']
+        )
 
     def _setPen(self):
         '''
         Set the legend offset
         '''
         self.legend_item.setPen(self['Pen color'].getRgb())
-        self.canvas.plot_widget.sceneObj.update()
 
     def _setBrush(self):
         '''
         Set the legend offset
         '''
         self.legend_item.setBrush(self['Brush color'].getRgb())
-        self.canvas.plot_widget.sceneObj.update()
 
     def _updatePos(self, x, y):
         '''
@@ -155,18 +154,34 @@ class Legend(ParameterHandler):
         Set the legend offset
         '''
         self.legend_item.setTextLength(self['Text length'])
-        self.canvas.plot_widget.sceneObj.update()
 
     def _setTextColor(self):
         '''
         Set the legend offset
         '''
         self.legend_item.setTextColor(self['Text color'].name())
-        self.canvas.plot_widget.sceneObj.update()
 
     def _setTextSize(self):
         '''
         Set the legend offset
         '''
         self.legend_item.setTextSize(self['Text size'])
-        self.canvas.plot_widget.sceneObj.update()
+
+    def _setIconSize(self):
+        '''
+        Set the legend offset
+        '''
+        self.legend_item.setIconSize(self['Icon size'])
+
+    def _setMargins(self):
+        '''
+        Set the legend offset
+        '''
+        self.legend_item.setMargins(self['Margins'])
+
+    def _setTextJustify(self):
+        '''
+        Set the legend offset
+        '''
+        self.legend_item.setTextJusitfy(self['Text justify'])
+
