@@ -47,6 +47,7 @@ class Legend(ParameterHandler):
         self.legend_item = SimplePlotLegendItem()
         self._initialize()
         self.putLegend()
+        self.legend_item.pos_updated.connect(self._putPos)
 
     def _initialize(self):
         '''
@@ -89,6 +90,13 @@ class Legend(ParameterHandler):
             'Margins',  [5, 5, 5, 5, 2, 2],
             names   = ['left-outer', 'right-outer', 'top-outer', 'bot-outter', 'between-h.','between-v.'],
             method  = self._setMargins)
+
+    def _putPos(self, position:QtCore.QPoint):
+        '''
+        Receive the point position from the item and then
+        inject it into the parameter model
+        '''
+        self.items['Relative position'].updateValue([position.x(),position.y()], method = False)
 
     def putLegend(self):
         '''
@@ -142,12 +150,6 @@ class Legend(ParameterHandler):
         Set the legend offset
         '''
         self.legend_item.setBrush(self['Brush color'].getRgb())
-
-    def _updatePos(self, x, y):
-        '''
-        Set the legend offset
-        '''
-        self.items['Position'].updateValue([x,y], method = False)
 
     def _setTextLength(self):
         '''

@@ -33,7 +33,7 @@ class SimplePlotLegendItem(QtWidgets.QGraphicsObject):
     This is the axis management system. It inherits the parameter
     node as it is a parameter collection.
     '''
-    pos_updated = QtCore.pyqtSignal(int,int)
+    pos_updated = QtCore.pyqtSignal(QtCore.QPoint)
 
     def __init__(self, size=None, offset=None):
         super().__init__()
@@ -295,8 +295,8 @@ class SimplePlotLegendItem(QtWidgets.QGraphicsObject):
                     diff.x()*pos_modifier[0],
                     diff.y()*pos_modifier[1])
             self.updateSize()
-            self.pos_updated.emit(self._pos.x(), self._pos.y())
             self._last_pos = event.pos()
+            self.pos_updated.emit(self._pos)
         event.accept()
 
     def updateSize(self):
@@ -368,4 +368,3 @@ class SimplePlotLegendItem(QtWidgets.QGraphicsObject):
             # sample.close()                          # remove from drawing
             # self.layout.removeItem(label)
             # label.close() 
-            
