@@ -108,7 +108,11 @@ class Legend(ParameterHandler):
         '''
         Build the legend item
         '''
-        self.tearLegendDown()
+        self.legend_item.removeAllItems()
+
+        if self.legend_item.scene() is None:
+            self.canvas.overlayScene().addItem(self.legend_item)
+
         for plot_handler in self.canvas._plot_root._children:
             for element in plot_handler._children:
                 if hasattr(element, 'legendItems'):
@@ -119,6 +123,8 @@ class Legend(ParameterHandler):
         Build the legend item
         '''
         self.legend_item.removeAllItems()
+        if not self.legend_item.scene() is None:
+            self.legend_item.scene().removeItem(self.legend_item)
 
     def _manageLegend(self):
         '''
