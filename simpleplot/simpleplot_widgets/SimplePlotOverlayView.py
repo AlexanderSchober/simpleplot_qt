@@ -31,6 +31,9 @@ class SimplePlotOverlayView(QtWidgets.QGraphicsView):
     which will propagate its signals to the underlaying
     child class if possible
     '''
+    sigTakenMouse = QtCore.pyqtSignal()
+    sigReleasedMouse = QtCore.pyqtSignal()
+
     def __init__(self, parent = None):
         '''
         The contructor
@@ -44,6 +47,8 @@ class SimplePlotOverlayView(QtWidgets.QGraphicsView):
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
 
+        self._mouse_captured = False
+
     def _propagateMouse(self, event:QtGui.QMouseEvent)->bool:
         '''
         This is a helper method supposed to tell the 
@@ -54,7 +59,14 @@ class SimplePlotOverlayView(QtWidgets.QGraphicsView):
             pos = self.mapToScene(event.pos())
             items = [hasattr(item,'ignore_for_mouse') for item in self.scene().items(pos)]
             if all(items) :
+                if self._mouse_captured:
+                    self.sigReleasedMouse.emit()
+                    self._mouse_captured = False
                 return True
+
+        if not self._mouse_captured:
+            self.sigTakenMouse.emit()
+            self._mouse_captured = True
         return False
 
     def mouseMoveEvent(self, event:QtGui.QMouseEvent):

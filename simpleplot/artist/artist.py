@@ -69,6 +69,20 @@ class Artist():
         self.pointer    = Pointer(self.canvas)
         self.legend     = Legend(self.canvas)
 
+    def handleOverlayMouseTaken(self):
+        '''
+        Manage the overlay owning the mouse. This can be interesting
+        for removing obstructing visual elements in this case
+        '''
+        pass
+
+    def handleOverlayMouseReleased(self):
+        '''
+        Manage the overlay owning the mouse. This can be interesting
+        for removing obstructing visual elements in this case
+        '''
+        pass
+
     def addPlot(self, name_type, *args, **kwargs):
         '''
         This method will go through the plot handlers
@@ -252,14 +266,9 @@ class Artist2DNode(SessionNode, Artist):
         self.canvas         = canvas
         self.plot_handlers  = []
         self.artist_type    = '2D'
-
-        self.axes       = Axes(self.canvas)
-        # self.mouse      = Mouse(self.canvas)
-        # self.Keyboard   = KeyboardClass.Keyboard(self.Canvas,Multi = self.Multi)
-        self.zoomer     = Zoomer(self.canvas)
-        self.measurer   = Measurer(self.canvas)
-        # self.Modifier   = ModificationClass.Modify(self.Canvas)
-        # self.Title      = None #TitleClass.TitleClass(self.Canvas)
+        self.axes           = Axes(self.canvas)
+        self.zoomer         = Zoomer(self.canvas)
+        self.measurer       = Measurer(self.canvas)
         self.connect()
         
     def connect(self):
@@ -381,6 +390,20 @@ class Artist2DNode(SessionNode, Artist):
         self.canvas._plot_root.childFromName('Surface')
         for child in self.canvas._plot_root.childFromName('Surface')._children:
             child.setColor(colors, positions)
+
+    def handleOverlayMouseTaken(self):
+        '''
+        Manage the overlay owning the mouse. This can be interesting
+        for removing obstructing visual elements in this case
+        '''
+        self.pointer.unbindPointer()
+
+    def handleOverlayMouseReleased(self):
+        '''
+        Manage the overlay owning the mouse. This can be interesting
+        for removing obstructing visual elements in this case
+        '''
+        self.pointer.bindPointer()
 
 class Artist3DNode(SessionNode, Artist):
     '''

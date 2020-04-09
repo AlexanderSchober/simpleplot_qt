@@ -231,7 +231,10 @@ class CanvasNode(SessionNode):
 
         #connect it all
         self._overlay_view.setParent(self.plot_widget)
+
         self.plot_widget.resized_signal.connect(self.resizeOverlaySpace)
+        self._overlay_view.sigTakenMouse.connect(self._artist.handleOverlayMouseTaken)
+        self._overlay_view.sigReleasedMouse.connect(self._artist.handleOverlayMouseReleased)
 
     def resizeOverlaySpace(self):
         '''
