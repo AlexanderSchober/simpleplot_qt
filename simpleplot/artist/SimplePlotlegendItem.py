@@ -175,7 +175,7 @@ class SimplePlotLegendItem(QtWidgets.QGraphicsObject):
                 y_offset = int((self._heights[i]-items[1].itemHeight())/2)
 
                 if items[1]._opts['justify'] == 'right': 
-                    x_offset = int((self._widths[0]-items[0].itemWidth()))
+                    x_offset = int((self._widths[1]-items[1].itemWidth()))
                 elif items[1]._opts['justify'] == 'center': 
                     x_offset = int((self._widths[1]-items[1].itemWidth())/2)
                 else: 
@@ -183,7 +183,7 @@ class SimplePlotLegendItem(QtWidgets.QGraphicsObject):
 
                 items[1]._item.setPos(
                     x + x_offset, 
-                    y - y_offset)
+                    y + y_offset)
                 y += self._heights[i] + self._margins[5] 
 
     def boundingRect(self):
