@@ -190,10 +190,10 @@ class CanvasNode(SessionNode):
 
         #insert the artist
         self._artist = Artist2DNode(name = '2D Artist', canvas = self)
+        self.model().appendRow(self._artist, self)
         self._buildOverlay()
         self._artist.setOverlayElements()
         self.resizeOverlaySpace()
-        self.model().insertRows(len(self._children)-1,1,[self._artist], self)
 
     def _populate3D(self):
         '''
@@ -211,10 +211,10 @@ class CanvasNode(SessionNode):
 
         #insert the artist
         self._artist = Artist3DNode('3D Artist', canvas = self)
+        self.model().appendRow(self._artist, self)
         self._buildOverlay()
         self._artist.setOverlayElements()
         self.resizeOverlaySpace()
-        self.model().insertRows(len(self._children)-1,1,[self._artist], self)
 
     def _buildOverlay(self):
         '''
@@ -243,8 +243,6 @@ class CanvasNode(SessionNode):
 
         if hasattr(self, '_artist'):
             self._artist.redrawOverlay()
-            if hasattr(self._artist, 'legend'):
-                self._artist.legend.legend_item._refreshText()
 
     def overlayView(self):
         '''

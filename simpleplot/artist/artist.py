@@ -315,6 +315,7 @@ class Artist2DNode(SessionNode, Artist):
         overlay of the plot widget
         '''
         self.pointer.resizePointerSpace()
+        self.legend.legend_item._refreshText()
 
     def clear(self):
         '''
@@ -334,8 +335,10 @@ class Artist2DNode(SessionNode, Artist):
         now this corresponds to the legend and the 
         pointer
         '''
-        self.pointer    = Pointer(self.canvas)
-        self.legend     = Legend(self.canvas)
+        if not hasattr(self, 'pointer'):
+            self.pointer = Pointer(self.canvas)
+        if not hasattr(self, 'legend'):
+            self.legend = Legend(self.canvas)
 
         try:
             self.pointer.unbindPointer()
@@ -443,7 +446,7 @@ class Artist3DNode(SessionNode, Artist):
         overlay of the plot widget
         '''
         pass
-    
+
     def setOverlayElements(self):
         '''
         This nethod allows to time the placement of the 

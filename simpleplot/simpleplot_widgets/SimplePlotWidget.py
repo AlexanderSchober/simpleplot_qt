@@ -57,7 +57,8 @@ class SimplePlotWidget(PlotWidget):
         self.sceneObj.contextMenu[0].triggered.disconnect(self.sceneObj.showExportDialog)
         self.sceneObj.contextMenu[0].triggered.connect(self._showExportDialog)
         self.plotItem.getViewBox().mouseDragEvent = self.mouseDragEvent
-
+        self.plotItem.getViewBox().sigStateChanged.connect(self.resized_signal.emit)
+        
     def mouseMoveEvent(self, ev):
         '''
         mouse move event
@@ -140,5 +141,5 @@ class SimplePlotWidget(PlotWidget):
         self._menuEnabled = enableMenu
 
     def resizeEvent(self, ev):
-        self.resized_signal.emit()
+        # self.resized_signal.emit()
         return super().resizeEvent(ev)
