@@ -104,19 +104,20 @@ class FunctionNode(SessionNode):
         '''
         Tell the item to set its plot item onto the convas
         '''
-        self._plot_item = canvas.artist.addPlot(
+        self._plot_item = canvas.artist().addPlot(
             'Scatter',
             Name = self._name,
             Style = ['-'], 
             Log = [False,False]
         )
+        canvas.artist().draw()
 
     def removePlotItem(self, canvas):
         '''
         Tell the item to remove itself from the canvas
         '''
         if not self._plot_item is None:
-            canvas.artist.removePlot(self._plot_item)
+            canvas.artist().removePlot(self._plot_item)
             self._plot_item = None
 
     def refreshPlot(self, x):

@@ -21,17 +21,17 @@
 #
 # *****************************************************************************
 
-from .canvas.multi_canvas import MultiCanvasItem
-from .gui_main.main_window import MainWindow
-
-from .models.project_node import ProjectNode
-from .models.project_node import PlotItem
-
 #import general
 from PyQt5 import QtWidgets, QtGui, QtCore
 import sys
 import os
 import numpy as np
+
+# The local imports
+from ..canvas.multi_canvas import MultiCanvasItem
+from ..gui_main.main_window import MainWindow
+from ..models.project_node import ProjectNode
+from ..models.project_node import PlotItem
 
 def startPlayGround():
     #set upt the window and the plot widget

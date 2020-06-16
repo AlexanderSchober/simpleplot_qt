@@ -22,7 +22,7 @@
 # *****************************************************************************
 
 
-from ..io import io_file_methods as file_methods 
+from . import io_file_methods as file_methods 
 import itertools
 import os
 import datetime
@@ -30,6 +30,9 @@ import numpy as np
 
 class IODataLoad:
     '''
+    This is the data loading class that will manage different type of
+    imports. These will all be preprocessed files that will therefore
+    not requires any analysis of the strucure
     '''
     def __init__(self, target, path:str):
         '''
@@ -109,9 +112,14 @@ class IODataLoad:
             self._dimAnalyser(lines, line_idx[1], line_idx[2])
             self._subdimAnalyser(lines, line_idx[2], line_idx[3])
             self._subaxisReader(lines, line_idx[2], line_idx[3])
-
             self._dataReader(lines,line_idx[3])
             self._axisReader(lines,line_idx[1], line_idx[2])
+
+    def _loadFromHdf5(self):
+        '''
+        load from txt files
+        '''
+        pass
 
     def _getLines(self, lines):
         '''
@@ -139,7 +147,7 @@ class IODataLoad:
         meaningfull.
         '''
         self._dims = []
-        for idx, axis_str in enumerate(lines[start_line+1:end_line]):
+        for axis_str in lines[start_line+1:end_line]:
             self._dims.append(
                 len(axis_str.strip('\n').split('**')[3].split(',')))
 
@@ -147,7 +155,7 @@ class IODataLoad:
         '''
         '''
         self._subdims = []
-        for idx, axis_str in enumerate(lines[start_line+1:end_line]):
+        for axis_str in lines[start_line+1:end_line]:
             self._subdims.append(
                 len(axis_str.strip('\n').split('**')[2].split(',')))
 
@@ -168,7 +176,7 @@ class IODataLoad:
         '''
         '''
         self._subaxis = []
-        for idx, axis_str in enumerate(lines[start_line+1:end_line]):
+        for axis_str in lines[start_line+1:end_line]:
             self._subaxis.append([
                 float(e) for e in 
                 axis_str.strip('\n').split('**')[2].split(',')])

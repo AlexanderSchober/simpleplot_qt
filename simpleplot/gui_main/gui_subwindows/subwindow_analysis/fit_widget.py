@@ -475,10 +475,12 @@ class FitWidget(QtWidgets.QWidget):
         '''
         if not self._subplot is None:
             if not self._main_plot is None:
-                self._subplot.artist.removePlot(self._main_plot)
+                self._subplot.artist().removePlot(self._main_plot)
 
             if not self._sum_plot is None:
-                self._subplot.artist.removePlot(self._sum_plot)
+                self._subplot.artist().removePlot(self._sum_plot)
+
+            self._subplot.artist().draw()
 
             for function_node in self._root_node._children:
                 for function in function_node._children:
@@ -488,7 +490,7 @@ class FitWidget(QtWidgets.QWidget):
         '''
 
         '''
-        self._main_plot =  self._subplot.artist.addPlot(
+        self._main_plot =  self._subplot.artist().addPlot(
             'Scatter',
             Name = 'Data',
             Color = 'red',
@@ -496,13 +498,15 @@ class FitWidget(QtWidgets.QWidget):
             Log = [False,False]
         )
 
-        self._sum_plot =  self._subplot.artist.addPlot(
+        self._sum_plot =  self._subplot.artist().addPlot(
             'Scatter',
             Name = 'Fit sum',
             Color = 'black',
             Style = ['-'], 
             Log = [False,False]
         )
+
+        self._subplot.artist().draw()
 
         for function_node in self._root_node._children:
             for function in function_node._children:

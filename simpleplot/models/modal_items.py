@@ -67,3 +67,4 @@ class QFontDialog(QtWidgets.QFontDialog):
                 self.currentFontChanged.disconnect(method)
             except:
                 print('Could not disconnect', method)
+                

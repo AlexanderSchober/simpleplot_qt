@@ -109,7 +109,7 @@ class SimplePlotItem(PlotItem):
         '''
         Set the logarythmic mode
         '''
-        self.canvas.artist.axes.general_handler.items['Log'].updateValue(
+        self.canvas.artist().axes.general_handler.items['Log'].updateValue(
             [self.ctrl.logXCheck.isChecked(),self.ctrl.logYCheck.isChecked()],
             method = False)
         self.updateLogMode()
@@ -127,7 +127,7 @@ class SimplePlotItem(PlotItem):
         self.getAxis('top').setLogMode(x)
         self.getAxis('left').setLogMode(y)
         self.getAxis('right').setLogMode(y)
-        self.canvas.artist.zoomer.zoom()
+        self.canvas.artist().zoomer.zoom()
         self.recomputeAverages()
 
     def updateSpectrumMode(self, b=None):
@@ -135,7 +135,7 @@ class SimplePlotItem(PlotItem):
             b = self.ctrl.fftCheck.isChecked()
         for c in self.curves:
             c.setFftMode(b)
-        self.canvas.artist.zoomer.zoom()
+        self.canvas.artist().zoomer.zoom()
         self.recomputeAverages()
 
     def mouseMoveEvent(self, ev):

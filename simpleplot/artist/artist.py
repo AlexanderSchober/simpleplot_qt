@@ -335,8 +335,6 @@ class Artist2DNode(SessionNode, Artist):
         for plot_handler in self.canvas._plot_root._children:
             plot_handler.clear(self.canvas)
 
-        self.legend.tearLegendDown()
-
     def setOverlayElements(self):
         '''
         This nethod allows to time the placement of the 

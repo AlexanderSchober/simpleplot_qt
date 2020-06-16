@@ -128,7 +128,7 @@ class DatasetsNode(SessionNode):
         '''
         '''
         path = QtWidgets.QFileDialog.getOpenFileName(
-            parent = self, filter = "Text (*.txt)")
+            parent = None, filter = "Text (*.txt)")
         
         if not path[0] == "":
             data_item = self.addDataItem()

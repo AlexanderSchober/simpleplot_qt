@@ -21,8 +21,10 @@
 #
 # *****************************************************************************
 
-from ..io import io_file_methods as file_methods 
+# Handle the local imports
+from . import io_file_methods as file_methods 
 
+# Handle general imports
 import os
 import datetime
 import numpy as np
@@ -55,12 +57,12 @@ class IORawHandler:
         self.common_str         = []
         self.visual_string      = ''
         
-    def getMeasurementString(self):
-        '''
-        Tell the measurement handler that he needs to 
-        print the measurement.
-        '''
-        self.meas_string = self.measurement.generateScript()
+    # def getMeasurementString(self):
+    #     '''
+    #     Tell the measurement handler that he needs to 
+    #     print the measurement.
+    #     '''
+    #     self.meas_string = self.measurement.generateScript()
 
     def set_import_directory(self, path):
         '''
@@ -353,30 +355,6 @@ class IORawWorker:
 
         data_structure.axes.collapseAllAxes(data_structure)
         print(data_structure)
-
-        #send it all out to the writer
-        # axis_string = self._axisWriter(
-        #     future_axes_values,
-        #     future_axes_names,
-        #     future_axes_units)
-
-        # data_string = self._dataWriter(
-        #     future_axes_pos,
-        #     future_data_array)
-
-        # meta_string = self._metaWriter()
-
-        # print(future_data_array)
-
-        # #write to file
-        # text_file = open(self.path, "w")
-
-        # text_file.write(meta_string)
-        # text_file.write(axis_string)
-        # text_file.write(data_string)    
-
-        # text_file.close()
-        
         
     def _reader(self, path):
         '''
