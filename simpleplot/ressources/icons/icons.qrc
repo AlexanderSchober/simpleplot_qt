@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/">
+        <file>cog.svg</file>
+        <file>magnify-plus.svg</file>
+        <file>microsoft-xbox-controller-view.svg</file>
+        <file>minus-circle.svg</file>
+        <file>pencil.svg</file>
+        <file>plus-circle.svg</file>
+        <file>ruler.svg</file>
+    </qresource>
+</RCC>

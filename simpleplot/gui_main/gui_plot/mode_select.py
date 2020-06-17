@@ -26,9 +26,9 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import os
 from functools import partial
 from .settings import PreferenceWidget
-from ...ressources.icons import icons_ui
+from ...ressources.icons import icons
 
-class ModeSelect(QtWidgets.QHBoxLayout):
+class ModeSelect(QtWidgets.QToolBar):
 
     def __init__(self, multi_canvas, parent, icon_dim):
         '''
@@ -39,7 +39,10 @@ class ModeSelect(QtWidgets.QHBoxLayout):
         - parent is the widget parent
         - icondim is a integers
         '''
-        QtWidgets.QHBoxLayout.__init__(self)
+        super().__init__(parent)
+        self.setIconSize(QtCore.QSize(20, 20))
+        self.setFixedHeight(36)
+
         self.multi_canvas = multi_canvas
         self.initialize(parent, icon_dim)
         self.selected = 0
@@ -60,20 +63,18 @@ class ModeSelect(QtWidgets.QHBoxLayout):
         '''
         #Modes and variables
         self.modes = [
-            (r"Zoom"       , 0),
-            (r"Measure"    , 1),
-            (r"Edit"       , 2),
-            (r"Settings"   , 3)
+            (r"magnify-plus" , 0),
+            (r"ruler" , 1),
+            (r"pencil" , 2),
+            (r"cog" , 3)
             ]
         #Grab the Path
-        Path = os.path.join(os.path.dirname(__file__),'ressources')
+        
         self.buttons = []
         #populate buttons
         for i in range(len(self.modes)):
-            self.buttons.append(QtWidgets.QPushButton('', parent))
-            self.buttons[i].setIcon(QtGui.QIcon(":/icons/"+self.modes[i][0]+".jpg"))
-            self.buttons[i].setIconSize(QtCore.QSize(icon_dim, icon_dim))
-            self.buttons[i].setStyleSheet('background-color: silver; border-style: inset;border-width: 2px')
+            self.buttons.append(QtWidgets.QToolButton(parent))
+            self.buttons[i].setIcon(QtGui.QIcon(":/"+self.modes[i][0]+".svg"))
             if i < len(self.modes) - 1:
                 self.buttons[i].setCheckable(True)
                 self.buttons[i].clicked.connect(partial(self.process,i))
@@ -84,10 +85,6 @@ class ModeSelect(QtWidgets.QHBoxLayout):
         self.label = QtWidgets.QLabel(parent)
         self.label.setText('')
         self.addWidget(self.label)
-        
-        #add a stretch to the selector
-        self.addStretch(1)
-        self.setSpacing(2)
                 
     def process(self, idx):
         '''
@@ -101,13 +98,13 @@ class ModeSelect(QtWidgets.QHBoxLayout):
 
         #set all buttons inset
         for i in range(len(self.modes)):
-            self.buttons[i].setStyleSheet('background-color: silver; border-style: inset;border-width: 2px')
-        self.buttons[idx].setStyleSheet('background-color: grey; border-style: outset;border-width: 2px')
+            self.buttons[i].setChecked(False)
+        self.buttons[idx].setChecked(True)
 
         for elements in self.multi_canvas.canvas_nodes:
             for subelement in elements:
                 try:
-                    subelement[0].artist.setMode(idx)
+                    subelement[0].artist().setMode(idx)
                 except:
                     pass
 
@@ -120,4 +117,3 @@ class ModeSelect(QtWidgets.QHBoxLayout):
             self.settings.tabWidget.setCurrentIndex(3)
             self.settings.export_widget.ui.expSubplot.setCurrentText(target)
         self.settings.setting_widget.show()
-

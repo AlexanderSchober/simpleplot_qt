@@ -265,11 +265,9 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         the main frame. 
         '''
         self.bottom_selector = ModeSelect(self,self.plot_widget, self.icon_dim)
-        self.addItem(
+        self.addWidget(
             self.bottom_selector, 
-            len(self.grid), 
-            0,  
-            columnSpan=len(self.grid[0]))
+            len(self.grid),0,1, len(self.grid[0]))
         
     def getSubplot(self,i,j):
         '''
