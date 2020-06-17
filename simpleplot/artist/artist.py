@@ -109,6 +109,11 @@ class Artist():
 
         self.canvas._plot_model.referenceModel()
 
+        if self.artist_type == '2D':
+            output.draw(self.canvas)
+        elif self.artist_type == '3D':
+            output.drawGL(self.canvas)
+
         return output
 
     def addItem(self, name_type, *args, **kwargs):
@@ -163,7 +168,6 @@ class Artist():
                 x = data[0], y = data[1], error = data[2],
                     Style = ['-','o',10])
 
-        
             if self.artist_type == '2D':
                 item.draw(self.canvas)
             elif self.artist_type == '3D':

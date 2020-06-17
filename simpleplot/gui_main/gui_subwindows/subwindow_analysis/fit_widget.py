@@ -480,8 +480,6 @@ class FitWidget(QtWidgets.QWidget):
             if not self._sum_plot is None:
                 self._subplot.artist().removePlot(self._sum_plot)
 
-            self._subplot.artist().draw()
-
             for function_node in self._root_node._children:
                 for function in function_node._children:
                     function.removePlotItem(self._subplot)
@@ -505,8 +503,6 @@ class FitWidget(QtWidgets.QWidget):
             Style = ['-'], 
             Log = [False,False]
         )
-
-        self._subplot.artist().draw()
 
         for function_node in self._root_node._children:
             for function in function_node._children:

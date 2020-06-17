@@ -247,7 +247,6 @@ class DataLinkCreator(QtWidgets.QDialog):
         '''
         subplot = self._subplots[self._subplot_drop.currentIndex()]
         plot_item = subplot.artist().addPlot(self._plot_type.currentText())
-        subplot.artist().draw()
         data_item = self._data[self._data_drop.currentIndex()]
         data_link_item = PlotLinkItem()
         data_injector = data_link_item.data_injector
