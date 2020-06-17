@@ -7,5 +7,10 @@
         <file>pencil.svg</file>
         <file>plus-circle.svg</file>
         <file>ruler.svg</file>
+        <file>content-save.svg</file>
+        <file>file-download.svg</file>
+        <file>file-upload.svg</file>
+        <file>filter.svg</file>
+        <file>information.svg</file>
     </qresource>
 </RCC>

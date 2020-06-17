@@ -35,10 +35,15 @@ class SidebarTreeView(QtWidgets.QTreeView):
         self.setAutoScroll(False)
         
         self._hover_buttons = [
-            QtWidgets.QPushButton(self.viewport()),
-            QtWidgets.QPushButton(self.viewport()),
-            QtWidgets.QPushButton(self.viewport()),
+            QtWidgets.QToolButton(self.viewport()),
+            QtWidgets.QToolButton(self.viewport()),
+            QtWidgets.QToolButton(self.viewport()),
         ]
+        
+        for button in self._hover_buttons:
+            button.setAutoRaise(True) 
+            button.setStyleSheet("QToolButton{border:0;}")
+
         self._hideAllHoverButtons()
 
         self._current_item = None
@@ -74,7 +79,6 @@ class SidebarTreeView(QtWidgets.QTreeView):
         for button in self._hover_buttons[::-1]:
             if button.isVisible():
                 position = QtCore.QPoint(position.x() - rect.height(), position.y())
-                button.setFlat(True) #mac minimum size restriction
                 button.setGeometry(
                     position.x(), position.y(), 
                     rect.height(), rect.height())

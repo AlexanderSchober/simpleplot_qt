@@ -170,8 +170,8 @@ class DatasetsNode(SessionNode):
         Set up all the hover button functionalities
         '''
         button_list[0].setVisible(True)
-        button_list[0].setText("+")
-        button_list[0].setIcon(QtGui.QIcon())
+        button_list[0].setText("")
+        button_list[0].setIcon(QtGui.QIcon(":/plus-circle.svg"))
         button_list[0].clicked.connect(
             partial(self.localContextMenuGenerator, button_list[0]))
         button_list[0].setToolTip("Add data")
@@ -232,22 +232,19 @@ class DataItem(SessionNode):
         '''
         button_list[0].setVisible(True)
         button_list[0].setText("")
-        button_list[0].setIcon(
-            button_list[0].style().standardIcon(QtGui.QStyle.SP_TitleBarNormalButton))
+        button_list[0].setIcon(QtGui.QIcon(":/microsoft-xbox-controller-view.svg"))
         button_list[0].clicked.connect(
             partial(self.localContextMenuGenerator, button_list[0]))
         button_list[0].setToolTip("Show the data")
 
         button_list[1].setVisible(True)
         button_list[1].setText("")
-        button_list[1].setIcon(
-            button_list[0].style().standardIcon(QtGui.QStyle.SP_MessageBoxInformation))
+        button_list[1].setIcon(QtGui.QIcon(":/information.svg"))
         button_list[0].setToolTip("Show the data information")
 
         button_list[2].setVisible(True)
         button_list[2].setText("")
-        button_list[2].setIcon(
-            button_list[1].style().standardIcon(QtGui.QStyle.SP_TrashIcon))
+        button_list[2].setIcon(QtGui.QIcon(":/minus-circle.svg"))
         button_list[0].setToolTip("Remove the data")
 
 class PlotLinkItem(SessionNode):
@@ -362,16 +359,14 @@ class FitItem(SessionNode):
         '''
         button_list[0].setVisible(True)
         button_list[0].setText("")
-        button_list[0].setIcon(
-            button_list[0].style().standardIcon(QtGui.QStyle.SP_TitleBarNormalButton))
+        button_list[0].setIcon(QtGui.QIcon(":/microsoft-xbox-controller-view.svg"))
         button_list[0].clicked.connect(
             partial(self.localContextMenuGenerator, button_list[0]))
         button_list[0].setToolTip("Show the fit manager")
 
         button_list[2].setVisible(True)
         button_list[2].setText("")
-        button_list[2].setIcon(
-            button_list[1].style().standardIcon(QtGui.QStyle.SP_TrashIcon))
+        button_list[2].setIcon(QtGui.QIcon(":/minus-circle.svg"))
         button_list[0].setToolTip("Remove the fit manager")
 
 class PlotNode(SessionNode):
@@ -404,8 +399,8 @@ class PlotNode(SessionNode):
         Set up all the hover button functionalities
         '''
         button_list[0].setVisible(True)
-        button_list[0].setText("+")
-        button_list[0].setIcon(QtGui.QIcon())
+        button_list[0].setText("")
+        button_list[0].setIcon(QtGui.QIcon(":/plus-circle.svg"))
         button_list[0].clicked.connect(self.createPlot)
         button_list[0].setToolTip("Add data")
 
@@ -472,14 +467,12 @@ class PlotItem(SessionNode):
         '''
         button_list[0].setVisible(True)
         button_list[0].setText("")
-        button_list[0].setIcon(
-            button_list[0].style().standardIcon(QtGui.QStyle.SP_TitleBarNormalButton))
+        button_list[0].setIcon(QtGui.QIcon(":/microsoft-xbox-controller-view.svg"))
         button_list[0].clicked.connect(
             partial(self.localContextMenuGenerator, button_list[0]))
         button_list[0].setToolTip("Show the plot")
 
         button_list[2].setVisible(True)
         button_list[2].setText("")
-        button_list[2].setIcon(
-            button_list[1].style().standardIcon(QtGui.QStyle.SP_TrashIcon))
+        button_list[2].setIcon(QtGui.QIcon(":/minus-circle.svg"))
         button_list[0].setToolTip("Remove the plot")
