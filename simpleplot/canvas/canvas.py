@@ -409,21 +409,18 @@ class CanvasNode(SessionNode):
         '''
         button_list[0].setVisible(True)
         button_list[0].setText("")
-        button_list[0].setIcon(
-            button_list[0].style().standardIcon(QtGui.QStyle.SP_DialogSaveButton))
+        button_list[0].setIcon(QtGui.QIcon(":/file-download.svg"))
         button_list[0].clicked.connect(self.saveConfiguration)
         button_list[0].setToolTip("Save configuration")
 
         button_list[1].setVisible(True)
         button_list[1].setText("")
-        button_list[1].setIcon(
-            button_list[1].style().standardIcon(QtGui.QStyle.SP_DialogOpenButton))
+        button_list[1].setIcon(QtGui.QIcon(":/file-upload.svg"))
         button_list[1].clicked.connect(self.loadConfiguration)
         button_list[1].setToolTip("Load configuration")
 
         button_list[2].setVisible(True)
         button_list[2].setText("")
-        button_list[2].setIcon(
-            button_list[2].style().standardIcon(QtGui.QStyle.SP_DialogResetButton))
+        button_list[2].setIcon(QtGui.QIcon(":/reload.svg"))
         button_list[2].clicked.connect(self.loadDefaultConfiguration)
         button_list[2].setToolTip("Reset configuration")

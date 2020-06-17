@@ -12,5 +12,6 @@
         <file>file-upload.svg</file>
         <file>filter.svg</file>
         <file>information.svg</file>
+        <file>reload.svg</file>
     </qresource>
 </RCC>
