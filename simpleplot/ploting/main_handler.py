@@ -20,24 +20,26 @@
 #   Alexander Schober <alexander.schober@mac.com>
 #
 # *****************************************************************************
-from PyQt5 import QtGui, QtCore
-import numpy as np
 
-from .scatter_plot_handler          import ScatterPlotHandler
-from .surface_plot_handler          import SurfacePlotHandler 
-from .step_plot_handler             import StepPlotHandler
-from .bar_plot_handler              import BarPlotHandler
-from .volume_plot_handler           import VolumePlotHandler
-from .distribution_plot_handler     import DistributionPlotHandler
-from .plot_items.vector_field_plot  import VectorFieldPlot
-from .crystal_plot_handler          import CrystalPlotHandler
+from .plot_handler_items.scatter_plot_handler          import ScatterPlotHandler
+from .plot_handler_items.surface_plot_handler          import SurfacePlotHandler 
+from .plot_handler_items.step_plot_handler             import StepPlotHandler
+from .plot_handler_items.bar_plot_handler              import BarPlotHandler
+from .plot_handler_items.volume_plot_handler           import VolumePlotHandler
+from .plot_handler_items.distribution_plot_handler     import DistributionPlotHandler
+from .plot_items.vector_field_plot                     import VectorFieldPlot
+from .plot_handler_items.crystal_plot_handler          import CrystalPlotHandler
 
-from .graph_items.circle_item       import CircleItem
-from .graph_items.ellipse_item      import EllipseItem
-from .graph_items.rectangle_item    import RectangleItem
-from .graph_items.square_item       import SquareItem
-from .graph_items.pie_item          import PieItem
-from .graph_items.triangle_item     import TriangleItem
+from .graphics_items.circle_item       import CircleItem
+from .graphics_items.ellipse_item      import EllipseItem
+from .graphics_items.rectangle_item    import RectangleItem
+from .graphics_items.square_item       import SquareItem
+from .graphics_items.pie_item          import PieItem
+from .graphics_items.triangle_item     import TriangleItem
+from .graphics_items.cube_item         import CubeItem
+from .graphics_items.cuboid_item       import CuboidItem
+from .graphics_items.parallepiped_item import ParallepipedItem
+from .graphics_items.ellipsoid_item    import EllipsoidItem
 
 from ..models.session_node          import SessionNode
 
@@ -87,7 +89,11 @@ class MainHandler(SessionNode):
             'Square':SquareItem,
             'Rectangle':RectangleItem,
             'Pie':PieItem,
-            'Triangle':TriangleItem
+            'Triangle':TriangleItem,
+            'Cube':CubeItem,
+            'Cuboid':CuboidItem,
+            'Parallepiped':ParallepipedItem,
+            'Ellipsoid':EllipsoidItem
         }
         
     def addChild(self,*args, **kwargs):

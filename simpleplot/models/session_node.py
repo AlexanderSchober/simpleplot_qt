@@ -11,6 +11,7 @@ class SessionNode(QtGui.QStandardItem):
         self._name      = name
         self._children  = []
         self._parent    = parent
+        self._model     = None
         
         if parent is not None:
             parent.addChild(self)
@@ -31,6 +32,7 @@ class SessionNode(QtGui.QStandardItem):
         
         self._children.insert(position, child)
         child._parent = self
+        child._model = self.model()
 
         return True
 
@@ -41,6 +43,7 @@ class SessionNode(QtGui.QStandardItem):
         
         child = self._children.pop(position)
         child._parent = None
+        child._model = None
         return True
 
     def name(self):
@@ -58,7 +61,7 @@ class SessionNode(QtGui.QStandardItem):
         return None
 
     def child(self, row):
-        if row == self.childCount():
+        if row >= self.childCount():
             return None
         return self._children[row]
     

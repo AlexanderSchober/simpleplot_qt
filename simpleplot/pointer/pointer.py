@@ -23,7 +23,7 @@
 
 #import dependencies
 import os
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtGui
 from ..pyqtgraph import pyqtgraph as pg
 from .pointer_objects import *
 from .pointer_pos import * 

@@ -21,49 +21,38 @@
 #
 # *****************************************************************************
 
+# General imports
 from PyQt5 import QtGui
-from copy import deepcopy
 import numpy as np
-
-from ...pyqtgraph                   import pyqtgraph as pg
-from ...pyqtgraph.pyqtgraph         import opengl as gl
-
+from ...pyqtgraph import pyqtgraph as pg
 from ..custom_pg_items.SimplePlotDataItem import SimplePlotDataItem
-from ..custom_pg_items.SimpleErrorBarItem import SimpleErrorBarItem
 
-from ...models.parameter_class       import ParameterHandler 
-from ..custom_pg_items.GLLinePlotItem import GLLinePlotItem
+# Personal imports
+from ..graphics_items.graphics_item import GraphicsItem
+from ..plot_views_3D.line_view_3D   import LineView3D
 
-class LinePlot(ParameterHandler): 
+class LinePlot(GraphicsItem): 
     '''
     This class will be the scatter plots. 
     '''
-
-    def __init__(self,  **kwargs):
+    def __init__(self,*args, **kwargs):
         '''
-        This class serves as envelope for the 
-        PlotDataItem. Note that the axis of y will be
-        changed to z in case of a 3D representation while the 
-        y axis will be set to 0. This seems more
-        natural.
+        Initialisation of the class and super class
 
-        Parameters
-        - - - - - - - - - - -
-        x : 1D numpy array
-            the x data
-        y : 1D numpy array
-            the y data
-        z : 1D numpy array
-            the z data
-        error: dict of float arrays
-            The error of each point
+        Parameters:
+        -------------------
+        *args : -
+            These are the arguments of the class
+        **kwargs : -
+            These are the keyword arguments of the class
         '''
-        ParameterHandler.__init__(self, 'Line')
+        super().__init__('Line', *args, transformer = False, **kwargs)
         
-        self._initialize(**kwargs)
+        self.initializeMain(**kwargs)
+        self.initialize(**kwargs)
         self._mode = '2D'
 
-    def _initialize(self, **kwargs):
+    def initialize(self, **kwargs):
         '''
         This class will be the scatter plots. 
 
@@ -75,49 +64,52 @@ class LinePlot(ParameterHandler):
         '''
         style  = kwargs['Style'] if 'Style' in kwargs.keys() else ['-']
         color  = QtGui.QColor(kwargs['Color']) if 'Color' in kwargs.keys() else QtGui.QColor('blue')
+        self.items['Visible'].updateValue('-' in style, method = False)
 
-        self.addParameter(
-            'Visible', True if '-' in style else False, 
-            tags    = ['2D', '3D'],
-            method = self.refresh)
-        self.addParameter(
-            'Antialiassing', True ,
-            tags     = ['2D', '3D'],
-            method  = self.refresh)
         self.addParameter(
             'Line color', color ,
             tags     = ['2D', '3D'],
-            method  = self.refresh)
+            method  = self.setVisual)
         self.addParameter(
             'Line width', float(kwargs['Thickness']) if 'Thickness' in kwargs.keys() else 2. ,
             tags     = ['2D', '3D'],
-            method  = self.refresh)
+            method  = self.setVisual)
         self.addParameter(
             'Shadow color', QtGui.QColor('black') ,
             tags     = ['2D'],
-            method  = self.refresh)
+            method  = self.setVisual)
         self.addParameter(
             'Shadow width', 0 ,
             tags     = ['2D'],
-            method  = self.refresh)
+            method  = self.setVisual)
         self.addParameter(
             'Fill', False ,
-            tags     = ['2D'],
-            method  = self.refresh)
+            tags     = ['2D', '3D'],
+            method  = self.setVisual)
         self.addParameter(
             'Fill level', 0. ,
             tags     = ['2D'],
-            method  = self.refresh)
+            method  = self.setVisual)
+        self.addParameter(
+            'Fill line start', [0.,0.,0.],
+            names   = ['x','y','z'], 
+            tags    = ['3D'],
+            method  = self.setVisual)
+        self.addParameter(
+            'Fill line end', [1.,0.,0.],
+            names   = ['x','y','z'], 
+            tags    = ['3D'],
+            method  = self.setVisual)
         self.addParameter(
             'Fill color', QtGui.QColor('blue') ,
-            tags     = ['2D'],
-            method  = self.refresh)
+            tags     = ['2D', '3D'],
+            method  = self.setVisual)
         self.addParameter(
             'Depth', 0.,
             tags     = ['2D'],
-            method  = self.refresh)
+            method  = self.setVisual)
             
-    def _setVisual(self):
+    def setPens(self):
         '''
         This method will initialise the Qpen as the
         the QPainter method
@@ -136,21 +128,24 @@ class LinePlot(ParameterHandler):
         '''
         Send out the dictionary for the legend
         '''
-        self._setVisual()
+        self.setVisual()
         kwargs = {}
         kwargs['pen']   = self.line_pen
         return kwargs
 
-    def _getDictionary(self):
+    def setVisual(self):
         '''
-        Build the dictionary used for plotting
+        Set the visual of the given shape element
         '''
-        kwargs = {}
-        if self._mode == '2D':
+        if not hasattr(self, 'draw_items'):
+            self.redraw()
+            return
 
-            self._setVisual()
+        if self._mode == '2D':
+            self.setPens()
             data = self.parent()._plot_data.getData()
 
+            kwargs = {}
             kwargs['x']         = data[0]
             kwargs['y']         = data[1]
             kwargs['connect']   = 'all'
@@ -159,85 +154,64 @@ class LinePlot(ParameterHandler):
             kwargs['antialias'] = True
             kwargs['brush']     = self.fill_brush if self['Fill'] else None
             kwargs['fillLevel'] = self['Fill level'] if self['Fill'] else None
+            self.draw_items[0].setData(**kwargs)
 
         elif self._mode == '3D':
-            data = self.parent()._plot_data.getData(['x','y','z'])
+            kwargs = {}
+            kwargs['line_draw'] = self['Visible']
+            kwargs['fill_draw'] = self['Fill']
             
-            kwargs['pos']   = np.vstack(data).transpose()
-            kwargs['color'] = self['Line color'].getRgbF()
-            kwargs['width'] = self['Line width']/100.
+            kwargs['line_color'] = np.array(self['Line color'].getRgbF())
+            kwargs['line_width'] = np.array([self['Line width']/100.])
 
-        return kwargs
+            kwargs['fill_color'] = np.array(self['Fill color'].getRgbF())
+            kwargs['fill_axis_start'] = np.array([self['Fill line start']])
+            kwargs['fill_axis_end'] = np.array([self['Fill line end']])
 
-    def refresh(self):
+            self.draw_items[0].setProperties(**kwargs)
+
+    def setPlotData(self):
         '''
-        Set the data of the plot manually after the plot item 
-        has been actualized
+        The preference implementation requires the ability to set
+        colors without redrawing the entire data. As such we will 
+        here allow the setting of colors either through the 
+        color map or through shaders.
         '''
-        if hasattr(self, 'draw_items'):
-            if self['Visible'] and self._mode == '2D':
-                kwargs = self._getDictionary()
-                self.draw_items[0].setData(**kwargs)
-                self.draw_items[0].setZValue(self['Depth'])
-            elif self['Visible'] and self._mode == '3D':
-                kwargs = self._getDictionary()
-                self.draw_items[0].setData(**kwargs)
-            else:
-                for i in range(len(self.draw_items))[::-1]:
-                    if self._mode == '2D':
-                        self.default_target.draw_surface.removeItem(
-                            self.draw_items[i])
-                    elif self._mode == '3D':
-                        self.default_target.view.removeItem(
-                            self.draw_items[i])
-                del self.draw_items
-        else:
-            if self['Visible'] and self._mode == '2D':
-                self.draw()
-            elif self['Visible'] and self._mode == '3D':
-                self.drawGL()
+        data = self.parent()._plot_data.getData(['x','y','z'])
+        self.draw_items[0].setData(vertices = np.vstack(data).transpose())
 
     def draw(self, target_surface = None):
         '''
         Draw the objects.
         '''
+        self.removeItems()
         self._mode = '2D'
         if not target_surface == None:
-            self.default_target = target_surface
+            self.default_target = target_surface.draw_surface.vb
             self.setCurrentTags(['2D'])
 
         if self['Visible']:
             self.draw_items = []
-            kwargs          = self._getDictionary()
-            self.draw_items = [SimplePlotDataItem(**kwargs)]
+            self.draw_items = [SimplePlotDataItem()]
             self.draw_items[0].setZValue(self['Depth'])
+            self.setPlotData()
+            self.setVisual()
 
             for curve in self.draw_items:
-                self.default_target.draw_surface.addItem(curve)
+                self.default_target.addItem(curve)
 
     def drawGL(self, target_view = None):
         '''
         Draw the objects.
         '''
+        self.removeItems()
         self._mode = '3D'
         if not target_view == None:
-            self.default_target = target_view
+            self.default_target = target_view.view
             self.setCurrentTags(['3D'])
 
         if self['Visible']:
-            self.draw_items = []
-            kwargs = self._getDictionary()
-            self.draw_items.append(GLLinePlotItem(**kwargs))
-            self.draw_items[-1].setTransform(self.parent().transformer.getTransform())
-            self.draw_items[-1].setGLOptions('translucent')
-
-            for curve in self.draw_items:
-                self.default_target.view.addItem(curve)
-
-    def removeItems(self):
-        '''
-        Remove the objects.
-        '''
-        if hasattr(self, 'draw_items'):
-            for curve in self.draw_items:
-                self.default_target.draw_surface.removeItem(curve)
+            self.draw_items = [LineView3D()]
+            self.default_target.addItem(self.draw_items[-1])
+            self.setPlotData()
+            self.setVisual()

@@ -51,6 +51,9 @@ class CanvasWidget(QtWidgets.QWidget):
     def dragMoveEvent(self, event):
         super(CanvasWidget, self).dragMoveEvent(event)
 
+    def mouseMoveEvent(self, event):
+        super(CanvasWidget, self).mouseMoveEvent(event)
+
 def NumpyFileDrop(generator_class, event):
     '''
     This is the drop method and will support the

@@ -22,10 +22,7 @@
 # *****************************************************************************
 
 #import dependencies
-import os
-from PyQt5 import QtCore, QtGui, QtWidgets
-from ..pyqtgraph import pyqtgraph as pg
-import numpy as np
+from PyQt5 import QtCore, QtGui
 
 class PointerObject:
     

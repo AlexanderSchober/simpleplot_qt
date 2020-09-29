@@ -74,7 +74,7 @@ class ExportDialog(QtGui.QWidget):
             self.current_type = '3D'
             self.canvas_item = item
             self.scene = item.view
-            self.updateItemList(select=self.scene)
+            # self.updateItemList(select=self.scene)
 
     def updateItemList(self, select=None):
         self.ui.itemTree.clear()

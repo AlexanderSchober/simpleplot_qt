@@ -23,6 +23,7 @@
 # *****************************************************************************
 
 #public dependencies
+from simpleplot.pyqtgraph.pyqtgraph.GraphicsScene import mouseEvents
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 class SimplePlotOverlayView(QtWidgets.QGraphicsView):
@@ -46,6 +47,7 @@ class SimplePlotOverlayView(QtWidgets.QGraphicsView):
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
+        self.setMouseTracking(True)
 
         self._mouse_captured = False
 

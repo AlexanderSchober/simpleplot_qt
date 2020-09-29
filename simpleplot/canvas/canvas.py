@@ -23,10 +23,6 @@
 
 #import dependencies
 from PyQt5      import QtWidgets, QtGui, QtCore
-from OpenGL     import GL
-from functools  import partial
-
-import numpy    as np
 import os
 
 from ..pyqtgraph.pyqtgraph.graphicsItems.ViewBox import ViewBox
@@ -72,6 +68,7 @@ class CanvasNode(SessionNode):
         and the plot model that will then be
         sued to edit plot data
         '''
+        self._current_mode = kwargs['Type']
         self.mouse = Mouse(self)
 
         self.handler = ParameterHandler(
@@ -150,22 +147,26 @@ class CanvasNode(SessionNode):
         '''
         Switch from 2D to 3D and vice versa
         '''
+        if self._current_mode == self.handler['Type']:
+            return 
+        if hasattr(self, '_artist'):
+            self._artist.disconnect()
+
+        self._artist.removeItems()
         self._model.removeRows(1,self.childCount()-1, self)
         self.plot_widget.deleteLater()
         self.mouse.clear()
-        self._populate()
-        self._model.referenceModel()
+        self.buildGraph()
         self._setBackground()
         self._artist.draw()
         self._model.referenceModel()
+        self._current_mode = self.handler['Type']
 
     def _populate(self):
         '''
         General populate method that will check the 
         chosen state and try to redraw all.
         '''
-        if hasattr(self, '_artist'):
-            self._artist.disconnect()
 
         if self.handler['Type'] == '2D':
             self._populate2D()
@@ -203,6 +204,7 @@ class CanvasNode(SessionNode):
         self.plot_widget = MyGLViewWidget(self)
         self.plot_widget.setContentsMargins(0, 0, 0, 0)
         self.plot_widget.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        self.plot_widget.show()
 
         # Reference the elements
         self.view = self.plot_widget
@@ -216,13 +218,17 @@ class CanvasNode(SessionNode):
         self._artist.setOverlayElements()
         self.resizeOverlaySpace()
 
+        self.plot_widget.setCamera(self._artist.camera)
+        self.plot_widget.setLightSource(self._artist.light)
+        self._artist.setUpGraphItems()
+
     def _buildOverlay(self):
         '''
         This method will build an overlay over the current
         plot widget and then make its dimensions fit
         '''
         # Create the QGraphics overlay view
-        self._overlay_view = SimplePlotOverlayView()        
+        self._overlay_view = SimplePlotOverlayView()
 
         # Create the QGraphics scene to go with it
         self._overlay_scene = QtWidgets.QGraphicsScene()
@@ -275,15 +281,6 @@ class CanvasNode(SessionNode):
     def _setHorizontalSpacing(self):
         self.grid_layout.setHorizontalSpacing(
             self.handler['Horizontal spacing'])
-
-    def mouseMove(self,event):
-        self.mouse.move(event)
-    def mousePress(self,event):
-        self.mouse.press(event)
-    def mouseRelease(self,event):
-        self.mouse.release(event)
-    def mouseDrag(self,event):
-        self.mouse.drag(event)
 
     def _configurationPathSet(self):
         '''

@@ -6,9 +6,9 @@ from ...pyqtgraph.pyqtgraph import QtGui
 from ...pyqtgraph.pyqtgraph import functions as fn
 import numpy as np
 
-from ..plot_geometries.points           import Point
-from ..plot_geometries.transformations  import *
-from ..plot_geometries.operations       import *
+from ..graphics_geometry.points           import Point
+from ..graphics_geometry.transformations  import *
+from ..graphics_geometry.operations       import *
 
 import scipy.linalg as sci_lin
 __all__ = ['GLLinePlotItem']

@@ -21,118 +21,98 @@
 #
 # *****************************************************************************
 
+# General imports
 from PyQt5 import QtGui
-from copy import deepcopy
 import numpy as np
-
 from ...pyqtgraph                   import pyqtgraph as pg
-from ...pyqtgraph.pyqtgraph         import opengl as gl
-
 from ..custom_pg_items.SimplePlotDataItem import SimplePlotDataItem
-from ..custom_pg_items.SimpleErrorBarItem import SimpleErrorBarItem
-from ..custom_pg_items.GLScatterPlotItem  import GLScatterPlotItem
 
-from ...models.parameter_class       import ParameterHandler 
-from ..plot_geometries.transformer  import Transformer
+# Personal imports
+from ..graphics_items.graphics_item import GraphicsItem
+from ..plot_views_3D.distribution_view_3D import DistributionView3D
 
-class ScatterPlot(ParameterHandler): 
+class ScatterPlot(GraphicsItem): 
     '''
     This class will be the scatter plots. 
     '''
-
-    def __init__(self,  **kwargs):
+    def __init__(self,*args, **kwargs):
         '''
-        This class serves as envelope for the 
-        PlotDataItem. Note that the axis of y will be
-        changed to z in case of a 3D representation while the 
-        y axis will be set to 0. This seems more
-        natural.
+        Initialisation of the class and super class
 
-        Parameters
-        -----------
-        x : 1D numpy array
-            the x data
-        y : 1D numpy array
-            the y data
-        z : 1D numpy array
-            the z data
-        error: dict of float arrays
-            The error of each point
+        Parameters:
+        -------------------
+        *args : -
+            These are the arguments of the class
+        **kwargs : -
+            These are the keyword arguments of the class
         '''
-        ParameterHandler.__init__(self, 'Scatter')
-        self.addChild(Transformer())
+        super().__init__('Scatter', *args, transformer = False, **kwargs)
         
-        self._initialize(**kwargs)
+        self.initializeMain(**kwargs)
+        self.initialize(**kwargs)
         self._mode = '2D'
 
-    def _initialize(self, **kwargs):
+    def initialize(self, **kwargs):
         '''
         This class will be the scatter plots. 
 
         Parameters
-        -----------
+        - - - - - - - - - - -
         kwargs : dict
             The parameters passed on by the user that 
             will override the predefined values
         '''
-        style           = kwargs['Style'] if 'Style' in kwargs.keys() else []
+        style           = kwargs.get('Style', [])
         options         = ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']
         scatter_bool    = [option in style for option in options]
 
         symbol = options[scatter_bool.index(True)] if any(scatter_bool) else 'o'
-        color  = QtGui.QColor(kwargs['Color']) if 'Color' in kwargs.keys() else QtGui.QColor('blue')
+        color  = QtGui.QColor(kwargs.get('Color', QtGui.QColor('blue')))
+
         if any(scatter_bool):
-            if type(kwargs['Style'][-1]) is int:
-                size   = kwargs['Style'][-1]
+            if isinstance(style[-1], int) or isinstance(style[-1], float):
+                size   = style[-1]
             else:
                 size = 10
         else:
             size = 10
 
-        self.addParameter(
-            'Visible', True if any(scatter_bool) else False, 
-            tags     = ['2D', '3D'],
-            method = self.refresh)
-        self.addParameter(
-            'Symbol', [True, QtGui.QColor('blue'),10,4], 
-            names   = ['Show', 'Color','Size', 'Thickness'],
-            tags     = ['2D', '3D'],
-            method  = self.refresh)
+        self.items['Visible'].updateValue(any(scatter_bool), method = False)
+
         self.addParameter(
             'Type', symbol ,
             choices = options,
             names   = options,
             tags     = ['2D'],
-            method  = self.refresh)
+            method  = self.setVisual)
         self.addParameter(
             'Size', float(size) ,
             tags     = ['2D', '3D'],
-            method  = self.refresh)
+            method  = self.setPlotData)
         self.addParameter(
             'Fill color', color ,
-            tags     = ['2D'],
-            method  = self.refresh)
+            tags     = ['2D', '3D'],
+            method  = self.setPlotData)
         self.addParameter(
             'Line color', QtGui.QColor('black') ,
             tags     = ['2D', '3D'],
-            method  = self.refresh)
+            method  = self.setVisual)
         self.addParameter(
             'Line width', 3 ,
             tags     = ['2D', '3D'],
-            method  = self.refresh)
+            method  = self.setVisual)
         self.addParameter(
             'Antialiassing', True ,
             tags     = ['2D', '3D'],
-            method  = self.refresh)
+            method  = self.setVisual)
         self.addParameter(
             'Depth', 1.,
             tags     = ['2D'],
-            method  = self.refresh)
+            method  = self.setVisual)
 
-    def _setVisual(self):
+    def _setPens(self):
         '''
-        This method will initialise the Qpen as the
-        the QPainter method
+        Set the visual of the given shape element
         '''
         self.symbol_pen = pg.mkPen({
             'color': self['Line color'],
@@ -140,11 +120,47 @@ class ScatterPlot(ParameterHandler):
         self.symbol_brush = pg.mkBrush(
             self['Fill color'])
 
+    def _getDictionary(self):
+        '''
+        Set the visual of the given shape element
+        '''
+        self._setPens()
+        data = self.parent()._plot_data.getData()
+        kwargs                  = {}
+        kwargs['x']             = data[0]
+        kwargs['y']             = data[1]
+        kwargs['pen']           = None
+        kwargs['symbol']        = self['Type']
+        kwargs['symbolSize']    = self['Size']
+        kwargs['symbolPen']     = self.symbol_pen
+        kwargs['symbolBrush']   = self.symbol_brush
+        kwargs['antialias']     = self['Antialiassing']
+        return kwargs
+
+    def setVisual(self):
+        '''
+        Set the visual of the given shape element
+        '''
+        if not hasattr(self, 'draw_items'):
+            self.redraw()
+            return
+
+        if self._mode == '2D':
+            self.draw_items[0].setData(**self._getDictionary())
+
+        elif self._mode == '3D':
+
+            parameters = {}
+            parameters['drawFaces']     = True
+            parameters['drawEdges']     = False
+
+            self.draw_items[0].setProperties(**parameters)
+
     def getLegendDictionary(self)->dict:
         '''
         Send out the dictionary for the legend
         '''
-        self._setVisual()
+        self.setVisual()
         kwargs = {}
         kwargs['symbolPen']     = self.symbol_pen
         kwargs['symbolBrush']   = self.symbol_brush
@@ -152,69 +168,33 @@ class ScatterPlot(ParameterHandler):
         kwargs['symbol']        = self['Type']
         return kwargs
 
-    def _getDictionary(self):
+    def setPlotData(self):
         '''
-        Build the dictionary used for plotting
+        The preference implementation requires the ability to set
+        colors without redrawing the entire data. As such we will 
+        here allow the setting of colors either through the 
+        color map or through shaders.
         '''
-        kwargs = {}
+        data = self.parent()._plot_data.getData(['x','y','z'])
+        data = np.vstack(data).transpose()
+        vertices = np.ones((data.shape[0],4), dtype=np.float)
+        vertices *= self['Size']
+        vertices[:,:3] = data
+        colors = np.ones((data.shape[0],4))
+        colors *= np.array(self['Fill color'].getRgbF())
 
-        if self._mode == '2D':
-            self._setVisual()
-            data = self.parent()._plot_data.getData()
-
-            kwargs['x']             = data[0]
-            kwargs['y']             = data[1]
-            kwargs['pen']           = None
-            kwargs['symbol']        = self['Type']
-            kwargs['symbolSize']    = self['Size']
-            kwargs['symbolPen']     = self.symbol_pen
-            kwargs['symbolBrush']   = self.symbol_brush
-            kwargs['antialias']     = self['Antialiassing']
-
-        elif self._mode == '3D':
-            data = self.parent()._plot_data.getData(['x','y','z'])
-            
-            kwargs['pos']           = np.vstack(data).transpose()
-            kwargs['color']         = self['Line color'].getRgbF()
-            kwargs['size']          = self['Size']
-
-        return kwargs
-
-    def refresh(self, **kwargs):
-        '''
-        Set the data of the plot manually after the plot item 
-        has been actualized
-        '''
-        if hasattr(self, 'draw_items'):
-            if self['Visible'] and self._mode == '2D':
-                kwargs = self._getDictionary()
-                self.draw_items[0].setData(**kwargs)
-                self.draw_items[0].setZValue(self['Depth'])
-            elif self['Visible'] and self._mode == '3D':
-                kwargs = self._getDictionary()
-                self.draw_items[0].setData(**kwargs)
-            else:
-                for i in range(len(self.draw_items))[::-1]:
-                    if self._mode == '2D':
-                        self.default_target.draw_surface.removeItem(
-                            self.draw_items[i])
-                    elif self._mode == '3D':
-                        self.default_target.view.removeItem(
-                            self.draw_items[i])
-                del self.draw_items
-        else:
-            if self['Visible'] and self._mode == '2D':
-                self.draw()
-            elif self['Visible'] and self._mode == '3D':
-                self.drawGL()
+        self.draw_items[0].setData(
+            vertices = vertices,
+            colors = colors)
 
     def draw(self, target_surface = None):
         '''
         Draw the objects.
         '''
+        self.removeItems()
         self._mode = '2D'
         if not target_surface == None:
-            self.default_target = target_surface
+            self.default_target = target_surface.draw_surface.vb
             self.setCurrentTags(['2D'])
 
         if self['Visible']:
@@ -225,31 +205,20 @@ class ScatterPlot(ParameterHandler):
             self.draw_items[-1].scatter.opts['useCache'] = False
 
             for curve in self.draw_items:
-                self.default_target.draw_surface.addItem(curve)
+                self.default_target.addItem(curve)
 
     def drawGL(self, target_view = None):
         '''
         Draw the objects.
         '''
+        self.removeItems()
         self._mode = '3D'
         if not target_view == None:
-            self.default_target = target_view
+            self.default_target = target_view.view
             self.setCurrentTags(['3D'])
-            
-        if self['Visible']:
-            self.draw_items = []
-            kwargs = self._getDictionary()
-            self.draw_items.append(GLScatterPlotItem(**kwargs))
-            self.draw_items[-1].setTransform(self.parent().transformer.getTransform())
-            self.draw_items[-1].setGLOptions('translucent')
-            
-            for curve in self.draw_items:
-                self.default_target.view.addItem(curve)
 
-    def removeItems(self):
-        '''
-        Remove the objects.
-        '''
-        if hasattr(self, 'draw_items'):
-            for curve in self.draw_items:
-                self.default_target.draw_surface.removeItem(curve)
+        if self['Visible']:
+            self.draw_items = [DistributionView3D()]
+            self.default_target.addItem(self.draw_items[-1])
+            self.setPlotData()
+            self.setVisual()

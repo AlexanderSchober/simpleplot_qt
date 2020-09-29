@@ -21,31 +21,32 @@
 #
 # *****************************************************************************
 
+# General imports
 from PyQt5 import QtGui
 import numpy as np
-from OpenGL.GL  import *
 
-from ...pyqtgraph                   import pyqtgraph as pg
-from ...pyqtgraph.pyqtgraph         import opengl as gl
+# Personal imports
+from ..graphics_items.graphics_item import GraphicsItem
+from ..plot_views_3D.isosurface_view_3D import IsoSurfaceView3D
 
-from ..plot_geometries.shaders      import ShaderConstructor
-from ...models.parameter_class       import ParameterHandler 
-from ..plot_geometries.shaders      import ShaderConstructor
-
-class IsoSurfacePlot(ParameterHandler): 
+class IsoSurfacePlot(GraphicsItem): 
     '''
     This class will be the scatter plots. 
     '''
-    def __init__(self, **kwargs):
+    def __init__(self,*args, **kwargs):
         '''
-        This class serves as envelope for the 
-        PlotDataItem. Note that the axis of y will be
-        changed to z in case of a 3D representation while the 
-        y axis will be set to 0. This seems more
-        natural.
+        Initialisation of the class and super class
+
+        Parameters:
+        -------------------
+        *args : -
+            These are the arguments of the class
+        **kwargs : -
+            These are the keyword arguments of the class
         '''
-        ParameterHandler.__init__(self, 'IsoSurface')
-        self.addChild(ShaderConstructor())
+        super().__init__('Iso-surface', *args,transformer = False, **kwargs)
+
+        self.initializeMain(**kwargs)
         self.initialize(**kwargs)
         self._mode = '3D'
 
@@ -54,71 +55,91 @@ class IsoSurfacePlot(ParameterHandler):
         This class will be the scatter plots. 
         The arguments are given as kwargs 
         '''
+        bounds = kwargs['data_item'].getBounds()
+
         self.addParameter(
-            'Visible', False, 
+            'Raycast step size', 0.5/20, 
+            method = self.setColor, 
+            tags = ['3D'])
+        self.addParameter(
+            'Surface color', QtGui.QColor('grey'),
             tags   = ['3D'],
-            method = self.refresh)
+            method = self.setColor)
         self.addParameter(
-            'Draw faces', True, 
-            tags     = ['3D'],
-            method = self.refresh)
+            'Surface value', 0.5,
+            tags   = ['3D'],
+            method = self.setColor)
         self.addParameter(
-            'Draw edges', False, 
-            tags     = ['3D'],
-            method = self.refresh)
+            'X range', [False, bounds[0][0], bounds[0][1],False, ''],
+            names  = ['Constrain','min', 'max','Cut outs', 'values'],
+            tags   = ['3D'],
+            method = self.setColor)
         self.addParameter(
-            'Draw smooth', True, 
-            tags     = ['3D'],
-            method = self.refresh)
+            'Y range', [False, bounds[1][0], bounds[1][1],False, ''],
+            names  = ['Constrain','min', 'max','Cut outs', 'values'],
+            tags   = ['3D'],
+            method = self.setColor)
         self.addParameter(
-            'Level', 0.2, 
-            tags     = ['3D'],
-            method = self.refresh)
+            'Z range', [False, bounds[2][0], bounds[2][1],False, ''],
+            names  = ['Constrain','min', 'max','Cut outs', 'values'],
+            tags   = ['3D'],
+            method = self.setColor)
 
-    def refresh(self):
+    def _refreshBounds(self):
         '''
-        Set the data of the image and then let the 
-        program decide which procedure to target Note
-        that this routine aims at updating the data only
+        refresh the bounds of the parameter handler 
+        as the data is being refreshed
         '''
-        if hasattr(self, 'draw_items'):
-            if self['Visible']:
-                surface = None
-                for draw_item in self.draw_items:
-                    if isinstance(draw_item, gl.GLMeshItem):
-                        surface = draw_item
-                            
-                if self._mode == '3D':
-                    surface.opts['drawEdges']   = self['Draw edges']
-                    surface.opts['drawFaces']   = self['Draw faces']
-                    surface.opts['smooth']      = self['Draw smooth']
+        bounds = self.parent()._plot_data.getBounds()
 
-                    data = self.parent()._plot_data.getIsoSurface(self['Level'])
-                    kwargs = {}
-                    kwargs['vertexes']  = data[0]
-                    kwargs['faces']     = data[1]
-                    surface.setMeshData(**kwargs)
-                    self.childFromName('Shader').runShader()
-
-            else:
-                for i in range(len(self.draw_items))[::-1]:
-                    if isinstance(self.draw_items[i],gl.GLMeshItem):
-                        if self._mode == '3D':
-                            self.default_target.view.removeItem(self.draw_items[i])
-                del self.draw_items
-        else:
-            if self['Visible'] and self._mode == '3D':
-                self.drawGL()
+        targets     = ['X range', 'Y range', 'Z range']
+        for j,target in enumerate(targets):
+            data_range = self[target]
+            if not data_range[0]:
+                data_range[1] = float(bounds[j][0])
+                data_range[2] = float(bounds[j][1])
+                self.items[target].updateValue(data_range, method = False)
 
     def setColor(self):
+        '''
+        Set the visual of the given shape element
+        '''
+        if not hasattr(self, 'draw_items'):
+            self.redraw()
+            return
+
+        if self._mode == '2D':
+            pass
+
+        elif self._mode == '3D':
+            bounds      = np.array(self.parent()._plot_data.getBounds()[:3])
+
+            parameters = {}
+            parameters['color']         =  np.array([val/255 for val in self['Surface color'].getRgb()])
+            parameters['threshold']     = np.array(self['Surface value'])
+            parameters['step_size']     = self['Raycast step size']
+            parameters['top_limits'] = np.array([
+                1 if not self['X range'][0] else (self['X range'][2]-bounds[0,0])/(bounds[0,1] - bounds[0,0]),
+                1 if not self['Y range'][0] else (self['Y range'][2]-bounds[1,0])/(bounds[1,1] - bounds[1,0]),
+                1 if not self['Z range'][0] else (self['Z range'][2]-bounds[2,0])/(bounds[2,1] - bounds[2,0])
+            ])
+            parameters['bot_limits'] = np.array([
+                0 if not self['X range'][0] else (self['X range'][1]-bounds[0,0])/(bounds[0,1] - bounds[0,0]),
+                0 if not self['Y range'][0] else (self['Y range'][1]-bounds[1,0])/(bounds[1,1] - bounds[1,0]),
+                0 if not self['Z range'][0] else (self['Z range'][1]-bounds[2,0])/(bounds[2,1] - bounds[2,0])
+            ])
+            self.draw_items[0].setColors(**parameters)
+
+    def setData(self):
         '''
         The preference implementation requires the ability to set
         colors without redrawing the entire data. As such we will 
         here allow the setting of colors either through the 
         color map or through shaders.
         '''
-        if self._mode == '3D':
-            self.draw_items[0].setShader(self.childFromName('Shader').getShader('edgeShader'))
+        data = self.parent()._plot_data.getData()
+        bounds = np.array(self.parent()._plot_data.getBounds()[:3])
+        self.draw_items[0].setPlotData(bounds, data[4])
 
     def draw(self, target_surface = None):
         '''
@@ -127,35 +148,21 @@ class IsoSurfacePlot(ParameterHandler):
         self._mode = '2D'
         if not target_surface == None:
             self.default_target = target_surface
+            self.setCurrentTags(['2D'])
 
     def drawGL(self, target_view = None):
         '''
         Draw the objects.
         '''
+        self.removeItems()
         self._mode = '3D'
         if not target_view == None:
-            self.default_target = target_view
+            self.default_target = target_view.view
             self.setCurrentTags(['3D'])
 
         if self['Visible']:
-            self.draw_items = []
-            mesh = self.parent()._plot_data.getIsoSurface(self['Level'])
-            kwargs = {}
-            kwargs['vertexes']  = mesh[0]
-            kwargs['faces']     = mesh[1]
-            kwargs['smooth']    = self['Draw smooth']
-            kwargs['drawFaces'] = self['Draw faces']
-            kwargs['drawEdges'] = self['Draw edges']
-            self.draw_items.append(gl.GLMeshItem(**kwargs))
-            self.draw_items[-1].setGLOptions('opaque')
-            self.draw_items[-1].setTransform(self.parent().transformer.getTransform())
-            self.default_target.view.addItem(self.draw_items[-1])
-            self.childFromName('Shader').runShader()
-
-    def removeItems(self):
-        '''
-        Remove the objects.
-        '''
-        if hasattr(self, 'draw_items'):
-            for curve in self.draw_items:
-                self.default_target.draw_surface.removeItem(curve)
+            self.draw_items = [IsoSurfaceView3D()]
+            self.default_target.addItem(self.draw_items[-1])
+            self.setPlotData()
+            self.setColor()
+            self.setVisual()

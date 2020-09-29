@@ -21,21 +21,20 @@
 #
 # *****************************************************************************
 
-from PyQt5 import QtGui, QtCore, QtWidgets
-
 from ..pointer.pointer  import Pointer
 from ..pointer.zoomer   import Zoomer
 from ..pointer.measurer import Measurer
-from .axes              import Axes
-from .axes_gl           import Axes3D
-from .legend            import Legend
-from .grid_gl           import GridGl
+from ..ploting.graph_items.axes_item_2D import AxesItem2D
+from ..ploting.graph_items.axes_item_3D import AxesItem3D
+from ..ploting.graph_items.axes_orientation_item_3D import AxesOrientationItem3D
+from ..ploting.graph_items.legend import Legend
+from ..ploting.graph_items.grid_item_3D import GridItem3D
+from .camera import Camera
+from .light import LightSource
+
 from ..models.session_node import SessionNode
-
 from ..ploting.main_handler import get_main_handler
-from ..pyqtgraph import pyqtgraph as pg
 
-from copy import deepcopy
 import numpy as np
 import os
 
@@ -203,20 +202,19 @@ class Artist():
         selected items. if not a new instance will be
         generated and then fed into the handler system
         '''
-        for plot_handler in self.canvas._plot_root._children:
-            plot_handler.removeItems()
+        self.removeItems()
         for plot_handler in self.canvas._plot_root._children:
             plot_handler.draw(self.canvas)
 
-    # def redraw(self):
-    #     '''
-    #     This method will go through the plot handlers
-    #     and check if one of them has already the 
-    #     selected items. if not a new instance will be
-    #     generated and then fed into the handler system
-    #     '''
-    #     for plot_handler in self.plot_handlers:
-    #         plot_handler.draw(self.canvas)
+    def removeItems(self):
+        '''
+        This method will go through the plot handlers
+        and check if one of them has already the 
+        selected items. if not a new instance will be
+        generated and then fed into the handler system
+        '''
+        for plot_handler in self.canvas._plot_root._children:
+            plot_handler.removeItems()
 
     def clear(self):
         '''
@@ -270,7 +268,7 @@ class Artist2DNode(SessionNode, Artist):
         self.canvas         = canvas
         self.plot_handlers  = []
         self.artist_type    = '2D'
-        self.axes           = Axes(self.canvas)
+        self.axes           = AxesItem2D(self.canvas)
         self.zoomer         = Zoomer(self.canvas)
         self.measurer       = Measurer(self.canvas)
         self.connect()
@@ -420,11 +418,23 @@ class Artist3DNode(SessionNode, Artist):
         self.canvas         = canvas
         self.plot_handlers  = []
         self.artist_type    = '3D'
-
-        self.grid = GridGl(canvas)
-        self.axes = Axes3D(canvas)
-        
+        self.camera         = Camera(canvas)
+        self.light          = LightSource(canvas)
         self.connect()
+
+    def setUpGraphItems(self):
+        '''
+        this will help setting up the graph items
+        after the artists has been initialised such as the 
+        camera dn the light
+        '''
+        self.axes           = AxesItem3D(self.canvas)
+        self.orientation    = AxesOrientationItem3D(self.canvas)
+        self.grid           = GridItem3D(self.axes._axes_list, self.canvas)
+
+        self.addChild(self.axes)
+        self.addChild(self.orientation)
+        self.addChild(self.grid)
 
     def connect(self):
         '''
@@ -464,7 +474,7 @@ class Artist3DNode(SessionNode, Artist):
 
         self.axes.refreshAuto()
         self.grid.refreshAuto()
-
+        
     def redrawOverlay(self):
         '''
         Redraw items that have been put onto the 
@@ -479,7 +489,8 @@ class Artist3DNode(SessionNode, Artist):
         now this corresponds to the legend and the 
         pointer
         '''
-        self.legend     = Legend(self.canvas)
+        pass
+        # self.legend     = Legend(self.canvas)
 
     def set_mode(self, idx):
         '''

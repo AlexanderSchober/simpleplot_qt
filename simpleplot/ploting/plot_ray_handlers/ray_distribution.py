@@ -28,10 +28,9 @@ from ...pyqtgraph.pyqtgraph.opengl   import GLMeshItem
 from ...pyqtgraph.pyqtgraph.opengl.MeshData     import MeshData
 from ...models.parameter_class   import ParameterHandler 
 
-from ..plot_geometries.shaders      import ShaderConstructor
+from ..graphics_geometry.shaders      import ShaderConstructor
 
-from .ray_intersec_lib import rayTriangleIntersection
-from .ray_intersec_lib import closestPointOnLine
+
 from .ray_intersec_lib import checkBoundingBox
 from .ray_intersec_lib import retrievePositionSpheres
 

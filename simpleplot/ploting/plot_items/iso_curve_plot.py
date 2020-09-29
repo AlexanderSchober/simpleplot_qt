@@ -22,15 +22,12 @@
 # *****************************************************************************
 
 from PyQt5 import QtGui
-from copy import deepcopy
 import numpy as np
-from scipy.spatial.distance import pdist
 
 from ...pyqtgraph                   import pyqtgraph as pg
 from ...pyqtgraph.pyqtgraph         import opengl as gl
-from ...pyqtgraph.pyqtgraph.graphicsItems.GradientEditorItem import GradientEditorItem
 
-from ..plot_geometries.shaders      import ShaderConstructor
+from ..graphics_geometry.shaders      import ShaderConstructor
 from ...models.parameter_class       import ParameterHandler
 
 class IsoCurvePlot(ParameterHandler):  
@@ -116,7 +113,7 @@ class IsoCurvePlot(ParameterHandler):
 
                 if self._mode == '2D':
                     for i,level in enumerate(self._processLevels()):
-                        isocurves[i].setData(self.parent()['Data'].getData()[2], level = level)
+                        isocurves[i].setPlotData(self.parent()['Data'].getData()[2], level = level)
                         self.childFromName('Shader').runShader()
                         
                 elif self._mode == '3D':
@@ -187,7 +184,7 @@ class IsoCurvePlot(ParameterHandler):
 
                 elif self._mode == '3D':
                     for curve in isocurves[i]:
-                        curve.setData(color = colors[i].getRgbF())
+                        curve.setPlotData(color = colors[i].getRgbF())
 
     def _processLevels(self):
         '''

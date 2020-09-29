@@ -9,8 +9,8 @@ class ParameterNode(SessionNode):
         self.description = ''
  
     def data(self, column):
-        if   column is 0: return self._name
-        elif column is 1: return self.description
+        if   column == 0: return self._name
+        elif column == 1: return self.description
  
     def setData(self, column, value):
         pass
@@ -19,7 +19,7 @@ class ParameterNode(SessionNode):
         if index.column() == 0:
             return QtCore.Qt.ItemIsEnabled 
         elif index.column() == 1:
-            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
+            return QtCore.Qt.ItemIsEnabled
         else:
             return QtCore.Qt.NoItemFlags
 
@@ -30,7 +30,7 @@ class ParameterItem(SessionNode):
         self._method = method
          
     def data(self, column):
-        if column is 0: return self._name
+        if column == 0: return self._name
         elif column  == 1:
             if not type(self._value) == QtGui.QFont: 
                 return self._value

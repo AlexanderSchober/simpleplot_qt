@@ -23,10 +23,6 @@
 
 import numpy as np
 from .plot_data import PlotData
-
-from ..plot_geometries.surfaces import QuadSurface
-from ..plot_geometries.points   import Point
-from ..plot_geometries.shaders  import ShaderConstructor
 from ...pyqtgraph.pyqtgraph     import functions
 
 from ...models.session_node   import SessionNode
@@ -46,7 +42,7 @@ class VolumeData(PlotData, SessionNode):
         self._bounds = [[0,1],[0,1],[0,1],[0,1]]
         self._buffer = {}
 
-    def setData(self, **kwargs):
+    def setPlotData(self, **kwargs):
         '''
         set the local data manually even after
         initialization of the class

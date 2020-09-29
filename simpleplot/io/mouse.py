@@ -21,8 +21,6 @@
 #
 # *****************************************************************************
 
-from ..pyqtgraph import pyqtgraph as pg
-from PyQt5 import QtCore, Qt, QtGui
 import numpy as np
 
 class Mouse:
@@ -195,7 +193,6 @@ class Mouse:
         Input: 
         - Qt based mouse ev
         '''
-        
         try:
             self.released.remove(ev.button())
         except:

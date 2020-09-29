@@ -37,9 +37,9 @@ class LineData(PlotData, SessionNode):
         SessionNode.__init__(self, 'Data')
 
         self._axes = ['x','y','z']
-        self.setData(**kwargs)
+        self.setPlotData(**kwargs)
         
-    def setData(self, **kwargs):
+    def setPlotData(self, **kwargs):
         '''
         set the local data manually even after
         initialization of the class

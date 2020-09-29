@@ -23,10 +23,6 @@
 
 import numpy as np
 from .plot_data import PlotData
-
-from ..plot_geometries.surfaces import QuadSurface
-from ..plot_geometries.points   import Point
-from ..plot_geometries.shaders  import ShaderConstructor
 from ...pyqtgraph.pyqtgraph     import functions
 
 from ...models.session_node   import SessionNode
@@ -44,7 +40,7 @@ class StepData(PlotData, SessionNode):
         self._axes = ['x','y','z']
         self._data = [None, None, None]
 
-    def setData(self, **kwargs):
+    def setPlotData(self, **kwargs):
         '''
         set the local data manually even after
         initialization of the class
@@ -84,9 +80,7 @@ class StepData(PlotData, SessionNode):
             self._data = elements 
             self._setBounds()
             self._setHistogram()
-
-            if self.parent().childFromName('Step')._mode == '3D':
-                self.set3D(changed = changed)
+            self.set3D(changed = changed)
 
     def set3D(self, changed = [True, True, True]):
         '''

@@ -172,13 +172,19 @@ class ParameterHandler(SessionNode):
         present = [child._name for child in self._children]
         for name in self._order:
             if name in present:
-                self._model.removeRows(self.items[name].index().row(), 1, self)
+                if not self.model() is None:
+                    self.model().removeRows(self.items[name].index().row(), 1, self)
+                else:
+                    self.removeChild(self._children.index(self.items[name]))
 
         for name in self._order:
             if any([tag in self._tags for tag in self.items[name].getTags()]) or self._tags is None:
-                self._model.insertRows(len(self._children),1,[self.items[name]], self)
+                if not self.model() is None:
+                    self.model().insertRows(len(self._children),1,[self.items[name]], self)
+                else:
+                    self.insertChild(len(self._children),self.items[name])
 
-        self._model.dataChanged.emit(self.index(), self.index())
+        if not self.model() is None: self.model().dataChanged.emit(self.index(), self.index())
 
     def runAll(self):
         '''
@@ -359,8 +365,8 @@ class ParameterVector(ParameterMaster, ParameterNode):
         string = string[:-1] +' )'
         self.description = string
 
-        if notify:
-            self._model.dataChanged.emit(self.index(),self.index())
+        if notify and not self.model() is None:
+            self.model().dataChanged.emit(self.index(),self.index())
 
     def getValue(self):
         '''
@@ -510,7 +516,8 @@ class ParameterValue(ParameterMaster, ParameterItem):
         self._value = value
         if hasattr(self.parent(),'setString'):
             self.parent().setString()
-        self._model.dataChanged.emit(QtCore.QModelIndex(),QtCore.QModelIndex())
+        if not self.model() is None:
+            self.model().dataChanged.emit(QtCore.QModelIndex(),QtCore.QModelIndex())
 
         if 'method' in self.kwargs.keys() and method:
             self.kwargs['method']()

@@ -27,7 +27,7 @@ import numpy    as np
 
 from ...pyqtgraph                   import pyqtgraph as pg
 from ...pyqtgraph.pyqtgraph         import opengl as gl
-from ..plot_geometries.shaders      import ShaderConstructor
+from ..graphics_geometry.shaders      import ShaderConstructor
 from ...models.parameter_class       import ParameterHandler 
 
 class BarPlot(ParameterHandler): 
