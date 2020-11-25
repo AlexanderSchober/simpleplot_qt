@@ -2,6 +2,9 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "..\\..\\..\\Downloads\\moderngl-master\\moderngl-master"
 		}
 	],
 	"settings": {
@@ -13,6 +16,7 @@
 			"qlineedit": "cpp",
 			"qlistwidget": "cpp",
 			"*.ipp": "cpp"
-		}
+		},
+		"python.pythonPath": "C:\\Users\\alexs\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe"
 	}
 }

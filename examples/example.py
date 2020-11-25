@@ -28,10 +28,10 @@ import os
 import numpy as np
 
 # The local imports
-from ..canvas.multi_canvas import MultiCanvasItem
-from ..gui_main.main_window import MainWindow
-from ..models.project_node import ProjectNode
-from ..models.project_node import PlotItem
+from simpleplot.canvas.multi_canvas import MultiCanvasItem
+from simpleplot.gui_main.main_window import MainWindow
+from simpleplot.models.project_node import ProjectNode
+from simpleplot.models.project_node import PlotItem
 
 def startPlayGround():
     #set upt the window and the plot widget

@@ -27,7 +27,7 @@ import sys
 import numpy as np
 
 # The local imports
-from ..canvas.multi_canvas import MultiCanvasItem
+from simpleplot.canvas.multi_canvas import MultiCanvasItem
 
 def exampleSurface():
     #set upt the window and the plot widget
@@ -43,7 +43,7 @@ def exampleSurface():
         highlightthickness = 0)
 
     #link to the subplots
-    ax      = multi_canvas.getSubplot(0,0)    
+    ax      = multi_canvas.getSubplot(0,0) 
     x       = np.linspace(-4*np.pi,4*np.pi, 100)
     xv, yv  = np.meshgrid(x, x)
 

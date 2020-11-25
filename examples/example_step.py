@@ -24,11 +24,12 @@
 #import general
 from PyQt5 import QtWidgets
 import sys
+import numpy as np
 
 # The local imports
-from ..canvas.multi_canvas import MultiCanvasItem
+from simpleplot.canvas.multi_canvas import MultiCanvasItem
 
-def exampleItems():
+def exampleStep():
     #set upt the window and the plot widget
     app 	        = QtWidgets.QApplication(sys.argv)
     widget          = QtWidgets.QWidget()
@@ -40,30 +41,36 @@ def exampleItems():
         y_ratios    = [1],
         background  = "k",
         highlightthickness = 0)
-    
+
     #link to the subplots
-    ax = multi_canvas.getSubplot(0,0)    
-    circle = ax.addItem("Circle")
-    ellipse = ax.addItem("Ellipse")
-    square = ax.addItem("Square")
-    rectangle = ax.addItem("Rectangle")
-    pie = ax.addItem("Pie")
-    triangle = ax.addItem("Triangle")
-    cube = ax.addItem("Cube")
-    parallepiped = ax.addItem("Parallepiped")
-    ellipsoid = ax.addItem("Ellipsoid")
+    ax      = multi_canvas.getSubplot(0,0)    
+    x       = np.linspace(-4*np.pi,4*np.pi, 100)
+    xv, yv  = np.meshgrid(x, x)
+
+    Colors = [
+            [0.,1.,1.,1.],
+            [0.,0.,1.,1.],
+            [0.,1.,0.,1.],
+            [1.,0.,0.,1.],
+            [0.,1.,0.,1.],
+        ]
+    Positions = [0,0.25,0.5,0.75,1.]
+
+    ax.addPlot(
+        'Step', 
+        x = x,
+        y = x,
+        z = np.cos(xv)+np.sin(yv),
+        Name        = 'key',
+        Colors      = Colors[::-1],
+        Positions   = Positions)
 
     ax.draw()
 
-    ellipse['Diameters'] = [0.5,1,0.]
-    rectangle['Dimensions'] = [10,10]
-    rectangle['Subdivisions'] = [5,5]
-    rectangle['Subdivision dimensions'] = [False, 1,1]
-    
     #show widget
     widget.show()
     sys.exit(app.exec_())
 
 
 if __name__ == '__main__':
-    exampleItems()
+    exampleStep()

@@ -27,7 +27,7 @@ from .play_ground import Playground
 from .side_bar import Sidebar
 
 from ..models.project_class import ProjectHandler
-from ..models.plot_model import PlotModel
+from ..models.plot_model import SessionModel
 
 from .gui_subwindows.mainwindow_main import MainwindowMain
 
@@ -41,7 +41,7 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
 
         self._rootNode = ProjectHandler("Root", None)
-        self._model = PlotModel(self._rootNode, self,  1)
+        self._model = SessionModel(self._rootNode, self, 1)
         self._model.referenceModel()
 
         #Set up the visuals of the widget

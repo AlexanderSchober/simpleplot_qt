@@ -27,14 +27,14 @@ import sys
 import numpy as np
 
 # The local imports
-from ..canvas.multi_canvas import MultiCanvasItem
+from simpleplot.canvas.multi_canvas import MultiCanvasItem
 
-def exampleVolume():
+def exampleDistribution():
     #set upt the window and the plot widget
     app 	        = QtWidgets.QApplication(sys.argv)
     widget          = QtWidgets.QWidget()
     multi_canvas    = MultiCanvasItem(
-        widget = widget,        
+        widget      = widget,        
         grid        = [[True]],
         element_types = [['3D']],
         x_ratios    = [1],
@@ -43,19 +43,24 @@ def exampleVolume():
         highlightthickness = 0)
 
     #link to the subplots
-    ax      = multi_canvas.getSubplot(0,0)    
+    ax = multi_canvas.getSubplot(0,0)   
+    x =  np.random.rand(100000)
 
-    def calc(i,j,k):
-        return np.sin(np.cos(i/10)+np.sin(j/10)+np.sin(k/10))
-    data_0 = np.fromfunction(calc, (200,200,200))
-    data_0 += np.random.rand(*data_0.shape)*0.1
+    data = np.zeros((100000,4), dtype='f4')
+    data[:,0] = x+np.random.rand(x.shape[0])*3e-1*((x-0.5)*2)**2
+    data[:,1] = x+np.random.rand(x.shape[0])*3e-1*((x-0.5)*2)**2
+    data[:,2] = x+np.random.rand(x.shape[0])*3e-1*((x-0.5)*2)**2
+    data[:,3] = ((x-0.5)*2)**2
+
+    data *= np.array([10,10,10,1])
+
+    color = np.random.rand(x.shape[0],4)
+
     ax.addPlot(
-        'Volume', 
-        Name = 'The Volume',
-        x = np.linspace(0,1,200) ,
-        y = np.linspace(-4,-1,200) , 
-        z = np.linspace(0,1,200) ,
-        data = data_0)
+        'Distribution',
+        Name = 'Dist',
+        data = data,
+        color = color)
 
     ax.draw()
 
@@ -65,4 +70,4 @@ def exampleVolume():
 
 
 if __name__ == '__main__':
-    exampleVolume()
+    exampleDistribution()

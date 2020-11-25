@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "/usr/local/opt/python@3.8/bin/python3"
+    "python.pythonPath": "c:\\Users\\alexs\\Projects\\simpleplot\\simpleplot_qt\\.venv\\Scripts\\python.exe",
+    "python.linting.enabled": true
 }

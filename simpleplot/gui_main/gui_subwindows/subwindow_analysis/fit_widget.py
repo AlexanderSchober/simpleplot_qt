@@ -26,7 +26,7 @@ from functools import partial
 import os
 
 from ....models.session_node import SessionNode
-from ....models.plot_model import PlotModel
+from ....models.plot_model import SessionModel
 from ....models.fit_node import FitNode, FunctionNode
 from ....models.delegates import FitDelegate
 
@@ -553,7 +553,7 @@ class FitWidget(QtWidgets.QWidget):
 
         if self._root_node is None:
             self._root_node = SessionNode("Root")
-        self._model = PlotModel(self._root_node, col_count = 2*col_count + 2)
+        self._model = SessionModel(self._root_node, col_count =2 * col_count + 2)
 
         idx = 0
         for i,key in enumerate(plot_dict.keys()):

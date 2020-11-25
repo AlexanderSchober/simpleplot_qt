@@ -27,9 +27,9 @@ import sys
 import numpy as np
 
 # The local imports
-from ..canvas.multi_canvas import MultiCanvasItem
+from simpleplot.canvas.multi_canvas import MultiCanvasItem
 
-def exampleLine():
+def exampleVolume():
     #set upt the window and the plot widget
     app 	        = QtWidgets.QApplication(sys.argv)
     widget          = QtWidgets.QWidget()
@@ -43,50 +43,21 @@ def exampleLine():
         highlightthickness = 0)
 
     #link to the subplots
-    ax = multi_canvas.getSubplot(0,0)    
-    
-    x = np.linspace(-4*np.pi, 4*np.pi, 100)
-    y = np.sin(x)
-    z = np.cos(x)
-    y_1 = np.cos(x+0.5)
-    y_2 = np.cos(x)+2*np.sin(x)
+    ax      = multi_canvas.getSubplot(0,0)    
 
-    #set the ax plot
-    first = ax.addPlot(
-        'Scatter', 
-        Name        = 'sin', 
-        Style       = ['-','d','r', 0.2], 
-        Log         = [False,False],
-        Color       = 'red')
-    second = ax.addPlot(
-        'Scatter', 
-        Name        = 'cos', 
-        Style       = ['d','r',0.1], 
-        Log         = [False,False])
-    third = ax.addPlot(
-        'Scatter', 
-        Name        = 'tan', 
-        Line_thickness   = 3, 
-        Style       = ['-'], 
-        Log         = [False,False])
-    fourth = ax.addPlot(
-        'Scatter', 
-        Name        = 'tan', 
-        Line_thickness   = 3, 
-        Style       = ['-'], 
-        Log         = [False,False])
+    def calc(i,j,k):
+        return np.sin(np.cos(i/10)+np.sin(j/10)+np.sin(k/10))
+    data_0 = np.fromfunction(calc, (200,200,200))
+    data_0 += np.random.rand(*data_0.shape)*0.1
+    ax.addPlot(
+        'Volume', 
+        Name = 'The Volume',
+        x = np.linspace(0,1,200) ,
+        y = np.linspace(-4,-1,200) , 
+        z = np.linspace(0,1,200) ,
+        data = data_0)
+
     ax.draw()
-
-    x_2 = np.linspace(0, 4*np.pi, 100)
-    y = np.sin(x_2)
-    y_1 = np.cos(x_2+0.5)
-    y_2 = np.sin(x_2)#+2*np.sin(x_2)
-
-    first.setPlotData(x = x_2, y = y+2)
-    second.setPlotData(x = x_2, y = y_1+3, error = {'width' : 0.1,'height': 0.5})
-    third.setPlotData(x = x_2, y = y_2+1)
-    fourth.setPlotData(x = x_2, z = y_2)
-
 
     #show widget
     widget.show()
@@ -94,4 +65,4 @@ def exampleLine():
 
 
 if __name__ == '__main__':
-    exampleLine()
+    exampleVolume()

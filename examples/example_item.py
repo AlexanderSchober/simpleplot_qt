@@ -24,50 +24,46 @@
 #import general
 from PyQt5 import QtWidgets
 import sys
-import numpy as np
 
 # The local imports
-from ..canvas.multi_canvas import MultiCanvasItem
+from simpleplot.canvas.multi_canvas import MultiCanvasItem
 
-def exampleDistribution():
+def exampleItems():
     #set upt the window and the plot widget
     app 	        = QtWidgets.QApplication(sys.argv)
     widget          = QtWidgets.QWidget()
     multi_canvas    = MultiCanvasItem(
-        widget      = widget,        
+        widget = widget,        
         grid        = [[True]],
         element_types = [['3D']],
         x_ratios    = [1],
         y_ratios    = [1],
         background  = "k",
         highlightthickness = 0)
-
+    
     #link to the subplots
-    ax = multi_canvas.getSubplot(0,0)   
-    x =  np.random.rand(100000)
-
-    data = np.zeros((100000,4), dtype='f4')
-    data[:,0] = x+np.random.rand(x.shape[0])*3e-1*((x-0.5)*2)**2
-    data[:,1] = x+np.random.rand(x.shape[0])*3e-1*((x-0.5)*2)**2
-    data[:,2] = x+np.random.rand(x.shape[0])*3e-1*((x-0.5)*2)**2
-    data[:,3] = ((x-0.5)*2)**2
-
-    data *= np.array([10,10,10,1])
-
-    color = np.random.rand(x.shape[0],4)
-
-    ax.addPlot(
-        'Distribution',
-        Name = 'Dist',
-        data = data,
-        color = color)
+    ax = multi_canvas.getSubplot(0,0)    
+    circle = ax.addItem("Circle")
+    ellipse = ax.addItem("Ellipse")
+    square = ax.addItem("Square")
+    rectangle = ax.addItem("Rectangle")
+    pie = ax.addItem("Pie")
+    triangle = ax.addItem("Triangle")
+    cube = ax.addItem("Cube")
+    parallepiped = ax.addItem("Parallepiped")
+    ellipsoid = ax.addItem("Ellipsoid")
 
     ax.draw()
 
+    ellipse['Diameters'] = [0.5,1,0.]
+    rectangle['Dimensions'] = [10,10]
+    rectangle['Subdivisions'] = [5,5]
+    rectangle['Subdivision dimensions'] = [False, 1,1]
+    
     #show widget
     widget.show()
     sys.exit(app.exec_())
 
 
 if __name__ == '__main__':
-    exampleDistribution()
+    exampleItems()

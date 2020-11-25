@@ -28,12 +28,12 @@ import os
 import numpy as np
 
 # The local imports
-from ..canvas.multi_canvas import MultiCanvasItem
-from ..gui_main.main_window import MainWindow
-from ..models.project_node import ProjectNode
-from ..models.project_node import PlotItem
-from ..core.io.io_data_import import IODataLoad
-from ..models.project_node import FitLinkItem, FitItem
+from simpleplot.canvas.multi_canvas import MultiCanvasItem
+from simpleplot.gui_main.main_window import MainWindow
+from simpleplot.models.project_node import ProjectNode
+from simpleplot.models.project_node import PlotItem
+from simpleplot.core.io.io_data_import import IODataLoad
+from simpleplot.models.project_node import FitLinkItem, FitItem
 
 def startPlayGround():
     '''

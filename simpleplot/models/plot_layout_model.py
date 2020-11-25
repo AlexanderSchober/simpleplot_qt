@@ -24,7 +24,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import itertools
 
 from .plot_layout_item import PlotLayoutItem
-from .plot_model import PlotModel
+from .plot_model import SessionModel
 
 class PlotLayoutModel(QtCore.QAbstractTableModel): 
     def __init__(self, parent=None, *args): 
@@ -61,10 +61,10 @@ class PlotLayoutModel(QtCore.QAbstractTableModel):
                 resource = node.resource()
                 return QtGui.QIcon(QtGui.QPixmap(resource))
             
-        if role == PlotModel.sortRole:
+        if role == SessionModel.sortRole:
             return node.typeInfo()
 
-        if role == PlotModel.filterRole:
+        if role == SessionModel.filterRole:
             return node.typeInfo()
 
         if role == QtCore.Qt.BackgroundRole:

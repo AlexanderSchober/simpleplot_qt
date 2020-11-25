@@ -39,14 +39,14 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
     Override GLViewWidget with enhanced behavior and Atom integration.
     '''
     resized_signal = QtCore.pyqtSignal()
+    shown = QtCore.pyqtSignal()
     sigUpdate = QtCore.pyqtSignal()
     rayUpdate = QtCore.pyqtSignal()
     
     def __init__(self,canvas, parent = None):
         '''
         '''        
-        super(MyGLViewWidget, self).__init__(self.qglFormat(), None)
-        # self.setFocusPolicy(QtCore.Qt.Focus)
+        super(MyGLViewWidget, self).__init__(self.qglFormat(), parent)
         self._context_class = ContextClass(self)
         self._canvas = canvas
         self._initialize()
@@ -58,7 +58,7 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         widget to make sure we run on opengl 3.3
         '''
         fmt = QtOpenGL.QGLFormat()
-        fmt.setVersion(3, 3)
+        fmt.setVersion(4, 1)
         fmt.setProfile(QtOpenGL.QGLFormat.CoreProfile)
         fmt.setSampleBuffers(True)
         return fmt
@@ -115,16 +115,7 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         a dummy to allow the contextClass to handle the
         drawing process.
         '''
-        self.paintGL = self.paintGLDummy
         self.contextClass().render()
-
-    def paintGLDummy(self):
-        '''
-        This is the dummy replacing the paintGL method
-        after the initial draw ha been called. See 
-        paintGL for the reasoning.
-        '''
-        pass
 
     def _initialize(self):
         '''
@@ -217,6 +208,13 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         if delta == 0:
             delta = event.angleDelta().y()
         self._camera.zoom(0.999, delta)
+
+    def showEvent(self, event:QtGui.QShowEvent)->None:
+        '''
+        verride the normal show behaviour
+        '''
+        super().showEvent(event)
+        self.shown.emit()
 
     def evalKeyState(self):
         if len(self.keysPressed) > 0:
