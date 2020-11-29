@@ -21,33 +21,32 @@
 #
 # *****************************************************************************
 
-from .plot_handler_items.scatter_plot_handler          import ScatterPlotHandler
-from .plot_handler_items.surface_plot_handler          import SurfacePlotHandler 
-from .plot_handler_items.step_plot_handler             import StepPlotHandler
-from .plot_handler_items.bar_plot_handler              import BarPlotHandler
-from .plot_handler_items.volume_plot_handler           import VolumePlotHandler
-from .plot_handler_items.distribution_plot_handler     import DistributionPlotHandler
-from .plot_items.vector_field_plot                     import VectorFieldPlot
-from .plot_handler_items.crystal_plot_handler          import CrystalPlotHandler
-
-from .graphics_items.circle_item       import CircleItem
-from .graphics_items.ellipse_item      import EllipseItem
-from .graphics_items.rectangle_item    import RectangleItem
-from .graphics_items.square_item       import SquareItem
-from .graphics_items.pie_item          import PieItem
-from .graphics_items.triangle_item     import TriangleItem
-from .graphics_items.cube_item         import CubeItem
-from .graphics_items.cuboid_item       import CuboidItem
+from .graphics_items.circle_item import CircleItem
+from .graphics_items.cube_item import CubeItem
+from .graphics_items.cuboid_item import CuboidItem
+from .graphics_items.ellipse_item import EllipseItem
+from .graphics_items.ellipsoid_item import EllipsoidItem
 from .graphics_items.parallepiped_item import ParallepipedItem
-from .graphics_items.ellipsoid_item    import EllipsoidItem
+from .graphics_items.pie_item import PieItem
+from .graphics_items.rectangle_item import RectangleItem
+from .graphics_items.square_item import SquareItem
+from .graphics_items.triangle_item import TriangleItem
+from .plot_handler_items.bar_plot_handler import BarPlotHandler
+from .plot_handler_items.crystal_plot_handler import CrystalPlotHandler
+from .plot_handler_items.distribution_plot_handler import DistributionPlotHandler
+from .plot_handler_items.scatter_plot_handler import ScatterPlotHandler
+from .plot_handler_items.step_plot_handler import StepPlotHandler
+from .plot_handler_items.surface_plot_handler import SurfacePlotHandler
+from .plot_handler_items.volume_plot_handler import VolumePlotHandler
+from .plot_items.vector_field_plot import VectorFieldPlot
+from ..models.session_node import SessionNode
 
-from ..models.session_node          import SessionNode
 
 def get_main_handler(select):
-    '''
+    """
     Will return the right fit manager depending 
     on the initial input
-    '''
+    """
     if select == 'Scatter':
         return MainHandler(select, ScatterPlotHandler)
     elif select == 'Surface':
@@ -67,54 +66,55 @@ def get_main_handler(select):
     elif select == 'Items':
         return MainHandler(select)
     else:
-        print('Could not find the fit class you are looking for. Error...')        
+        print('Could not find the fit class you are looking for. Error...')
         return None
 
+
 class MainHandler(SessionNode):
-    '''
+    """
     This class will be the manager of all the 
     scatter plots. 
-    '''
+    """
 
-    def __init__(self, name, target_class = None):
-        SessionNode.__init__(self,name)
-        self.identifier     = 0
-        self.target_class   = target_class
-        self.name           = name
-        self.type           = 'None'
+    def __init__(self, name, target_class=None):
+        SessionNode.__init__(self, name)
+        self.identifier = 0
+        self.target_class = target_class
+        self.name = name
+        self.type = 'None'
 
         self._item_dict = {
-            'Circle':CircleItem,
-            'Ellipse':EllipseItem,
-            'Square':SquareItem,
-            'Rectangle':RectangleItem,
-            'Pie':PieItem,
-            'Triangle':TriangleItem,
-            'Cube':CubeItem,
-            'Cuboid':CuboidItem,
-            'Parallepiped':ParallepipedItem,
-            'Ellipsoid':EllipsoidItem
+            'Circle': CircleItem,
+            'Ellipse': EllipseItem,
+            'Square': SquareItem,
+            'Rectangle': RectangleItem,
+            'Pie': PieItem,
+            'Triangle': TriangleItem,
+            'Cube': CubeItem,
+            'Cuboid': CuboidItem,
+            'Parallepiped': ParallepipedItem,
+            'Ellipsoid': EllipsoidItem
         }
-        
-    def addChild(self,*args, **kwargs):
-        '''
+
+    def addChild(self, *args, **kwargs):
+        """
         This will effectively add an element to the 
         plot_elements array. 
-        '''
-        if self.target_class == None:
-            new_child = self._item_dict[args[0]](*args,**kwargs)
+        """
+        if self.target_class is None:
+            new_child = self._item_dict[args[0]](*args, **kwargs)
         else:
-            new_child = self.target_class(*args,**kwargs)
+            new_child = self.target_class(*args, **kwargs)
 
         self._model.insertRows(len(self._children), 1, [new_child], self)
         return self._children[-1]
 
     def removeItem(self):
-        '''
+        """
         here we will ask the element in question to 
         remove one of its items and proceed to a clean
         removal. 
-        '''
+        """
         # if idx == None and name == '':
         #     print("You can't remove nothing ...")
 
@@ -128,38 +128,35 @@ class MainHandler(SessionNode):
         #     del self.plot_elements[idx]
 
     def removeItems(self):
-        '''
+        """
         here we will ask the element in question to 
         remove one of its items and proceed to a clean
         removal. 
-        '''
+        """
         for plot_element in self._children:
             plot_element.removeItems()
-        
+
     def clear(self, target):
-        '''
+        """
         Draw all the items onto the plot
-        '''
+        """
         for plot_element in self._children:
             plot_element.removeItems()
-        
-        self._model.removeRows(0,len(self._children), self)
+
+        self._model.removeRows(0, len(self._children), self)
 
     def draw(self, target):
-        '''
+        """
         Draw all the items onto the plot
-        '''
+        """
         for plot_element in self._children:
-            if target.handler['Type'] == "2D":
-                plot_element.draw(target)
-            elif target.handler['Type'] == "3D":
-                plot_element.drawGL(target)
+            plot_element.drawGL(target)
 
     def processRay(self, ray):
-        '''
+        """
         process the ray tracing and then give
         the result back as a hits
-        '''
+        """
         for plot_element in self._children:
             if hasattr(plot_element, '_ray_handler'):
                 plot_element._ray_handler.processRay(ray)
@@ -171,11 +168,11 @@ class MainHandler(SessionNode):
                     hits.append([plot_element._ray_handler.point, plot_element._ray_handler])
         return hits
 
-    def processProjection(self, x = 0, y = 0, z = 0):
-        '''
+    def processProjection(self, x=0, y=0, z=0):
+        """
         process the ray tracing and then give
         the result back as a hits
-        '''
+        """
         for plot_element in self._children:
             if hasattr(plot_element, "processProjection"):
-                plot_element.processProjection(x,y,z)
+                plot_element.processProjection(x, y, z)

@@ -28,7 +28,7 @@ import numpy as np
 
 #import personal dependencies
 from ..graphics_items.graphics_item import GraphicsItem
-from ..graph_views_3D.grid_view_3D  import GridView3D
+from ..graph_views_3D.grid_view_3d  import GridView3D
 from ...models.parameter_class      import ParameterHandler 
 
 class GridItem3D(GraphicsItem): 

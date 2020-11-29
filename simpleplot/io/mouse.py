@@ -23,44 +23,45 @@
 
 import numpy as np
 
+
 class Mouse:
-    '''
+    """
     In this class we aim at having a mouse ev
     listener always active that will then allow
     the other objects to directly fetch the 
     parameters from here. This avoids many 
     listeners.
-    '''
+    """
 
     def __init__(self, canvas):
 
-        #make the local reference
-        self.canvas     = canvas
-        self.verbose    = False
-        
-        #Bound mouse method list
-        self.move_methods       = []
-        self.press_methods      = []
-        self.release_methods    = []
-        self.drag_methods       = []
-        
-        #the list of mouses to communicate to
+        # make the local reference
+        self.canvas = canvas
+        self.verbose = False
+
+        # Bound mouse method list
+        self.move_methods = []
+        self.press_methods = []
+        self.release_methods = []
+        self.drag_methods = []
+
+        # the list of mouses to communicate to
         self.link_list = []
-    
-        #initialise
+
+        # initialise
         self.cursor_x = 0
         self.cursor_y = 0
-        self.pressed  = []
+        self.pressed = []
         self.released = []
 
     def get_pos(self):
-        '''
+        """
         Get the current mouse position. 
-        '''
+        """
         return self.cursor_x, self.cursor_y
 
-    def bind(self, motion_type, method, id_string, button = None, send_ev = False):
-        '''
+    def bind(self, motion_type, method, id_string, button=None, send_ev=False):
+        """
         This methods allows the developer to bind 
         methods to the mouse evs. The move ev 
         will trigger the mouse motion ev based 
@@ -71,7 +72,7 @@ class Mouse:
         - motion_type 
         - the method to bind
         - the id string to identify it
-        '''
+        """
         if motion_type == 'move':
             self.move_methods.append([method, id_string, send_ev])
 
@@ -83,20 +84,20 @@ class Mouse:
 
         elif motion_type.split('-')[0] == 'release':
             self.release_methods.append([method, id_string, button, send_ev])
-        
+
         else:
             print('Motion type not found')
-        
+
     def unbind(self, motion_type, id_string):
-        '''
+        """
         This method is the counterpart to the bind 
         method ans serves to remove methods. 
         ———————
         Input: 
         - motion_type 
         - the id string to identify it
-        '''
-        #normal mouse move
+        """
+        # normal mouse move
         if motion_type == 'move':
             for i in range(len(self.move_methods)):
                 if self.move_methods[i][1] == id_string:
@@ -122,54 +123,43 @@ class Mouse:
                     break
 
     def clear(self):
-        '''
+        """
         Clear all the bindings to allow purge of
         the methods
-        '''
-        #Bound mouse method list
-        self.move_methods       = []
-        self.press_methods      = []
-        self.release_methods    = []
-        self.drag_methods       = []
+        """
+        # Bound mouse method list
+        self.move_methods = []
+        self.press_methods = []
+        self.release_methods = []
+        self.drag_methods = []
 
-    def move(self,ev):
-        '''
+    def move(self, ev):
+        """
         This method will manage the motion of the 
         mouse and send it out.
         ———————
         Input: 
         - Qt based mouse ev
-        '''
-        if self.canvas.handler['Type'] == '2D':
-            pos             = ev.pos()
-            mousePoint      = self.canvas.draw_surface.vb.mapSceneToView(pos)
-        elif self.canvas.handler['Type'] == '3D':
-            mousePoint      = ev.pos()
-
-        self.cursor_x   = mousePoint.x()
-        self.cursor_y   = mousePoint.y()
+        """
+        mousePoint = ev.pos()
+        self.cursor_x = mousePoint.x()
+        self.cursor_y = mousePoint.y()
         self.transmitMotion(self.cursor_x, self.cursor_y)
         self.evaluateMotion()
 
-    def drag(self,ev):
-        '''
+    def drag(self, ev):
+        """
         This method will manage the drag of the 
         mouse and send it out.
         ———————
         Input: 
         - Qt based mouse ev
-        '''
+        """
         ev.accept()
-        
-        if self.canvas.handler['Type'] == '2D':
-            start = self.canvas.draw_surface.vb.mapToView(ev.buttonDownPos())
-            last  = self.canvas.draw_surface.vb.mapToView(ev.lastPos())
-            pos   = self.canvas.draw_surface.vb.mapToView(ev.pos())
-        
-        elif self.canvas.handler['Type'] == '3D':
-            start = ev.buttonDownPos()
-            last  = ev.lastPos()
-            pos   = ev.pos()
+
+        start = ev.buttonDownPos()
+        last = ev.lastPos()
+        pos = ev.pos()
 
         self.cursor_x_init = start.x()
         self.cursor_y_init = start.y()
@@ -181,34 +171,34 @@ class Mouse:
         self.cursor_y = pos.y()
 
         self.drag_start = ev.isStart()
-        self.drag_end   = ev.isFinish()
+        self.drag_end = ev.isFinish()
 
         self.evaluateDrag(ev)
 
-    def press(self,ev):
-        '''
+    def press(self, ev):
+        """
         This method will manage the pressing of the 
         mouse and send it out.
         
         Input: 
         - Qt based mouse ev
-        '''
+        """
         try:
             self.released.remove(ev.button())
         except:
             pass
-        if not ev.button() in self.pressed: 
+        if not ev.button() in self.pressed:
             self.pressed.append(ev.button())
         self.evaluatePress(ev)
-    
-    def release(self,ev):
-        '''
+
+    def release(self, ev):
+        """
         This method will manage the release of the 
         mouse and send it out.
         ———————
         Input: 
         - Qt based mouse ev
-        '''
+        """
         try:
             self.pressed.remove(ev.button())
         except:
@@ -217,22 +207,22 @@ class Mouse:
         self.evaluateRelease(ev)
 
     def evaluateMotion(self):
-        '''
+        """
         Evaluate the motion of the mouse onto the 
         linked methods.
-        '''
+        """
         for method in self.move_methods:
-            method[0](self.cursor_x,self.cursor_y)
+            method[0](self.cursor_x, self.cursor_y)
 
         if self.canvas.handler['Type'] == '2D':
             for element in self.canvas._plot_root._children:
-                element.processProjection(x = self.cursor_x, y = self.cursor_y)
+                element.processProjection(x=self.cursor_x, y=self.cursor_y)
 
     def evaluateDrag(self, ev):
-        '''
+        """
         Evaluate the motion of the mouse onto the 
         linked methods.
-        '''
+        """
         for method in self.drag_methods:
             if method[2] == ev.button():
                 method[0](
@@ -248,10 +238,10 @@ class Mouse:
                     self.drag_end)
 
     def evaluatePress(self, ev):
-        '''
+        """
         Evaluate the motion of the mouse onto the 
         linked methods.
-        '''
+        """
         for method in self.press_methods:
             if method[2] == ev.button():
                 if method[3]:
@@ -260,10 +250,10 @@ class Mouse:
                     method[0]()
 
     def evaluateRelease(self, ev):
-        '''
+        """
         Evaluate the motion of the mouse onto the 
         linked methods.
-        '''
+        """
         for method in self.release_methods:
             if method[2] == ev.button():
                 if method[3]:
@@ -272,11 +262,11 @@ class Mouse:
                     method[0]()
 
     def transmitMotion(self, x, y):
-        '''
+        """
         This is a feature where the cursor motion in 
         a canvas can be transmitted to the counter-
         parts another canvases. 
-        '''
+        """
         for link in self.link_list:
             if link[2] == 'x':
                 if link[3] == 'x':
@@ -294,4 +284,3 @@ class Mouse:
                     link[4].cursor_y = np.copy(y)
 
             link[5].evaluateMotion()
-    

@@ -27,7 +27,9 @@ import os
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 # personal imports
-from ..artist.artist import Artist2DNode, Artist3DNode
+from ..artist.artist import Artist
+from ..artist.artist_2d import Artist2DNode
+from ..artist.artist_3d import Artist3DNode
 from ..io.mouse import Mouse
 from ..models.parameter_class import ParameterHandler
 from ..models.plot_model import SessionModel
@@ -35,7 +37,6 @@ from ..models.session_node import SessionNode
 from ..simpleplot_widgets.SimpleCanvasWidget import CanvasWidget
 from ..simpleplot_widgets.SimplePlotGLViewWidget import MyGLViewWidget
 from ..simpleplot_widgets.SimplePlotOverlayView import SimplePlotOverlayView
-from ..simpleplot_widgets.SimplePlotWidget import SimplePlotWidget
 
 
 class CanvasNode(SessionNode):
@@ -109,7 +110,7 @@ class CanvasNode(SessionNode):
     def itemModel(self) -> SessionModel:
         return self._item_model
 
-    def artist(self) -> Artist2DNode:
+    def artist(self) -> Artist:
         return self._artist
 
     def _hideCanvas(self):
@@ -158,7 +159,6 @@ class CanvasNode(SessionNode):
         self.mouse.clear()
         self.buildGraph()
         self._setBackground()
-        self._artist.draw()
         self._model.referenceModel()
         self._current_mode = self.handler['Type']
 
@@ -178,22 +178,21 @@ class CanvasNode(SessionNode):
         _populate the ui elements on the grid
         """
         # Set up the plot widget
-        self.plot_widget = SimplePlotWidget(self)
+        self.plot_widget = MyGLViewWidget(self, parent=self.widget)
         self.plot_widget.setContentsMargins(0, 0, 0, 0)
-        self.plot_widget.setViewportMargins(0, 0, 0, 0)
         self.plot_widget.setWindowFlags(QtCore.Qt.FramelessWindowHint)
 
         # Reference the elements
-        self.draw_surface = self.plot_widget.getPlotItem()
-        self.view = self.draw_surface.getViewBox()
-        self.grid_layout.addWidget(self.plot_widget, 1, 1)
+        self.view = self.plot_widget
+        self.grid_layout.addWidget(self.view, 1, 1)
+        self.draw_surface = self.view
 
         # insert the artist
-        self._artist = Artist2DNode(name='2D Artist', canvas=self)
+        self._artist = Artist2DNode(canvas=self)
         self.model().appendRow(self._artist, self)
-        self._buildOverlay()
-        self._artist.setOverlayElements()
-        self.resizeOverlaySpace()
+        self.plot_widget.setCamera(self._artist.camera)
+        self.plot_widget.setLightSource(self._artist.light)
+        self.plot_widget.shown.connect(self._setUpGraphItems)
 
     def _populate3D(self):
         """
@@ -210,9 +209,8 @@ class CanvasNode(SessionNode):
         self.draw_surface = self.view
 
         # insert the artist
-        self._artist = Artist3DNode('3D Artist', canvas=self)
+        self._artist = Artist3DNode(canvas=self)
         self.model().appendRow(self._artist, self)
-
         self.plot_widget.setCamera(self._artist.camera)
         self.plot_widget.setLightSource(self._artist.light)
         self.plot_widget.shown.connect(self._setUpGraphItems)
@@ -220,10 +218,11 @@ class CanvasNode(SessionNode):
     def _setUpGraphItems(self):
         """
         """
-        self._buildOverlay()
-        self._artist.setOverlayElements()
-        self.resizeOverlaySpace()
+        # self._buildOverlay()
+        # self._artist.setOverlayElements()
+        # self.resizeOverlaySpace()
         self._artist.setUpGraphItems()
+        self._artist.draw()
 
     def _buildOverlay(self):
         """

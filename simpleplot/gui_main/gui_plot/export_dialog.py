@@ -52,29 +52,29 @@ class ExportDialog(QtGui.QWidget):
     def refreshSubplot(self,item):
         if not hasattr(item, 'handler'):
             return
-        if item.handler['Type'] == '2D':
-            self.current_type = '2D'
-            self.canvas_item = item
-            self.scene = item.plot_widget
-            scene_item = self.scene
-
-            if scene_item is not None:
-                ## Select next exportable parent of the item originally clicked on
-                while not isinstance(scene_item, ViewBox) and not isinstance(scene_item, PlotItem) and scene_item is not None:
-                    scene_item = scene_item.parentItem()
-                ## if this is a ViewBox inside a PlotItem, select the parent instead.
-                if isinstance(scene_item, ViewBox) and isinstance(scene_item.parentItem(), PlotItem):
-                    scene_item = scene_item.parentItem()
-                self.updateItemList(select=scene_item)
-            
-            # self.scene.addItem(self.selectBox)
-            # self.selectBox.setVisible(True)
-
-        elif item.handler['Type'] == '3D':
-            self.current_type = '3D'
-            self.canvas_item = item
-            self.scene = item.view
-            # self.updateItemList(select=self.scene)
+        # if item.handler['Type'] == '2D':
+        #     self.current_type = '2D'
+        #     self.canvas_item = item
+        #     self.scene = item.plot_widget
+        #     scene_item = self.scene
+        #
+        #     if scene_item is not None:
+        #         ## Select next exportable parent of the item originally clicked on
+        #         while not isinstance(scene_item, ViewBox) and not isinstance(scene_item, PlotItem) and scene_item is not None:
+        #             scene_item = scene_item.parentItem()
+        #         ## if this is a ViewBox inside a PlotItem, select the parent instead.
+        #         if isinstance(scene_item, ViewBox) and isinstance(scene_item.parentItem(), PlotItem):
+        #             scene_item = scene_item.parentItem()
+        #         self.updateItemList(select=scene_item)
+        #
+        #     # self.scene.addItem(self.selectBox)
+        #     # self.selectBox.setVisible(True)
+        #
+        # elif item.handler['Type'] == '3D':
+        #     self.current_type = '3D'
+        #     self.canvas_item = item
+        #     self.scene = item.view
+        #     # self.updateItemList(select=self.scene)
 
     def updateItemList(self, select=None):
         self.ui.itemTree.clear()
