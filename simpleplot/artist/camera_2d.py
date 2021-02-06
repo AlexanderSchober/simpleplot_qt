@@ -50,7 +50,7 @@ class Camera2D(Camera):
             method=self._buildMVP)
 
         self.addParameter(
-            'Z near', 0.1,
+            'Z near', -100,
             method=self._buildMVP)
 
         self.addParameter(

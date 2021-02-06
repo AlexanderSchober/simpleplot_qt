@@ -21,15 +21,19 @@
 #
 # *****************************************************************************
 
-import decimal
 from pathlib import Path
 
 # General imports
+from typing import Tuple
+
 import moderngl
 import numpy as np
-
 # Personal imports
-from .management.tick_management import tickValues
+from PyQt5 import QtGui
+from PyQt5.QtGui import QGuiApplication
+
+from .font_to_bitmap import getFontPaths, Font
+from .management.tick_management import tickValues, updateAutoSIPrefix
 from ..views_3D.graphics_view_3D import GraphicsView3D
 
 SI_PREFIXES = str('yzafpnµm kMGTPEZY')
@@ -41,6 +45,7 @@ class AxisView2D(GraphicsView3D):
         """
         """
         super().__init__(**opts)
+        self._family_to_path = getFontPaths()
         self._initParameters()
 
     def _initParameters(self):
@@ -48,25 +53,27 @@ class AxisView2D(GraphicsView3D):
         This is a placeholder for the parameter
         initialisation
         """
+        self._orientations = ['bottom', 'top', 'right', 'left']
         self._tick_positions_1d = np.array([0, 0.5, 0.7, 1])
+        self.texture_title = None
 
         self._parameters['draw_axis'] = True
         self._parameters['draw_ticks'] = True
         self._parameters['draw_values'] = False
         self._parameters['draw_title'] = False
 
-        self._parameters['axis_length'] = np.array([-5., 5.])
-        self._parameters['axis_width'] = np.array([0.05])
+        self._parameters['axis_widths'] = np.array([0.05, 0.05, 0.05, 0.05])
         self._parameters['axis_color'] = np.array([1, 0, 0, 1])
-        self._parameters['axis_direction'] = np.array([1, 0, 0])
-        self._parameters['axis_center'] = np.array([0, 0, 0])
-        self._parameters['axis_arrow_width'] = np.array([0.1])
-        self._parameters['axis_arrow_length'] = np.array([0.2])
+        self._parameters['axis_margins'] = np.array([20, 20, 20, 20])
+        self._parameters['axis_pos'] = 'bottom'
 
-        self._parameters['tick_length'] = np.array([0.5])
+        self._parameters['tick_length'] = np.array([10])
         self._parameters['tick_direction'] = np.array([0, 1, 0])
         self._parameters['tick_color'] = np.array([1, 0, 0, 1])
-        self._parameters['tick_width'] = np.array([0.05])
+        self._parameters['tick_width'] = np.array([10])
+        self._parameters['small_ticks'] = np.array([1])
+
+        self._parameters['title_position'] = np.array([10])
 
     def initializeGL(self) -> None:
         """
@@ -85,57 +92,245 @@ class AxisView2D(GraphicsView3D):
             geometry_shader=self._geometryShader('ticks'))
 
         self._createProgram(
-            "values",
+            "labels",
             vert_shader=self._vertexShader(),
             frag_shader=self._fragmentShader('labels'),
             geometry_shader=self._geometryShader('labels'))
 
-        self.setProperties()
+        self._createProgram(
+            "title",
+            vert_shader=self._vertexShader(),
+            frag_shader=self._fragmentShader('title'))
+
+        self.setUniforms(**self._parameters)
+        self.setTitle('No title', QtGui.QFont())
+        self._updateAxis()
         self.setMVP()
         self.setLight()
-        self.update()
 
     def setProperties(self, **kwargs) -> None:
         """
-        Set the properties to diplay the graph
+        Set the properties to display the graph
         """
         self._parameters.update(kwargs)
         self.setUniforms(**self._parameters)
         self._updateAxis()
         self.update()
 
+    def setTitle(self, text: str, font: QtGui.QFont, *args) -> None:
+        """
+        This method will effectively build the texture for the text
+        :param text: str, the text to set
+        :param font: QtGui.QFont
+        :return: None
+        """
+        font_info = font.key().split(',')
+        dpi = QGuiApplication.primaryScreen().physicalDotsPerInch()
+        pixel_size = float(font_info[1]) / 72 * dpi
+        freetype_font = Font(self._family_to_path[font_info[0]] if font_info[0] != 'MS Shell Dlg 2'
+                             else self._family_to_path['Arial'], int(pixel_size))
+        bitmap = freetype_font.render_text(text)
+
+        self.texture_title = self.context().texture(
+            (bitmap.width, bitmap.height), 1,
+            np.array(bitmap.pixels).astype('f4').tobytes(), dtype='f4')
+
+        self.texture_title.repeat_x = False
+        self.texture_title.repeat_y = False
+
+    def setTickFont(self, font: QtGui.QFont):
+        """
+        This will generate the font texture for the tick values.
+        Only the following is required:
+        0123456789
+        -+_,()[]
+        abcdefghijklm
+        nopqrstuvwxyz
+        ABCDEFGHIJKLM
+        NOPQRSTUVWXYZ
+
+        :param font:
+        :return: None
+        """
+
     def _updateAxis(self) -> None:
         """
         Here we will order the software to inject the main data into
         the present buffers
         """
-        self._updateAutoSIPrefix(
-            self._parameters['axis_length'][0],
-            self._parameters['axis_length'][1])
-
+        tick_range = self._getTickValues()
+        updateAutoSIPrefix(tick_range[0], tick_range[1])
         self._tick_positions_1d = tickValues(
-            self._parameters['axis_length'][0],
-            self._parameters['axis_length'][1],
-            self._parameters['axis_length'][1]
-            - self._parameters['axis_length'][0])
+            tick_range[0], tick_range[1],
+            tick_range[1] - tick_range[0], 1)
+        self.ticks_positions_3d = self._getTickPositions(self._tick_positions_1d)
+        title_positions, title_parameters = self._getTitleParameters()
 
-        ticks_positions_3d = np.zeros((self._tick_positions_1d.shape[0], 3))
-        ticks_positions_3d[:, 0] = self._tick_positions_1d
-
-        self._createVBO("axis", np.array([[-1, 0, 0], [1, 0, 0]]))
+        self._createVBO("axis", self.getAxisPositions())
         self._createVAO("axis", {"axis": ["3f", "in_vert"]})
-        self._createVBO("ticks", ticks_positions_3d)
+        self._createVBO("ticks", self.ticks_positions_3d)
         self._createVAO("ticks", {"ticks": ["3f", "in_vert"]})
-        self._createVAO("values", {"ticks": ["3f", "in_vert"]})
+        self._createVAO("labels", {"ticks": ["3f", "in_vert"]})
+        self._createVBO("title", title_positions)
+        self._createVAO("title", {"title": ["3f", "in_vert"]})
+
+        if self._parameters['axis_pos'] in ['bottom', 'top']:
+            axis_thickness = self._parameters['axis_widths'][self._orientations.index(self._parameters['axis_pos'])] \
+                             * float(self.renderer().camera().getPixelSize()[1])
+            tick_thickness = self._parameters['tick_width'] * float(self.renderer().camera().getPixelSize()[0])
+            tick_length = self._parameters['tick_length'] * float(self.renderer().camera().getPixelSize()[1])
+
+        else:
+            axis_thickness = self._parameters['axis_widths'][self._orientations.index(self._parameters['axis_pos'])] \
+                             * float(self.renderer().camera().getPixelSize()[0])
+            tick_thickness = self._parameters['tick_width'] * float(self.renderer().camera().getPixelSize()[1])
+            tick_length = self._parameters['tick_length'] * float(self.renderer().camera().getPixelSize()[0])
+        self.setUniforms(axis_thickeness=axis_thickness,
+                         tick_thickness=tick_thickness,
+                         tick_length=tick_length,
+                         title_parameters=title_parameters)
+
+    def _getTitleParameters(self) -> Tuple[np.array, np.array]:
+        """
+
+        :return: Tuple[np.array, np.array]
+        """
+        center = self._getTitleCenter()
+        screen_size = self.renderer().camera()['Screen size']
+        width = self.texture_title.width / screen_size[0] if screen_size[0] != 0 else 0
+        height = self.texture_title.height / screen_size[1] if screen_size[1] != 0 else 0
+
+        half_height = height / 2
+        half_width = width / 2
+        positions = np.array([
+            [center[0] - half_width, center[1] - half_height, -1],
+            [center[0] - half_width, center[1] + half_height, -1],
+            [center[0] + half_width, center[1] - half_height, -1],
+            [center[0] + half_width, center[1] + half_height, -1]
+        ], dtype='f4')
+
+        return positions, np.array([center[0], center[1], width, height], dtype="object")
+
+    def _getTitleCenter(self) -> np.array:
+        """
+        Get the center position of the title depending
+        on the axis location.
+        :return:
+        """
+        axis_pos = self._parameters['axis_pos']
+        cam_method = self.renderer().camera().getPixelScreenValue
+        if axis_pos == 'bottom':
+            return np.array([0., cam_method(0, self._parameters['title_position'])[1]], dtype="object")
+        elif axis_pos == 'top':
+            return np.array([0., cam_method(0, -self._parameters['title_position'])[1]], dtype="object")
+        elif axis_pos == 'left':
+            return np.array([cam_method(self._parameters['title_position'], 0)[0], 0.], dtype="object")
+        elif axis_pos == 'right':
+            return np.array([-cam_method(self._parameters['title_position'], 0)[0], 0.], dtype="object")
+        else:
+            return np.array([0., 0.])
+
+    def getAxisPositions(self) -> np.array:
+        """
+        Gets the axis positions depending on the self._parameters['axis_pos']
+        variable in the parameters
+        :return: np.array
+        """
+        axis_pos = self._parameters['axis_pos']
+        axis_margins = self._parameters['axis_margins']
+        cam_method = self.renderer().camera().getPixelScreenValue
+        if axis_pos == 'bottom':
+            return np.array([
+                list(cam_method(axis_margins[0] - self._parameters['axis_widths'][0] / 2, axis_margins[1])) + [0],
+                list(cam_method(-axis_margins[2] + self._parameters['axis_widths'][2] / 2, axis_margins[1])) + [0]
+            ])
+        elif axis_pos == 'top':
+            return np.array([
+                list(cam_method(axis_margins[0] - self._parameters['axis_widths'][0] / 2, -axis_margins[3])) + [0],
+                list(cam_method(-axis_margins[2] + self._parameters['axis_widths'][2] / 2, -axis_margins[3])) + [0]
+            ])
+        elif axis_pos == 'left':
+            return np.array([
+                list(cam_method(axis_margins[0], -axis_margins[3] - self._parameters['axis_widths'][3] / 2)) + [0],
+                list(cam_method(axis_margins[0], axis_margins[1] + self._parameters['axis_widths'][0] / 2)) + [0]
+            ])
+        elif axis_pos == 'right':
+            return np.array([
+                list(cam_method(-axis_margins[2], -axis_margins[3] - self._parameters['axis_widths'][3] / 2)) + [0],
+                list(cam_method(-axis_margins[2], axis_margins[1] + self._parameters['axis_widths'][0] / 2)) + [0]
+            ])
+        else:
+            return np.array([
+                list(cam_method(0, 0)) + [0],
+                list(cam_method(1, 1)) + [0]
+            ])
+
+    def _getTickValues(self) -> np.array:
+        """
+        This function will determine the tick values to consider using
+        the camera values and margins and return the limits
+        :return:
+        """
+        axis_pos = self._parameters['axis_pos']
+        axis_margins = self._parameters['axis_margins']
+        x_range = self.renderer().camera()['Camera x range']
+        y_range = self.renderer().camera()['Camera y range']
+        screen_size = self.renderer().camera()['Screen size']
+
+        if axis_pos in ['top', 'bottom']:
+            return np.array([
+                x_range[0] + (x_range[1] - x_range[0]) * axis_margins[0] / screen_size[0],
+                x_range[1] - (x_range[1] - x_range[0]) * axis_margins[2] / screen_size[0]
+            ]) if screen_size[0] > 0 else np.array([0, 1])
+        else:
+            return np.array([
+                y_range[0] + (y_range[1] - y_range[0]) * axis_margins[1] / screen_size[1],
+                y_range[1] - (y_range[1] - y_range[0]) * axis_margins[3] / screen_size[1]
+            ]) if screen_size[1] > 0 else np.array([0, 1])
+
+    def _getTickPositions(self, tick_values):
+        """
+        This will determine the appropriate tick positioning on screen
+        :param tick_values: np.array(float), array of float values
+        :return: np.array(float), 3d array of float positions
+        """
+        axis_pos = self._parameters['axis_pos']
+        axis_margins = self._parameters['axis_margins']
+        x_range = self.renderer().camera()['Camera x range']
+        y_range = self.renderer().camera()['Camera y range']
+        delta_x = x_range[1] - x_range[0]
+        delta_y = y_range[1] - y_range[0]
+        screen_size = self.renderer().camera()['Screen size']
+
+        ticks_positions_3d = np.zeros((tick_values.shape[0], 3))
+
+        if axis_pos == 'bottom':
+            ticks_positions_3d[:, 0] = (tick_values - x_range[0]) / delta_x * 2 - 1
+            ticks_positions_3d[:, 1] = axis_margins[1] / screen_size[1] * 2 - 1 \
+                if screen_size[1] != 0 else 0
+        elif axis_pos == 'top':
+            ticks_positions_3d[:, 0] = (tick_values - x_range[0]) / delta_x * 2 - 1
+            ticks_positions_3d[:, 1] = (screen_size[1] - axis_margins[3]) / screen_size[1] * 2 - 1 \
+                if screen_size[1] != 0 else 0
+        elif axis_pos == 'left':
+            ticks_positions_3d[:, 1] = (tick_values - y_range[0]) / delta_y * 2 - 1
+            ticks_positions_3d[:, 0] = axis_margins[0] / screen_size[0] * 2 - 1 \
+                if screen_size[0] != 0 else 0
+        elif axis_pos == 'right':
+            ticks_positions_3d[:, 1] = (tick_values - y_range[0]) / delta_y * 2 - 1
+            ticks_positions_3d[:, 0] = (screen_size[0] - axis_margins[2]) / screen_size[0] * 2 - 1 \
+                if screen_size[0] != 0 else 0
+
+        return ticks_positions_3d
 
     def paint(self):
         """
         Paint the elements of the axis.
         This includes the axis line,
-        the ticks and the lables
+        the ticks and the labels
         """
         self.context().disable(moderngl.CULL_FACE)
-
+        self._updateAxis()
         if self._parameters['draw_axis']:
             self._vaos['axis'].render(mode=moderngl.LINE_STRIP)
 
@@ -144,6 +339,12 @@ class AxisView2D(GraphicsView3D):
 
         if self._parameters['draw_values']:
             self._vaos['values'].render(mode=moderngl.LINE_STRIP)
+
+        if self._parameters['draw_title']:
+            self.texture_title.use(0)
+            self._programs['title']['text_texture'].value = 0
+            self._programs['title']['viewport_size'].value = tuple(self.context().viewport[2:])
+            self._vaos['title'].render(mode=moderngl.TRIANGLE_STRIP)
 
         self.context().enable(moderngl.CULL_FACE)
 
@@ -178,6 +379,12 @@ class AxisView2D(GraphicsView3D):
             output = file.read()
             file.close()
             return output
+        elif key == 'title':
+            file = open(
+                Path(__file__).resolve().parent / 'shader_scripts' / 'axis_fragment_title_2d.glsl')
+            output = file.read()
+            file.close()
+            return output
         else:
             return None
 
@@ -192,19 +399,25 @@ class AxisView2D(GraphicsView3D):
         """
         if key == 'axis':
             file = open(
-                Path(__file__).resolve().parent / 'shader_scripts' / 'axis_geometry_axis.glsl')
+                Path(__file__).resolve().parent / 'shader_scripts' / 'axis_geometry_axis_2d.glsl')
             output = file.read()
             file.close()
             return output
         elif key == 'ticks':
             file = open(
-                Path(__file__).resolve().parent / 'shader_scripts' / 'axis_geometry_ticks.glsl')
+                Path(__file__).resolve().parent / 'shader_scripts' / 'axis_geometry_ticks_2d.glsl')
             output = file.read()
             file.close()
             return output
         elif key == 'labels':
             file = open(
                 Path(__file__).resolve().parent / 'shader_scripts' / 'axis_geometry_labels.glsl')
+            output = file.read()
+            file.close()
+            return output
+        elif key == 'title':
+            file = open(
+                Path(__file__).resolve().parent / 'shader_scripts' / 'axis_geometry_title_2d.glsl')
             output = file.read()
             file.close()
             return output

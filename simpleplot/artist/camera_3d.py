@@ -113,8 +113,8 @@ class Camera3D(Camera):
         diff_y : float
             The y difference on screen
         """
-        x_factor = 360. / self._context_class.context().viewport[3]
-        y_factor = 360. / self._context_class.context().viewport[2]
+        x_factor = 360. / self.parent().view.contextClass().context().viewport[3]
+        y_factor = 360. / self.parent().view.contextClass().context().viewport[2]
 
         self.items['Camera position'].updateValue([
             self['Camera position'][0],

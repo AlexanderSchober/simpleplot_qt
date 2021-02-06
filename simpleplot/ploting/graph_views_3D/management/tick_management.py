@@ -45,7 +45,7 @@ def tickValues(min_value, max_value, size, scale):
     min_value, max_value = sorted((min_value, max_value))
 
     ticks = []
-    tick_level = tickSpacing(min_value, max_value, size)
+    tick_level = tickSpacing(min_value, max_value, size, scale)
     all_values = np.array([])
     for i in range(len(tick_level)):
         spacing, offset = tick_level[i]

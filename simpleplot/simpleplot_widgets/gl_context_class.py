@@ -43,6 +43,7 @@ class ContextClass(QtCore.QObject):
         self.items = []
         self.graph_items = []
         self._background_color = (0, 0, 0)
+        self._camera = None
 
     def context(self) -> moderngl.Context:
         """
@@ -145,6 +146,13 @@ class ContextClass(QtCore.QObject):
         self._camera = camera
         if hasattr(self, '_moderngl_context'):
             self._camera.setRatio(self._moderngl_context.viewport[2] / self._moderngl_context.viewport[3])
+
+    def camera(self) -> Union[Camera2D, Camera3D]:
+        """
+        retrieve the camera
+        :return: Union[Camera2D, Camera3D]
+        """
+        return self._camera
 
     def setMVP(self, item=None) -> None:
         """

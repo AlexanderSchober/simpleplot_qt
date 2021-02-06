@@ -20,6 +20,8 @@
 #   Alexander Schober <alex.schober@mac.com>
 #
 # *****************************************************************************
+from typing import List
+
 from pyrr import Vector3, Matrix44
 
 from simpleplot.models.parameter_class import ParameterHandler
@@ -95,6 +97,38 @@ class Camera(ParameterHandler):
         :return: None
         """
         self['Screen size'] = [x, y]
+
+    def getPixelScreenValue(self, x: int, y: int) -> List[float]:
+        """
+        This will return a position on the screen from
+        a given pixel position. This can be useful
+        to draw invariant positions
+        :param x: int, the x position (negative values start from max)
+        :param y: int, the y position (negative values start from max)
+        :return: List[float]
+        """
+        size = self['Screen size']
+        pos_x = x if x >= 0 else size[0] + x
+        pos_y = y if y >= 0 else size[1] + y
+
+        return [
+            (pos_x / size[0]) * 2. - 1 if size[0] != 0 else 0.,
+            (pos_y / size[1]) * 2. - 1 if size[1] != 0 else 0.
+        ]
+
+    def getPixelSize(self) -> List[float]:
+        """
+        This will return a position on the screen from
+        a given pixel position. This can be useful
+        to draw invariant positions
+        :return: List[float]
+        """
+        size = self['Screen size']
+
+        return [
+            2. / size[0] if size[0] != 0 else 0,
+            2. / size[1] if size[1] != 0 else 0
+        ]
 
     def zoom(self, ratio: float = 0, delta: float = 0) -> None:
         """

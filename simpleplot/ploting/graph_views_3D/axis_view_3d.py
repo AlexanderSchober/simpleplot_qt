@@ -30,6 +30,7 @@ import moderngl
 import numpy as np
 
 # Personal imports
+from .management.tick_management import tickValues, updateAutoSIPrefix
 from ..views_3D.graphics_view_3D import GraphicsView3D
 
 
@@ -106,15 +107,15 @@ class AxisView3D(GraphicsView3D):
         Here we will order the software to inject the main data into
         the present buffers
         """
-        self._updateAutoSIPrefix(
+        updateAutoSIPrefix(
             self._parameters['axis_length'][0],
             self._parameters['axis_length'][1])
 
-        self._tick_positions_1d = self._tickValues(
+        self._tick_positions_1d = tickValues(
             self._parameters['axis_length'][0],
             self._parameters['axis_length'][1],
             self._parameters['axis_length'][1]
-            - self._parameters['axis_length'][0])
+            - self._parameters['axis_length'][0], 1)
 
         ticks_positions_3d = np.zeros((self._tick_positions_1d.shape[0], 3))
         ticks_positions_3d[:, 0] = self._tick_positions_1d

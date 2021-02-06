@@ -119,7 +119,8 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         a dummy to allow the contextClass to handle the
         drawing process.
         """
-        self.contextClass().render()
+        pass
+        # self.contextClass().render()
 
     def _initialize(self):
         """
@@ -334,7 +335,7 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         ev : QtGui.QResizeEvent
         """
         self.resized_signal.emit()
-        if not self.contextClass() == None:
+        if self.contextClass() is not None:
             self.contextClass().resizeEvent(
                 0, 0,
                 ev.size().width() * self.devicePixelRatio(),
@@ -346,27 +347,29 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         """
         Show the movement ball
         """
-        self._canvas.childFromName('Artist').childFromName('Orientation Axes').drag_on = True
-        self._canvas.childFromName('Artist').childFromName('Orientation Axes').setParameters()
+        if self._canvas.childFromName('Artist').orientation is not None:
+            self._canvas.childFromName('Artist').childFromName('Orientation Axes').drag_on = True
+            self._canvas.childFromName('Artist').childFromName('Orientation Axes').setParameters()
 
     def _hideAxes(self):
         """
         Show the movement ball
         """
-        self._canvas.childFromName('Artist').childFromName('Orientation Axes').drag_on = False
-        self._canvas.childFromName('Artist').childFromName('Orientation Axes').setParameters()
+        if self._canvas.childFromName('Artist').orientation is not None:
+            self._canvas.childFromName('Artist').childFromName('Orientation Axes').drag_on = False
+            self._canvas.childFromName('Artist').childFromName('Orientation Axes').setParameters()
 
     def _rayMovement(self, x, y):
         """
         Manage the ray movement
         """
         # fix the screen
-        screens = QtWidgets.QApplication.instance().screens()
-        num = QtWidgets.QApplication.instance().desktop().screenNumber(self)
-        ratio = QtGui.QScreen.devicePixelRatio(screens[num])
-        ray = self._context_class.getPickingRay(x * ratio, y * ratio)
-
-        self._context_class.pickRays()
+        # screens = QtWidgets.QApplication.instance().screens()
+        # num = QtWidgets.QApplication.instance().desktop().sreenNumber(self)
+        # ratio = QtGui.QScreen.devicePixelRatio(screens[num])
+        # ray = self._context_class.getPickingRay(x * ratio, y * ratio)
+        #
+        # self._context_class.pickRays()
 
         # save the new ray and emit ray
         # self.mouse_ray = np.array([self._camera['Camera position'], ray[:3]])

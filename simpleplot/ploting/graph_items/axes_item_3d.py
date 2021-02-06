@@ -42,12 +42,6 @@ class AxesItem3D(GraphicsItem):
     def __init__(self, canvas):
         super().__init__('Axes', transformer=False, parent=canvas)
 
-        self._handlers = [self.x_direction, self.y_direction, self.z_direction]
-        self._colors = ['blue', 'red', 'green']
-        self._tick_directions = [[0, -1, 0], [-1, 0, 0], [-1, -1, 0]]
-        self._directions = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-        self._axes_list = []
-
         self.canvas = canvas
 
         self.x_direction = ParameterHandler(
@@ -56,6 +50,12 @@ class AxesItem3D(GraphicsItem):
             name='Y direction', parent=self)
         self.z_direction = ParameterHandler(
             name='Z direction', parent=self)
+
+        self._handlers = [self.x_direction, self.y_direction, self.z_direction]
+        self._colors = ['blue', 'red', 'green']
+        self._tick_directions = [[0, -1, 0], [-1, 0, 0], [-1, -1, 0]]
+        self._directions = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        self._axes_list = []
 
         self.initialize()
 

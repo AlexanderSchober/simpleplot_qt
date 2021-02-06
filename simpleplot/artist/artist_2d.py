@@ -27,8 +27,8 @@ from simpleplot.artist.camera_2d import Camera2D
 from simpleplot.artist.light import LightSource
 from simpleplot.models.session_node import SessionNode
 from simpleplot.ploting.graph_items.axes_item_2d import AxesItem2D
-from simpleplot.ploting.graph_items.axes_orientation_item_3D import AxesOrientationItem3D
-from simpleplot.ploting.graph_items.grid_item_3D import GridItem3D
+# from simpleplot.ploting.graph_items.axes_orientation_item_3D import AxesOrientationItem3D
+# from simpleplot.ploting.graph_items.grid_item_3D import GridItem3D
 
 
 class Artist2DNode(SessionNode, Artist):
@@ -61,13 +61,19 @@ class Artist2DNode(SessionNode, Artist):
         after the artists has been initialised such as the
         camera dn the light
         """
-        self.axes = AxesItem2D(self.canvas)
-        self.orientation = AxesOrientationItem3D(self.canvas)
-        self.grid = GridItem3D(self.axes._axes_list, self.canvas)
+        if self.axes is not None:
+            return
 
-        self.addChild(self.axes)
-        self.addChild(self.orientation)
-        self.addChild(self.grid)
+        # self.model().beginInsertRows(self.index(), 0, 1)
+        self.axes = AxesItem2D(self, self.canvas)
+        # self.orientation = AxesOrientationItem3D(self.canvas)
+        # self.grid = GridItem3D(self.axes._axes_list, self.canvas)
+
+        self.model().appendRow(self.axes, self)
+        self.axes.initialize()
+        # self.model().endInsertRows()
+        # self.addChild(self.orientation)
+        # self.addChild(self.grid)
 
     def connect(self):
         """
@@ -94,7 +100,7 @@ class Artist2DNode(SessionNode, Artist):
         if (self.canvas.plotModel().itemAt(index) is not None
                 and self.canvas.plotModel().itemAt(index).name in ['Data', 'Transform']):
             self.axes.refreshAuto()
-            self.grid.refreshAuto()
+            # self.grid.refreshAuto()
 
     def draw(self):
         """
@@ -107,7 +113,7 @@ class Artist2DNode(SessionNode, Artist):
             plot_handler.draw(self.canvas)
 
         self.axes.refreshAuto()
-        self.grid.refreshAuto()
+        # self.grid.refreshAuto()
 
     def redrawOverlay(self):
         """
