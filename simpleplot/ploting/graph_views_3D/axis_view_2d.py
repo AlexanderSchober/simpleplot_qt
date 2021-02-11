@@ -56,6 +56,7 @@ class AxisView2D(GraphicsView3D):
         self._orientations = ['bottom', 'top', 'right', 'left']
         self._tick_positions_1d = np.array([0, 0.5, 0.7, 1])
         self.texture_title = None
+        self._cached_text = None
 
         self._parameters['draw_axis'] = True
         self._parameters['draw_ticks'] = True
@@ -124,19 +125,25 @@ class AxisView2D(GraphicsView3D):
         :param font: QtGui.QFont
         :return: None
         """
+        print(self._family_to_path['Arial'])
+        font.setPixelSize(int(22))
         font_info = font.key().split(',')
-        dpi = QGuiApplication.primaryScreen().physicalDotsPerInch()
-        pixel_size = float(font_info[1]) / 72 * dpi
+        if self._cached_text is not None and self._cached_text[0] == text and self._cached_text[1] == font_info[0]:
+            return
+
         freetype_font = Font(self._family_to_path[font_info[0]] if font_info[0] != 'MS Shell Dlg 2'
-                             else self._family_to_path['Arial'], int(pixel_size))
+                             else self._family_to_path['Arial'], int(font_info[2]))
         bitmap = freetype_font.render_text(text)
+        print(bitmap.shape)
 
         self.texture_title = self.context().texture(
-            (bitmap.width, bitmap.height), 1,
-            np.array(bitmap.pixels).astype('f4').tobytes(), dtype='f4')
+            bitmap.shape, 1, (bitmap.astype('f4')).tobytes(), dtype='f4')
 
         self.texture_title.repeat_x = False
         self.texture_title.repeat_y = False
+        self.texture_title.filter = (moderngl.LINEAR, moderngl.LINEAR)
+
+        self._cached_text = [text, font_info[0]]
 
     def setTickFont(self, font: QtGui.QFont):
         """
@@ -170,7 +177,7 @@ class AxisView2D(GraphicsView3D):
         self._createVAO("axis", {"axis": ["3f", "in_vert"]})
         self._createVBO("ticks", self.ticks_positions_3d)
         self._createVAO("ticks", {"ticks": ["3f", "in_vert"]})
-        self._createVAO("labels", {"ticks": ["3f", "in_vert"]})
+        # self._createVAO("labels", {"ticks": ["3f", "in_vert"]})
         self._createVBO("title", title_positions)
         self._createVAO("title", {"title": ["3f", "in_vert"]})
 
@@ -197,8 +204,8 @@ class AxisView2D(GraphicsView3D):
         """
         center = self._getTitleCenter()
         screen_size = self.renderer().camera()['Screen size']
-        width = self.texture_title.width / screen_size[0] if screen_size[0] != 0 else 0
-        height = self.texture_title.height / screen_size[1] if screen_size[1] != 0 else 0
+        width = (self.texture_title.width) / screen_size[0] if screen_size[0] != 0 else 0
+        height = (self.texture_title.height) / screen_size[1] if screen_size[1] != 0 else 0
 
         half_height = height / 2
         half_width = width / 2
