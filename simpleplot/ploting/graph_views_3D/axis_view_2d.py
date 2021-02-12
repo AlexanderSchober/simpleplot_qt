@@ -125,20 +125,19 @@ class AxisView2D(GraphicsView3D):
         :param font: QtGui.QFont
         :return: None
         """
-        print(self._family_to_path['Arial'])
-        font.setPixelSize(int(22))
+        font.setPixelSize(int(50))
         font_info = font.key().split(',')
         if self._cached_text is not None and self._cached_text[0] == text and self._cached_text[1] == font_info[0]:
             return
 
         freetype_font = Font(self._family_to_path[font_info[0]] if font_info[0] != 'MS Shell Dlg 2'
                              else self._family_to_path['Arial'], int(font_info[2]))
-        bitmap = freetype_font.render_text(text)
-        print(bitmap.shape)
+        freefont_dict = freetype_font.render_text(text)
+
+
 
         self.texture_title = self.context().texture(
             bitmap.shape, 1, (bitmap.astype('f4')).tobytes(), dtype='f4')
-
         self.texture_title.repeat_x = False
         self.texture_title.repeat_y = False
         self.texture_title.filter = (moderngl.LINEAR, moderngl.LINEAR)
