@@ -31,6 +31,8 @@ import sys
 import time
 import freetype
 import numpy as np
+from PIL import Image
+
 from PyQt5.QtCore import QStandardPaths
 from PyQt5.QtGui import QFontDatabase
 from PyQt5.QtWidgets import QApplication
@@ -158,6 +160,7 @@ class Font(object):
     def __init__(self, filename, size):
         self.face = freetype.Face(filename)
         self.face.set_pixel_sizes(0, size)
+        self.size = size
         self.glyph_buffer = {}
         self._initBuffer()
 
@@ -165,10 +168,46 @@ class Font(object):
         start = time.time_ns()
         for i in range(32, 127):
             self.face.load_char(chr(i))
-            self.glyph_buffer[chr(i)] = self.face.glyph.bitmap
-            print(self.glyph_buffer[chr(i)].rows, self.glyph_buffer[chr(i)].width, self.glyph_buffer[chr(i)].top)
+            rows = self.face.glyph.bitmap.rows
+            width = self.face.glyph.bitmap.width
+            top = self.face.glyph.bitmap_top
+            self.glyph_buffer[chr(i)] = {
+                'bitmap': np.fromiter(self.face.glyph.bitmap.buffer, dtype=np.uint8).reshape((rows, width)),
+                'height': rows,
+                'width': width,
+                'top': top,
+                'descent': max(0, rows - top),
+                'ascent': max(0, max(top, rows) - max(0, rows - top))
+            }
         end = time.time_ns()
         print((end-start)*1e-6)
+
+        self.generateNumpyBitmap(self.glyph_buffer)
+
+    def generateNumpyBitmap(self, glyph_buffer):
+        max_width = 10 * self.size
+
+        current_width_indent = 0
+        current_row_indent = 0
+        for key in glyph_buffer.keys():
+            # Go back to the line if we have reached the limit
+            if current_width_indent + glyph_buffer[key]['width'] > max_width:
+                current_row_indent += self.size
+                current_width_indent = 0
+
+            # Set the values
+            glyph_buffer[key]['width_pos'] = current_width_indent
+            glyph_buffer[key]['row_pos'] = current_row_indent
+
+            # Advance
+            current_width_indent += glyph_buffer[key]['width']
+
+        baseline = max([glyph_buffer[key]['ascent'] for key in glyph_buffer.keys()])
+        self._numpy_bitmap = np.zeros((current_row_indent + self.size, max_width), dtype=np.uint8)
+        for key in glyph_buffer.keys():
+            self._numpy_bitmap[glyph_buffer[key]['row_pos']+baseline-glyph_buffer[key]['ascent']:glyph_buffer[key]['row_pos']+baseline-glyph_buffer[key]['ascent']+glyph_buffer[key]['height'],\
+            glyph_buffer[key]['width_pos']:glyph_buffer[key]['width_pos']+glyph_buffer[key]['width']] = glyph_buffer[key]['bitmap']
+        Image.fromarray(self._numpy_bitmap).save('name.jpeg')
 
     def _processGlyphForCharacter(self, char):
         # Let FreeType load the glyph for the given character and tell it to render
@@ -293,7 +332,7 @@ if __name__ == '__main__':
     # Be sure to place 'helvetica.ttf' (or any other ttf / otf font file) in the working directory.
     family_to_path = getFontPaths()
     start = time.time_ns()
-    fnt = Font(family_to_path['Arial Black'], 20)
+    fnt = Font(family_to_path['Courier New'], 100)
     end = time.time_ns()
     print(1e-9*(end-start))
 
