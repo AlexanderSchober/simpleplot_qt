@@ -1,159 +1,13 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# Needs freetype-py>=1.0
-
-# For more info see:
-# http://dbader.org/blog/monochrome-font-rendering-with-freetype-and-python
-
-# The MIT License (MIT)
-#
-# Copyright (c) 2013 Daniel Bader (http://dbader.org)
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
 import os
 import sys
 import time
+
 import freetype
 import numpy as np
 from PIL import Image
-
 from PyQt5.QtCore import QStandardPaths
 from PyQt5.QtGui import QFontDatabase
 from PyQt5.QtWidgets import QApplication
-
-#
-# class Bitmap(object):
-#     """
-#     A 2D bitmap image represented as a list of byte values. Each byte indicates the state
-#     of a single pixel in the bitmap. A value of 0 indicates that the pixel is `off`
-#     and any other value indicates that it is `on`.
-#     """
-#     def __init__(self, width, height, pixels=None):
-#         self.width = int(width)
-#         self.height = int(height)
-#         self.pixels = pixels or bytearray(int(width * height))
-#
-#     def __repr__(self):
-#         """Return a string representation of the bitmap's pixels."""
-#         rows = ''
-#         for y in range(self.height):
-#             for x in range(self.width):
-#                 rows += '█' if self.pixels[y * self.width + x] else '⠀'
-#             rows += '\n'
-#         return rows
-#
-#     def bitblt(self, src, x, y):
-#         """Copy all pixels from `src` into this bitmap"""
-#         srcpixel = int(0)
-#         dstpixel = int(y * self.width + x)
-#         row_offset = int(self.width - src.width)
-#
-#         for sy in range(src.height):
-#             for sx in range(src.width):
-#                 # Perform an OR operation on the destination pixel and the source pixel
-#                 # because glyph bitmaps may overlap if character kerning is applied, e.g.
-#                 # in the string "AVA", the "A" and "V" glyphs must be rendered with
-#                 # overlapping bounding boxes.
-#                 self.pixels[dstpixel] = self.pixels[dstpixel] or src.pixels[srcpixel]
-#                 srcpixel += 1
-#                 dstpixel += 1
-#             dstpixel += row_offset
-#
-#
-# class Glyph(object):
-#     def __init__(self, pixels, width, height, top, advance_width):
-#         self.bitmap = Bitmap(width, height, pixels)
-#
-#         # The glyph bitmap's top-side bearing, i.e. the vertical distance from the
-#         # baseline to the bitmap's top-most scanline.
-#         self.top = top
-#
-#         # Ascent and descent determine how many pixels the glyph extends
-#         # above or below the baseline.
-#         self.descent = max(0, self.height - self.top)
-#         self.ascent = max(0, max(self.top, self.height) - self.descent)
-#
-#         # The advance width determines where to place the next character horizontally,
-#         # that is, how many pixels we move to the right to draw the next glyph.
-#         self.advance_width = advance_width
-#
-#     @property
-#     def width(self):
-#         return self.bitmap.width
-#
-#     @property
-#     def height(self):
-#         return self.bitmap.height
-#
-#     @staticmethod
-#     def from_glyphslot(slot):
-#         """Construct and return a Glyph object from a FreeType GlyphSlot."""
-#         pixels = Glyph.unpack_mono_bitmap(slot.bitmap)
-#         width, height = slot.bitmap.width, slot.bitmap.rows
-#         top = slot.bitmap_top
-#
-#         # The advance width is given in FreeType's 26.6 fixed point format,
-#         # which means that the pixel values are multiples of 64.
-#         advance_width = slot.advance.x / 64
-#
-#         return Glyph(pixels, width, height, top, advance_width)
-#
-#     @staticmethod
-#     def unpack_mono_bitmap(bitmap):
-#         """
-#         Unpack a freetype FT_LOAD_TARGET_MONO glyph bitmap into a bytearray where each
-#         pixel is represented by a single byte.
-#         """
-#         # Allocate a bytearray of sufficient size to hold the glyph bitmap.
-#         data = bytearray(bitmap.rows * bitmap.width)
-#
-#         # Iterate over every byte in the glyph bitmap. Note that we're not
-#         # iterating over every pixel in the resulting unpacked bitmap --
-#         # we're iterating over the packed bytes in the input bitmap.
-#         for y in range(bitmap.rows):
-#             for byte_index in range(bitmap.pitch):
-#
-#                 # Read the byte that contains the packed pixel data.
-#                 byte_value = bitmap.buffer[y * bitmap.pitch + byte_index]
-#
-#                 # We've processed this many bits (=pixels) so far. This determines
-#                 # where we'll read the next batch of pixels from.
-#                 num_bits_done = byte_index * 8
-#
-#                 # Pre-compute where to write the pixels that we're going
-#                 # to unpack from the current byte in the glyph bitmap.
-#                 rowstart = y * bitmap.width + byte_index * 8
-#
-#                 # Iterate over every bit (=pixel) that's still a part of the
-#                 # output bitmap. Sometimes we're only unpacking a fraction of a byte
-#                 # because glyphs may not always fit on a byte boundary. So we make sure
-#                 # to stop if we unpack past the current row of pixels.
-#                 for bit_index in range(min(8, bitmap.width - num_bits_done)):
-#
-#                     # Unpack the next pixel from the current glyph byte.
-#                     bit = byte_value & (1 << (7 - bit_index))
-#
-#                     # Write the pixel to the output bytearray. We ensure that `off`
-#                     # pixels have a value of 0 and `on` pixels have a value of 1.
-#                     data[rowstart + bit_index] = 1 if bit else 0
-#
-#         return data
 
 
 class Font(object):
@@ -165,22 +19,36 @@ class Font(object):
         self._initBuffer()
 
     def _initBuffer(self):
-        start = time.time_ns()
-        for i in range(32, 127):
-            self.face.load_char(chr(i))
+        # Do the space separately
+        self.face.load_char(chr(2000))
+        rows = self.face.glyph.bitmap.rows
+        width = self.face.glyph.bitmap.width
+        top = self.face.glyph.bitmap_top
+        self.glyph_buffer[chr(32)] = {
+            'bitmap': np.zeros((rows, width), dtype=np.uint8),
+            'height': rows,
+            'width': width,
+            'top': top,
+            'descent': max(0, rows - top),
+            'ascent': max(0, max(top, rows) - max(0, rows - top)),
+            'unicode_idx': 0
+        }
+
+        # Do all the others
+        for i, uni_i in enumerate([j for j in range(33, 127)]):
+            self.face.load_char(chr(uni_i))
             rows = self.face.glyph.bitmap.rows
             width = self.face.glyph.bitmap.width
             top = self.face.glyph.bitmap_top
-            self.glyph_buffer[chr(i)] = {
+            self.glyph_buffer[chr(uni_i)] = {
                 'bitmap': np.fromiter(self.face.glyph.bitmap.buffer, dtype=np.uint8).reshape((rows, width)),
                 'height': rows,
                 'width': width,
                 'top': top,
                 'descent': max(0, rows - top),
-                'ascent': max(0, max(top, rows) - max(0, rows - top))
+                'ascent': max(0, max(top, rows) - max(0, rows - top)),
+                'unicode_idx': i + 1
             }
-        end = time.time_ns()
-        print((end-start)*1e-6)
 
         self.generateNumpyBitmap(self.glyph_buffer)
 
@@ -189,7 +57,7 @@ class Font(object):
 
         current_width_indent = 0
         current_row_indent = 0
-        for key in glyph_buffer.keys():
+        for i, key in enumerate(glyph_buffer.keys()):
             # Go back to the line if we have reached the limit
             if current_width_indent + glyph_buffer[key]['width'] > max_width:
                 current_row_indent += self.size
@@ -205,100 +73,41 @@ class Font(object):
         baseline = max([glyph_buffer[key]['ascent'] for key in glyph_buffer.keys()])
         self._numpy_bitmap = np.zeros((current_row_indent + self.size, max_width), dtype=np.uint8)
         for key in glyph_buffer.keys():
-            self._numpy_bitmap[glyph_buffer[key]['row_pos']+baseline-glyph_buffer[key]['ascent']:glyph_buffer[key]['row_pos']+baseline-glyph_buffer[key]['ascent']+glyph_buffer[key]['height'],\
-            glyph_buffer[key]['width_pos']:glyph_buffer[key]['width_pos']+glyph_buffer[key]['width']] = glyph_buffer[key]['bitmap']
-        Image.fromarray(self._numpy_bitmap).save('name.jpeg')
+            x_0 = glyph_buffer[key]['row_pos'] + baseline - glyph_buffer[key]['ascent']
+            x_1 = glyph_buffer[key]['row_pos'] + baseline - glyph_buffer[key]['ascent'] + glyph_buffer[key]['height']
+            y_0 = glyph_buffer[key]['width_pos']
+            y_1 = glyph_buffer[key]['width_pos'] + glyph_buffer[key]['width']
+            self._numpy_bitmap[x_0:x_1, y_0:y_1] = glyph_buffer[key]['bitmap']
 
-    def _processGlyphForCharacter(self, char):
-        # Let FreeType load the glyph for the given character and tell it to render
-        # a monochromatic bitmap representation.
-        self.face.load_char(char, freetype.FT_LOAD_RENDER)
-        return Glyph.from_glyphslot(self.face.glyph)
+        self._positions_rows = np.zeros(len(glyph_buffer), dtype=np.uint16)
+        self._positions_width = np.zeros(len(glyph_buffer), dtype=np.uint16)
+        self._char_width = np.zeros(len(glyph_buffer), dtype=np.uint16)
+        for key in glyph_buffer.keys():
+            self._positions_rows[glyph_buffer[key]['unicode_idx']] = glyph_buffer[key]['row_pos']
+            self._positions_width[glyph_buffer[key]['unicode_idx']] = glyph_buffer[key]['width_pos']
+            self._char_width[glyph_buffer[key]['unicode_idx']] = glyph_buffer[key]['width']
 
-    def glyph_for_character(self, char):
-        return self.glyph_buffer[char]
-
-    def render_character(self, char):
-        glyph = self.glyph_for_character(char)
-        return glyph.bitmap
-
-    def kerning_offset(self, previous_char, char):
+    def render_text(self, text):
         """
-        Return the horizontal kerning offset in pixels when rendering `char`
-        after `previous_char`.
-        Use the resulting offset to adjust the glyph's drawing position to
-        reduces extra diagonal whitespace, for example in the string "AV" the
-        bitmaps for "A" and "V" may overlap slightly with some fonts. In this
-        case the glyph for "V" has a negative horizontal kerning offset as it is
-        moved slightly towards the "A".
+
         """
-        kerning = self.face.get_kerning(previous_char, char)
+        output_dict = {
+            'bitmap': self._numpy_bitmap,
+            'positions_rows': self._positions_rows,
+            'positions_width': self._positions_width,
+            'char_width': self._char_width
+        }
 
-        # The kerning offset is given in FreeType's 26.6 fixed point format,
-        # which means that the pixel values are multiples of 64.
-        return kerning.x / 64
+        char_index = np.zeros(len(text), dtype=np.uint16)
+        for i, char in enumerate(text):
+            char_index[i] = self.glyph_buffer[char]['unicode_idx']
+        output_dict['char_index'] = char_index
 
-    def text_dimensions(self, text):
-        """Return (width, height, baseline) of `text` rendered in the current font."""
-        width = 0
-        max_ascent = 0
-        max_descent = 0
-        previous_char = None
-
-        # For each character in the text string we get the glyph
-        # and update the overall dimensions of the resulting bitmap.
-        for char in text:
-            glyph = self.glyph_for_character(char)
-            max_ascent = max(max_ascent, glyph.ascent)
-            max_descent = max(max_descent, glyph.descent)
-            kerning_x = self.kerning_offset(previous_char, char)
-
-            # With kerning, the advance width may be less than the width of the glyph's bitmap.
-            # Make sure we compute the total width so that all of the glyph's pixels
-            # fit into the returned dimensions.
-            width += max(glyph.advance_width + kerning_x, glyph.width + kerning_x)
-
-            previous_char = char
-
-        height = max_ascent + max_descent
-        return (width, height, max_descent)
-
-    def render_text(self, text, width=None, height=None, baseline=None):
-        """
-        Render the given `text` into a Bitmap and return it.
-        If `width`, `height`, and `baseline` are not specified they are computed using
-        the `text_dimensions' method.
-        """
-        if None in (width, height, baseline):
-            width, height, baseline = self.text_dimensions(text)
-
-        x = 0
-        previous_char = None
-        outbuffer = np.zeros((int(height), int(width)), dtype=np.ubyte)
-
-        for char in text:
-            glyph = self.glyph_for_character(char)
-
-            # Take kerning information into account before we render the
-            # glyph to the output bitmap.
-            x += self.kerning_offset(previous_char, char)
-
-            # The vertical drawing position should place the glyph
-            # on the baseline as intended.
-            y = height - glyph.ascent - baseline
-            x, y = int(x), int(y)
-            w, h = int(glyph.bitmap.width), int(glyph.bitmap.height)
-            outbuffer[y:y+h, x:x+w] |= np.array(glyph.bitmap.pixels).reshape(h, w)
-
-            x += glyph.advance_width
-            previous_char = char
-
-        return outbuffer.reshape((int(width), int(height)))
+        return output_dict
 
 
 def getFontPaths():
     font_paths = QStandardPaths.standardLocations(QStandardPaths.FontsLocation)
-
     accounted = []
     unloadable = []
     family_to_path = {}
@@ -307,23 +116,16 @@ def getFontPaths():
     for fpath in font_paths:  # go through all font paths
         for filename in os.listdir(fpath):  # go through all files at each path
             path = os.path.join(fpath, filename)
-
             idx = db.addApplicationFont(path)  # add font path
-
             if idx < 0:
                 unloadable.append(path)  # font wasn't loaded if idx is -1
             else:
                 names = db.applicationFontFamilies(idx)  # load back font family name
-
                 for n in names:
                     if n in family_to_path:
                         accounted.append((n, path))
                     else:
                         family_to_path[n] = path
-                # this isn't a 1:1 mapping, for example
-                # 'C:/Windows/Fonts/HTOWERT.TTF' (regular) and
-                # 'C:/Windows/Fonts/HTOWERTI.TTF' (italic) are different
-                # but applicationFontFamilies will return 'High Tower Text' for both
     return family_to_path
 
 
@@ -334,12 +136,10 @@ if __name__ == '__main__':
     start = time.time_ns()
     fnt = Font(family_to_path['Courier New'], 100)
     end = time.time_ns()
-    print(1e-9*(end-start))
+    print(1e-9 * (end - start))
 
     # Choosing the baseline correctly
     start = time.time_ns()
-    print(repr(fnt.render_text('No Title')))
+    print(fnt.render_text('No Title'))
     end = time.time_ns()
-    print(1e-9*(end-start))
-
-    print((fnt.render_text('No Title').shape))
+    print(1e-9 * (end - start))
