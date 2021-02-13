@@ -134,15 +134,27 @@ class AxisView2D(GraphicsView3D):
                              else self._family_to_path['Arial'], int(font_info[2]))
         freefont_dict = freetype_font.render_text(text)
 
-
-
         self.texture_title = self.context().texture(
-            bitmap.shape, 1, (bitmap.astype('f4')).tobytes(), dtype='f4')
+            freefont_dict['bitmap'].shape, 1,
+            (freefont_dict['bitmap'].astype('f4')/256).tobytes(),
+            dtype='f4')
+
         self.texture_title.repeat_x = False
         self.texture_title.repeat_y = False
         self.texture_title.filter = (moderngl.LINEAR, moderngl.LINEAR)
 
         self._cached_text = [text, font_info[0]]
+
+        self.setUniforms(
+            position_row_title=freefont_dict['positions_rows'],
+            positions_width_title=freefont_dict['positions_width'],
+            char_width_title=freefont_dict['char_width'],
+            char_index=freefont_dict['char_index'],
+            limit=np.array([len(freefont_dict['char_index'])]),
+            height=np.array([freetype_font.size]),
+            factor_x=np.array([1/freefont_dict['bitmap'].shape[0]]),
+            factor_y=np.array([1/freefont_dict['bitmap'].shape[1]])
+        )
 
     def setTickFont(self, font: QtGui.QFont):
         """
@@ -350,7 +362,7 @@ class AxisView2D(GraphicsView3D):
             self.texture_title.use(0)
             self._programs['title']['text_texture'].value = 0
             self._programs['title']['viewport_size'].value = tuple(self.context().viewport[2:])
-            self._vaos['title'].render(mode=moderngl.TRIANGLE_STRIP)
+            self._vaos['title'].render(mode=moderngl.LINE_STRIP)
 
         self.context().enable(moderngl.CULL_FACE)
 
