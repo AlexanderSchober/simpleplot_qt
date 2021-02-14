@@ -105,7 +105,7 @@ class AxisView2D(GraphicsView3D):
             frag_shader=self._fragmentShader('title'))
 
         self.setUniforms(**self._parameters)
-        self.setTitle('No title', QtGui.QFont())
+        self.setTitle('123', QtGui.QFont())
         self._updateAxis()
         self.setMVP()
         self.setLight()
@@ -160,6 +160,8 @@ class AxisView2D(GraphicsView3D):
             freefont_dict['char_index'].astype('f4').tobytes(),
             dtype='f4')
 
+        print(freefont_dict['positions_width'])
+
         self.texture_title.repeat_x = False
         self.texture_title.repeat_y = False
         self.texture_title.filter = (moderngl.LINEAR, moderngl.LINEAR)
@@ -174,7 +176,7 @@ class AxisView2D(GraphicsView3D):
             title_texture_len=np.array([freefont_dict['char_index'].shape[0]]),
             limit=np.array([len(freefont_dict['char_index'])]),
             height=np.array([freetype_font.size]),
-            factor_x=np.array([1/freefont_dict['bitmap'].shape[0], 1/freefont_dict['bitmap'].shape[1]])
+            factor=np.array([1/freefont_dict['bitmap'].shape[0], 1/freefont_dict['bitmap'].shape[1]])
         )
 
     def setTickFont(self, font: QtGui.QFont):
@@ -242,10 +244,7 @@ class AxisView2D(GraphicsView3D):
         half_height = height / 2
         half_width = width / 2
         positions = np.array([
-            [center[0] - half_width, center[1] - half_height, -1],
-            [center[0] - half_width, center[1] + half_height, -1],
-            [center[0] + half_width, center[1] - half_height, -1],
-            [center[0] + half_width, center[1] + half_height, -1]
+            [center[0], center[1], -1]
         ], dtype='f4')
 
         return positions, np.array([center[0], center[1], width, height], dtype="object")
@@ -380,9 +379,6 @@ class AxisView2D(GraphicsView3D):
             self._vaos['values'].render(mode=moderngl.LINE_STRIP)
 
         if self._parameters['draw_title']:
-
-            # self.texture_title.use(0)
-            # self._programs['title']['text_texture'].value = 0
             self.positions_row_title.use(0)
             self._programs['title']['positions_rows_title'].value = 0
             self.positions_width_title.use(1)
@@ -391,9 +387,11 @@ class AxisView2D(GraphicsView3D):
             self._programs['title']['char_width_title'].value = 2
             self.char_index_title.use(3)
             self._programs['title']['char_index_title'].value = 3
+            self.texture_title.use(4)
+            self._programs['title']['text_texture'].value = 4
 
             self._programs['title']['viewport_size'].value = tuple(self.context().viewport[2:])
-            self._vaos['title'].render(mode=moderngl.LINE_STRIP)
+            self._vaos['title'].render(mode=moderngl.POINTS)
 
         self.context().enable(moderngl.CULL_FACE)
 

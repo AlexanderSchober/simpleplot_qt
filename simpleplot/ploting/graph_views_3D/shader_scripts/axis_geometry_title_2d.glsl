@@ -15,7 +15,7 @@ uniform float height;
 uniform vec2 factor;
 
 out vec4 texture_coords;
-out vec2 center_position;
+out vec2 center_pixel_position;
 
 void main()
 {
@@ -24,54 +24,48 @@ void main()
     for (int i = 0; i < int(limit); ++i){
         int char_index = int(texture(char_index_title, vec2(i/(limit-1), 0)).r);
         int char_width = int(texture(char_width_title, vec2(char_index/title_texture_len, 0)).r);
-        width_pixel += factor.y * char_width;
+        width_pixel += char_width;
     }
 
     // Pixel size
     vec2 viewport_pixel_size = 2 / viewport_size;
-    float height_scene = height * viewport_pixel_size[1];
+    float height_scene = height * viewport_pixel_size.y;
 
     // Get the points
     vec3 position = gl_in[0].gl_Position.xyz;
-    vec2 current_pos = vec2(position.x - width_pixel*viewport_pixel_size.x, position.y);
+    vec2 current_pos = vec2(position.x - (width_pixel/2)*viewport_pixel_size.x, position.y);;
     for (int i = 0; i < int(limit); ++i){
-        
+
         int char_index = int(texture(char_index_title, vec2(i/(limit-1), 0)).r);
-        int char_width = int(texture(char_width_title, vec2(char_index/title_texture_len, 0)).r);
-        int position_row = int(texture(positions_rows_title, vec2(char_index/title_texture_len, 0)).r);
-        int positions_width = int(texture(positions_width_title, vec2(char_index/title_texture_len, 0)).r);
-        
+        float char_width = float(texture(char_width_title, vec2(char_index/title_texture_len, 0)).r);
+        float position_row = float(texture(positions_rows_title, vec2(char_index/title_texture_len, 0)).r);
+        float position_width = float(texture(positions_width_title, vec2(char_index/title_texture_len, 0)).r);
+
         texture_coords = vec4(
-            (positions_width + char_width / 2) ,
-            (position_row + height / 2),
+            position_width + char_width / 2,
+            position_row + height/ 2,
             factor.y,
             factor.x
         );
-        center_position = vec2(
-            ((current_pos.x + 1)/2)*viewport_size.x + char_width /2,
-            ((current_pos.y + 1)/2)*viewport_size.y
+        vec2 center_position = vec2(
+            current_pos.x + (char_width /2)*viewport_pixel_size.x,
+            current_pos.y
         );
 
-        gl_Position = vec4(
-            center_position.x - (char_width * viewport_pixel_size.x)/2,
-            center_position.y - height_scene/2, z_near, 1
+        center_pixel_position = vec2(
+            (center_position.x + 1)/2 * viewport_size.x,
+            (center_position.y + 1)/2 * viewport_size.y
         );
+
+        gl_Position = vec4(center_position.x - (char_width /2)*viewport_pixel_size.x,center_position.y - height_scene/2,-1,1);
         EmitVertex();
-        gl_Position = vec4(
-            center_position.x + (char_width * viewport_pixel_size.x)/2,
-            center_position.y - height_scene/2, z_near, 1
-        );
+        gl_Position = vec4(center_position.x + (char_width /2)*viewport_pixel_size.x,center_position.y - height_scene/2,-1,1);
         EmitVertex();
-        gl_Position = vec4(
-            center_position.x - (char_width * viewport_pixel_size.x)/2,
-            center_position.y + height_scene/2, z_near, 1
-        );
+        gl_Position = vec4(center_position.x - (char_width /2)*viewport_pixel_size.x,center_position.y + height_scene/2,-1,1);
         EmitVertex();
-        gl_Position = vec4(
-            center_position.x + (char_width * viewport_pixel_size.x)/2,
-            center_position.y + height_scene/2, z_near, 1
-        );
+        gl_Position = vec4(center_position.x + (char_width /2)*viewport_pixel_size.x,center_position.y + height_scene/2,-1,1);
         EmitVertex();
+
         EndPrimitive();
 
         current_pos = vec2(
