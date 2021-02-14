@@ -152,8 +152,7 @@ class AxisView2D(GraphicsView3D):
             char_index=freefont_dict['char_index'],
             limit=np.array([len(freefont_dict['char_index'])]),
             height=np.array([freetype_font.size]),
-            factor_x=np.array([1/freefont_dict['bitmap'].shape[0]]),
-            factor_y=np.array([1/freefont_dict['bitmap'].shape[1]])
+            factor_x=np.array([1/freefont_dict['bitmap'].shape[0], 1/freefont_dict['bitmap'].shape[1]])
         )
 
     def setTickFont(self, font: QtGui.QFont):
