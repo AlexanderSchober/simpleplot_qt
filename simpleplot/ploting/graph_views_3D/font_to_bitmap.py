@@ -53,7 +53,7 @@ class Font(object):
         self.generateNumpyBitmap(self.glyph_buffer)
 
     def generateNumpyBitmap(self, glyph_buffer):
-        self.max_width = 10 * self.size
+        max_width = 10 * self.size
 
         current_width_indent = 0
         current_row_indent = 0
@@ -79,9 +79,9 @@ class Font(object):
             y_1 = glyph_buffer[key]['width_pos'] + glyph_buffer[key]['width']
             self._numpy_bitmap[x_0:x_1, y_0:y_1] = glyph_buffer[key]['bitmap']
 
-        self._positions_rows = np.zeros(len(glyph_buffer), dtype='f4')
-        self._positions_width = np.zeros(len(glyph_buffer), dtype='f4')
-        self._char_width = np.zeros(len(glyph_buffer), dtype='f4')
+        self._positions_rows = np.zeros(len(glyph_buffer), dtype=np.uint16)
+        self._positions_width = np.zeros(len(glyph_buffer), dtype=np.uint16)
+        self._char_width = np.zeros(len(glyph_buffer), dtype=np.uint16)
         for key in glyph_buffer.keys():
             self._positions_rows[glyph_buffer[key]['unicode_idx']] = glyph_buffer[key]['row_pos']
             self._positions_width[glyph_buffer[key]['unicode_idx']] = glyph_buffer[key]['width_pos']

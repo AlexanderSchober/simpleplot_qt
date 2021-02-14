@@ -101,6 +101,7 @@ class AxisView2D(GraphicsView3D):
         self._createProgram(
             "title",
             vert_shader=self._vertexShader(),
+            geometry_shader=self._geometryShader('title'),
             frag_shader=self._fragmentShader('title'))
 
         self.setUniforms(**self._parameters)
@@ -139,17 +140,38 @@ class AxisView2D(GraphicsView3D):
             (freefont_dict['bitmap'].astype('f4')/256).tobytes(),
             dtype='f4')
 
+        self.positions_row_title = self.context().texture(
+            (freefont_dict['positions_rows'].shape[0], 1), 1,
+            freefont_dict['positions_rows'].astype('f4').tobytes(),
+            dtype='f4')
+
+        self.positions_width_title = self.context().texture(
+            (freefont_dict['positions_width'].shape[0], 1), 1,
+            freefont_dict['positions_width'].astype('f4').tobytes(),
+            dtype='f4')
+
+        self.char_width_title = self.context().texture(
+            (freefont_dict['char_width'].shape[0], 1), 1,
+            freefont_dict['char_width'].astype('f4').tobytes(),
+            dtype='f4')
+
+        self.char_index_title = self.context().texture(
+            (freefont_dict['char_index'].shape[0], 1), 1,
+            freefont_dict['char_index'].astype('f4').tobytes(),
+            dtype='f4')
+
         self.texture_title.repeat_x = False
         self.texture_title.repeat_y = False
         self.texture_title.filter = (moderngl.LINEAR, moderngl.LINEAR)
+        self.positions_row_title.filter = (moderngl.NEAREST, moderngl.NEAREST)
+        self.positions_width_title.filter = (moderngl.NEAREST, moderngl.NEAREST)
+        self.char_width_title.filter = (moderngl.NEAREST, moderngl.NEAREST)
+        self.char_index_title.filter = (moderngl.NEAREST, moderngl.NEAREST)
 
         self._cached_text = [text, font_info[0]]
 
         self.setUniforms(
-            position_row_title=freefont_dict['positions_rows'],
-            positions_width_title=freefont_dict['positions_width'],
-            char_width_title=freefont_dict['char_width'],
-            char_index=freefont_dict['char_index'],
+            title_texture_len=np.array([freefont_dict['char_index'].shape[0]]),
             limit=np.array([len(freefont_dict['char_index'])]),
             height=np.array([freetype_font.size]),
             factor_x=np.array([1/freefont_dict['bitmap'].shape[0], 1/freefont_dict['bitmap'].shape[1]])
@@ -358,8 +380,18 @@ class AxisView2D(GraphicsView3D):
             self._vaos['values'].render(mode=moderngl.LINE_STRIP)
 
         if self._parameters['draw_title']:
-            self.texture_title.use(0)
-            self._programs['title']['text_texture'].value = 0
+
+            # self.texture_title.use(0)
+            # self._programs['title']['text_texture'].value = 0
+            self.positions_row_title.use(0)
+            self._programs['title']['positions_rows_title'].value = 0
+            self.positions_width_title.use(1)
+            self._programs['title']['positions_width_title'].value = 1
+            self.char_width_title.use(2)
+            self._programs['title']['char_width_title'].value = 2
+            self.char_index_title.use(3)
+            self._programs['title']['char_index_title'].value = 3
+
             self._programs['title']['viewport_size'].value = tuple(self.context().viewport[2:])
             self._vaos['title'].render(mode=moderngl.LINE_STRIP)
 

@@ -3,22 +3,23 @@
 //in vec4 texture_coordinate;
 out vec4 fragment_color;
 uniform vec4 title_color = vec4(0,1,0,1);
-uniform sampler2D text_texture;
-uniform vec2 viewport_size;
+//uniform sampler2D text_texture;
 
 in vec4 texture_coords;
-in vec4 center_position;
+in vec2 center_position;
 
 void main() {
-//    vec2 fragment_position = 2.0 * gl_FragCoord.xy / viewport_size - 1.0;
-//    vec2 relative_position = vec2(
-//        (fragment_position.x - (title_parameters.x - title_parameters.b / 2)) / title_parameters.b,
-//        (fragment_position.y - (title_parameters.y - title_parameters.a / 2)) / title_parameters.a
-//    );
+
+    vec2 fragment_position = gl_FragCoord.xy - center_position;
+    vec2 texture_pos = vec2(
+        (fragment_position.x + texture_coords.x) * texture_coords.b,
+        (fragment_position.y + texture_coords.y) * texture_coords.a
+    );
 //    fragment_color = vec4(
 //        title_color.rgb,
-//        texture(text_texture, vec2(relative_position.x, 1-relative_position.y)).r
+//        texture(text_texture, vec2(texture_pos.x, 1-texture_pos.y)).r
 //        * title_color.a
 //    );
+    fragment_color = title_color + 0 *texture_coords + 0* vec4(center_position, 0,0);
 }
 
