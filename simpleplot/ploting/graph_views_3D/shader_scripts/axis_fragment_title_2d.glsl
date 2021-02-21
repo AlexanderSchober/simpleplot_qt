@@ -12,11 +12,11 @@ void main() {
     vec2 fragment_position = gl_FragCoord.xy - center_pixel_position;
     vec2 texture_pos = vec2(
         (texture_coords.x + fragment_position.x) * texture_coords.b,
-        (texture_coords.y + fragment_position.y)  * texture_coords.a
+        (texture_coords.y + fragment_position.y) * texture_coords.a
     );
     fragment_color = vec4(
         title_color.rgb,
-        1+0*texture(text_texture, vec2(texture_pos.x, 1-texture_pos.y)).r
+        texture(text_texture, vec2(texture_pos.y, texture_pos.x)).r
         * title_color.a
     );
 }

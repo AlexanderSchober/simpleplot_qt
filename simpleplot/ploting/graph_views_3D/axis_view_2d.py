@@ -142,25 +142,30 @@ class AxisView2D(GraphicsView3D):
 
         self.positions_row_title = self.context().texture(
             (freefont_dict['positions_rows'].shape[0], 1), 1,
-            freefont_dict['positions_rows'].astype('f4').tobytes(),
+            (freefont_dict['positions_rows'].astype('f4')/1000.).tobytes(),
             dtype='f4')
 
         self.positions_width_title = self.context().texture(
             (freefont_dict['positions_width'].shape[0], 1), 1,
-            freefont_dict['positions_width'].astype('f4').tobytes(),
+            (freefont_dict['positions_width'].astype('f4')/1000.).tobytes(),
             dtype='f4')
 
         self.char_width_title = self.context().texture(
             (freefont_dict['char_width'].shape[0], 1), 1,
-            freefont_dict['char_width'].astype('f4').tobytes(),
+            (freefont_dict['char_width'].astype('f4')/1000.).tobytes(),
             dtype='f4')
 
         self.char_index_title = self.context().texture(
             (freefont_dict['char_index'].shape[0], 1), 1,
-            freefont_dict['char_index'].astype('f4').tobytes(),
+            (freefont_dict['char_index'].astype('f4')/1000.).tobytes(),
             dtype='f4')
 
-        print(freefont_dict['positions_width'])
+        print(
+            freefont_dict['positions_rows'].astype('f4')/1000,
+            freefont_dict['positions_width'].astype('f4')/1000,
+            freefont_dict['char_width'].astype('f4')/1000,
+            freefont_dict['char_index'].astype('f4')/1000
+        )
 
         self.texture_title.repeat_x = False
         self.texture_title.repeat_y = False
@@ -172,8 +177,13 @@ class AxisView2D(GraphicsView3D):
 
         self._cached_text = [text, font_info[0]]
 
+        print(np.array([freefont_dict['positions_rows'].shape[0]]),
+            np.array([len(freefont_dict['char_index'])]),
+            freefont_dict['char_index'],
+            np.array([freetype_font.size]),
+            np.array([1/freefont_dict['bitmap'].shape[0], 1/freefont_dict['bitmap'].shape[1]]))
         self.setUniforms(
-            title_texture_len=np.array([freefont_dict['char_index'].shape[0]]),
+            title_texture_len=np.array([freefont_dict['positions_rows'].shape[0]]),
             limit=np.array([len(freefont_dict['char_index'])]),
             height=np.array([freetype_font.size]),
             factor=np.array([1/freefont_dict['bitmap'].shape[0], 1/freefont_dict['bitmap'].shape[1]])

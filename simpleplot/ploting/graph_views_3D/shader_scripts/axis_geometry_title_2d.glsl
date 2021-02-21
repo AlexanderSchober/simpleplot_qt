@@ -20,56 +20,56 @@ out vec2 center_pixel_position;
 void main()
 {
     // Get the width of the text
-    float width_pixel = 0;
+    float width_pixel = 0.;
     for (int i = 0; i < int(limit); ++i){
-        int char_index = int(texture(char_index_title, vec2(i/(limit-1), 0)).r);
-        int char_width = int(texture(char_width_title, vec2(char_index/title_texture_len, 0)).r);
-        width_pixel += char_width;
+        float char_index = 1000.*float(texture(char_index_title, vec2((i+0.5)/(limit), 0.5)).r);
+        float char_width = 1000.*float(texture(char_width_title, vec2((char_index+0.5)/title_texture_len, 0.5)).r);
+        width_pixel += float(char_width);
     }
 
     // Pixel size
-    vec2 viewport_pixel_size = 2 / viewport_size;
+    vec2 viewport_pixel_size = 2. / viewport_size;
     float height_scene = height * viewport_pixel_size.y;
 
     // Get the points
     vec3 position = gl_in[0].gl_Position.xyz;
-    vec2 current_pos = vec2(position.x - (width_pixel/2)*viewport_pixel_size.x, position.y);;
+    vec2 current_pos = vec2(position.x - (width_pixel/2)*viewport_pixel_size.x, position.y);
     for (int i = 0; i < int(limit); ++i){
 
-        int char_index = int(texture(char_index_title, vec2(i/(limit-1), 0)).r);
-        float char_width = float(texture(char_width_title, vec2(char_index/title_texture_len, 0)).r);
-        float position_row = float(texture(positions_rows_title, vec2(char_index/title_texture_len, 0)).r);
-        float position_width = float(texture(positions_width_title, vec2(char_index/title_texture_len, 0)).r);
+        float char_index = 1000.*float(texture(char_index_title, vec2((float(i)+0.5)/limit, 0.5)).r);
+        float char_width = 1000.*float(texture(char_width_title, vec2((char_index+0.5)/title_texture_len, 0.5)).r);
+        float position_row = 1000.*float(texture(positions_rows_title, vec2((char_index+0.5)/title_texture_len, 0.5)).r);
+        float position_width = 1000.*float(texture(positions_width_title, vec2((char_index+0.5)/title_texture_len, 0.5)).r);
 
         texture_coords = vec4(
-            position_width + char_width / 2,
-            position_row + height/ 2,
-            factor.y,
-            factor.x
+            position_width + char_width,
+            position_row + height,
+            factor.y,factor.x
         );
+
         vec2 center_position = vec2(
-            current_pos.x + (char_width /2)*viewport_pixel_size.x,
+            current_pos.x + (char_width/2.) * viewport_pixel_size.x,
             current_pos.y
         );
 
         center_pixel_position = vec2(
-            (center_position.x + 1)/2 * viewport_size.x,
-            (center_position.y + 1)/2 * viewport_size.y
+            (center_position.x + 1.)/2. * viewport_size.x,
+            (center_position.y + 1.)/2. * viewport_size.y
         );
 
-        gl_Position = vec4(center_position.x - (char_width /2)*viewport_pixel_size.x,center_position.y - height_scene/2,-1,1);
+        gl_Position = vec4(center_position.x - (char_width/2.)*viewport_pixel_size.x,center_position.y - height_scene/2,-1,1);
         EmitVertex();
-        gl_Position = vec4(center_position.x + (char_width /2)*viewport_pixel_size.x,center_position.y - height_scene/2,-1,1);
+        gl_Position = vec4(center_position.x + (char_width/2.)*viewport_pixel_size.x,center_position.y - height_scene/2,-1,1);
         EmitVertex();
-        gl_Position = vec4(center_position.x - (char_width /2)*viewport_pixel_size.x,center_position.y + height_scene/2,-1,1);
+        gl_Position = vec4(center_position.x - (char_width/2.)*viewport_pixel_size.x,center_position.y + height_scene/2,-1,1);
         EmitVertex();
-        gl_Position = vec4(center_position.x + (char_width /2)*viewport_pixel_size.x,center_position.y + height_scene/2,-1,1);
+        gl_Position = vec4(center_position.x + (char_width/2.)*viewport_pixel_size.x,center_position.y + height_scene/2,-1,1);
         EmitVertex();
 
         EndPrimitive();
 
         current_pos = vec2(
-            current_pos.x + (char_width * viewport_pixel_size.x),
+            current_pos.x + (char_width * viewport_pixel_size.x)+0.01,
             current_pos.y
         );
     }
