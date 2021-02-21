@@ -60,7 +60,7 @@ class Font(object):
         for i, key in enumerate(glyph_buffer.keys()):
             # Go back to the line if we have reached the limit
             if current_width_indent + glyph_buffer[key]['width'] > max_width:
-                current_row_indent += self.size
+                current_row_indent += self.size+2
                 current_width_indent = 0
 
             # Set the values
@@ -68,7 +68,7 @@ class Font(object):
             glyph_buffer[key]['row_pos'] = current_row_indent
 
             # Advance
-            current_width_indent += glyph_buffer[key]['width']
+            current_width_indent += glyph_buffer[key]['width'] + 2
 
         baseline = max([glyph_buffer[key]['ascent'] for key in glyph_buffer.keys()])
         self._numpy_bitmap = np.zeros((current_row_indent + self.size, max_width), dtype=np.uint8)
@@ -86,6 +86,10 @@ class Font(object):
             self._positions_rows[glyph_buffer[key]['unicode_idx']] = glyph_buffer[key]['row_pos']
             self._positions_width[glyph_buffer[key]['unicode_idx']] = glyph_buffer[key]['width_pos']
             self._char_width[glyph_buffer[key]['unicode_idx']] = glyph_buffer[key]['width']
+
+        from PIL import Image
+        im = Image.fromarray(self._numpy_bitmap)
+        im.save("your_file.jpeg")
 
     def render_text(self, text):
         """

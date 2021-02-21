@@ -126,7 +126,7 @@ class AxisView2D(GraphicsView3D):
         :param font: QtGui.QFont
         :return: None
         """
-        font.setPixelSize(int(50))
+        font.setPixelSize(int(100))
         font_info = font.key().split(',')
         if self._cached_text is not None and self._cached_text[0] == text and self._cached_text[1] == font_info[0]:
             return
@@ -136,8 +136,8 @@ class AxisView2D(GraphicsView3D):
         freefont_dict = freetype_font.render_text(text)
 
         self.texture_title = self.context().texture(
-            freefont_dict['bitmap'].shape, 1,
-            (freefont_dict['bitmap'].astype('f4')/256).tobytes(),
+            (freefont_dict['bitmap'].shape[1], freefont_dict['bitmap'].shape[0]), 1,
+            (freefont_dict['bitmap']/256).astype('f4').tobytes(),
             dtype='f4')
 
         self.positions_row_title = self.context().texture(
@@ -176,12 +176,6 @@ class AxisView2D(GraphicsView3D):
         self.char_index_title.filter = (moderngl.NEAREST, moderngl.NEAREST)
 
         self._cached_text = [text, font_info[0]]
-
-        print(np.array([freefont_dict['positions_rows'].shape[0]]),
-            np.array([len(freefont_dict['char_index'])]),
-            freefont_dict['char_index'],
-            np.array([freetype_font.size]),
-            np.array([1/freefont_dict['bitmap'].shape[0], 1/freefont_dict['bitmap'].shape[1]]))
         self.setUniforms(
             title_texture_len=np.array([freefont_dict['positions_rows'].shape[0]]),
             limit=np.array([len(freefont_dict['char_index'])]),
