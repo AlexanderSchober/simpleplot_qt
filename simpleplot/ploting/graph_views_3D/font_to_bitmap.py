@@ -87,10 +87,6 @@ class Font(object):
             self._positions_width[glyph_buffer[key]['unicode_idx']] = glyph_buffer[key]['width_pos']
             self._char_width[glyph_buffer[key]['unicode_idx']] = glyph_buffer[key]['width']
 
-        from PIL import Image
-        im = Image.fromarray(self._numpy_bitmap)
-        im.save("your_file.jpeg")
-
     def render_text(self, text):
         """
 

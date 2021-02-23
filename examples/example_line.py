@@ -35,9 +35,6 @@ from simpleplot.canvas.multi_canvas import MultiCanvasItem
 def exampleLine():
     # set upt the window and the plot widget
     app = QtWidgets.QApplication(sys.argv)
-    font = QFont('Nokia Sans')
-    font.setFamily(font.defaultFamily())
-    app.setFont(font)
     widget = QtWidgets.QWidget()
     multi_canvas = MultiCanvasItem(
         widget=widget,

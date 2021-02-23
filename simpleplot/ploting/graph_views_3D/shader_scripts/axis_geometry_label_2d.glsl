@@ -9,13 +9,13 @@ uniform sampler2D char_width_title;
 
 uniform float z_near = -1;
 uniform vec2 viewport_size;
-uniform float title_texture_len;
+uniform float label_texture_len;
 uniform float limit;
 uniform float height;
 uniform vec2 factor;
-uniform float title_angle = 45;
-uniform float title_v_just = 0;
-uniform float title_h_just = 0;
+uniform float label_angle = 45;
+uniform float label_v_just = 0;
+uniform float label_h_just = 0;
 
 out vec4 texture_coords;
 out vec2 center_pixel_position;

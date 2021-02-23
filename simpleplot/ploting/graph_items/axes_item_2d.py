@@ -22,15 +22,13 @@
 # *****************************************************************************
 
 from functools import partial
-
 import numpy as np
-# external dependencies
 from PyQt5 import QtGui
 
 from ..graph_views_3D.axis_view_2d import AxisView2D
-# import dependencies
 from ..graphics_items.graphics_item import GraphicsItem
 from ...models.parameter_class import ParameterHandler
+from ..graph_views_3D.font_to_bitmap import getFontPaths
 
 
 class AxesItem2D(GraphicsItem):
@@ -41,8 +39,8 @@ class AxesItem2D(GraphicsItem):
 
     def __init__(self, parent, canvas):
         super().__init__('Axes', transformer=False, parent=parent)
-
         self.canvas = canvas
+        self._fonts = getFontPaths()
         self._main_handler = ParameterHandler(name='Common', parent=self)
         self._handlers = [
             ParameterHandler(name='X bottom', parent=self),
@@ -55,6 +53,8 @@ class AxesItem2D(GraphicsItem):
         self._directions = [[0, 1, 0], [0, 1, 0], [1, 0, 0], [1, 0, 0]]
         self._tick_directions = [[0, 1, 0], [0, -1, 0], [1, 0, 0], [-1, 0, 0]]
         self._colors = ['black', 'black', 'black', 'black']
+        self._angles = [0, 0, 90, -90]
+        self._center_choices = [['Center', 'Left', 'Right'], ['Center', 'Top', 'Bottom']]
         self._axes_list = []
 
         # self.initialize()
@@ -99,8 +99,44 @@ class AxesItem2D(GraphicsItem):
 
             self._handlers[i].addParameter(
                 'Axis title',
-                ['No Title', QtGui.QFont(), 20, QtGui.QColor('black')],
-                names=['Title', 'Font', 'Position', 'Color'],
+                ['No Title', 25, 20, QtGui.QColor('black'), self._angles[i]],
+                names=['Title', 'Size', 'Position', 'Color', 'Angle'],
+                method=partial(self.setParameters, i))
+
+            self._handlers[i].addParameter(
+                'Axis title font', self.font().family() if self.font().family() != 'MS Shell Dlg 2' else 'Arial',
+                choices=[key for key in self._fonts.keys()],
+                method=partial(self.setParameters, i))
+
+            self._handlers[i].addParameter(
+                'Axis title justify vertical', 'Center',
+                choices=self._center_choices[1],
+                method=partial(self.setParameters, i))
+
+            self._handlers[i].addParameter(
+                'Axis title justify horizontal', 'Center',
+                choices=self._center_choices[0],
+                method=partial(self.setParameters, i))
+
+            self._handlers[i].addParameter(
+                'Axis label',
+                [25, 20, QtGui.QColor('black'), self._angles[i]],
+                names=['Size', 'Position', 'Color', 'Angle'],
+                method=partial(self.setParameters, i))
+
+            self._handlers[i].addParameter(
+                'Axis label font', self.font().family() if self.font().family() != 'MS Shell Dlg 2' else 'Arial',
+                choices=[key for key in self._fonts.keys()],
+                method=partial(self.setParameters, i))
+
+            self._handlers[i].addParameter(
+                'Axis label justify vertical', 'Center',
+                choices=self._center_choices[1],
+                method=partial(self.setParameters, i))
+
+            self._handlers[i].addParameter(
+                'Axis label justify horizontal', 'Center',
+                choices=self._center_choices[0],
                 method=partial(self.setParameters, i))
 
         for i in range(len(self._handlers)):
@@ -127,10 +163,20 @@ class AxesItem2D(GraphicsItem):
                       'small_ticks': np.array(self._tick_directions[i]),
 
                       'title_position': np.array(handler['Axis title'][2]),
-                      'title_color': np.array(handler['Axis title'][3].getRgbF())
+                      'title_color': np.array(handler['Axis title'][3].getRgbF()),
+                      'title_angle': np.array(handler['Axis title'][4]),
+                      'title_v_just': np.array(self._center_choices[1].index(handler['Axis title justify vertical'])),
+                      'title_h_just': np.array(self._center_choices[0].index(handler['Axis title justify horizontal'])),
+
+                      'label_position': np.array(handler['Axis label'][1]),
+                      'label_color': np.array(handler['Axis label'][2].getRgbF()),
+                      'label_angle': np.array(handler['Axis label'][3]),
+                      'label_v_just': np.array(self._center_choices[1].index(handler['Axis label justify vertical'])),
+                      'label_h_just': np.array(self._center_choices[0].index(handler['Axis label justify horizontal']))
                       }
 
-        self._axes_list[i].setTitle(*handler['Axis title'])
+        self._axes_list[i].setTitle(handler['Axis title'][0], handler['Axis title font'], handler['Axis title'][1])
+        self._axes_list[i].setLabelFont(handler['Axis label font'], handler['Axis label'][0])
         self._axes_list[i].setProperties(**parameters)
 
     def refreshAuto(self):

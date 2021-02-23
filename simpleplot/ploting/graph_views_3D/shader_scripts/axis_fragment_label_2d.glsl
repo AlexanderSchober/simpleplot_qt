@@ -2,7 +2,7 @@
 
 in vec4 texture_coordinate;
 out vec4 fragment_color;
-uniform vec4 title_color = vec4(0,1,0,1);
+uniform vec4 label_color = vec4(0,1,0,1);
 uniform sampler2D text_texture;
 
 in vec4 texture_coords;

@@ -57,6 +57,7 @@ class AxisView2D(GraphicsView3D):
         self._tick_positions_1d = np.array([0, 0.5, 0.7, 1])
         self.texture_title = None
         self._cached_text = None
+        self._cached_label_text = None
 
         self._parameters['draw_axis'] = True
         self._parameters['draw_ticks'] = True
@@ -75,6 +76,9 @@ class AxisView2D(GraphicsView3D):
         self._parameters['small_ticks'] = np.array([1])
 
         self._parameters['title_position'] = np.array([10])
+        self._parameters['title_angle'] = np.array([0])
+        self._parameters['title_v_just'] = np.array([0])
+        self._parameters['title_h_just'] = np.array([0])
 
     def initializeGL(self) -> None:
         """
@@ -105,7 +109,7 @@ class AxisView2D(GraphicsView3D):
             frag_shader=self._fragmentShader('title'))
 
         self.setUniforms(**self._parameters)
-        self.setTitle('123', QtGui.QFont())
+        self.setTitle('123', 'Arial', 20)
         self._updateAxis()
         self.setMVP()
         self.setLight()
@@ -119,20 +123,19 @@ class AxisView2D(GraphicsView3D):
         self._updateAxis()
         self.update()
 
-    def setTitle(self, text: str, font: QtGui.QFont, *args) -> None:
+    def setTitle(self, text: str, font: str, size: int) -> None:
         """
         This method will effectively build the texture for the text
         :param text: str, the text to set
         :param font: QtGui.QFont
         :return: None
         """
-        font.setPixelSize(int(100))
-        font_info = font.key().split(',')
-        if self._cached_text is not None and self._cached_text[0] == text and self._cached_text[1] == font_info[0]:
+
+        if self._cached_text is not None and self._cached_text[0] == text and self._cached_text[1] == font and self._cached_text[2] == size:
             return
 
-        freetype_font = Font(self._family_to_path[font_info[0]] if font_info[0] != 'MS Shell Dlg 2'
-                             else self._family_to_path['Arial'], int(font_info[2]))
+        freetype_font = Font(self._family_to_path[font] if font != 'MS Shell Dlg 2'
+                             else self._family_to_path['Arial'], size)
         freefont_dict = freetype_font.render_text(text)
 
         self.texture_title = self.context().texture(
@@ -160,13 +163,6 @@ class AxisView2D(GraphicsView3D):
             (freefont_dict['char_index'].astype('f4')/1000.).tobytes(),
             dtype='f4')
 
-        print(
-            freefont_dict['positions_rows'].astype('f4')/1000,
-            freefont_dict['positions_width'].astype('f4')/1000,
-            freefont_dict['char_width'].astype('f4')/1000,
-            freefont_dict['char_index'].astype('f4')/1000
-        )
-
         self.texture_title.repeat_x = False
         self.texture_title.repeat_y = False
         self.texture_title.filter = (moderngl.LINEAR, moderngl.LINEAR)
@@ -175,13 +171,74 @@ class AxisView2D(GraphicsView3D):
         self.char_width_title.filter = (moderngl.NEAREST, moderngl.NEAREST)
         self.char_index_title.filter = (moderngl.NEAREST, moderngl.NEAREST)
 
-        self._cached_text = [text, font_info[0]]
         self.setUniforms(
             title_texture_len=np.array([freefont_dict['positions_rows'].shape[0]]),
             limit=np.array([len(freefont_dict['char_index'])]),
             height=np.array([freetype_font.size]),
             factor=np.array([1/freefont_dict['bitmap'].shape[0], 1/freefont_dict['bitmap'].shape[1]])
         )
+
+        self._cached_text = [text, font, size]
+
+    def setLabelFont(self, font: str, size: int) -> None:
+        """
+        This method will effectively build the texture for the text
+        :param text: str, the text to set
+        :param font: QtGui.QFont
+        :return: None
+        """
+
+        if self._cached_label_text is not None and self._cached_label_text[0] == font and self._cached_label_text[1] == size:
+            return
+
+        freetype_font = Font(self._family_to_path[font] if font != 'MS Shell Dlg 2'
+                             else self._family_to_path['Arial'], size)
+        freefont_dict = freetype_font.render_text("")
+
+        self.texture_label = self.context().texture(
+            (freefont_dict['bitmap'].shape[1], freefont_dict['bitmap'].shape[0]), 1,
+            (freefont_dict['bitmap']/256).astype('f4').tobytes(),
+            dtype='f4')
+
+        self.positions_row_label = self.context().texture(
+            (freefont_dict['positions_rows'].shape[0], 1), 1,
+            (freefont_dict['positions_rows'].astype('f4')/1000.).tobytes(),
+            dtype='f4')
+
+        self.positions_width_label = self.context().texture(
+            (freefont_dict['positions_width'].shape[0], 1), 1,
+            (freefont_dict['positions_width'].astype('f4')/1000.).tobytes(),
+            dtype='f4')
+
+        self.char_width_label = self.context().texture(
+            (freefont_dict['char_width'].shape[0], 1), 1,
+            (freefont_dict['char_width'].astype('f4')/1000.).tobytes(),
+            dtype='f4')
+
+        self.texture_label.repeat_x = False
+        self.texture_label.repeat_y = False
+        self.texture_label.filter = (moderngl.LINEAR, moderngl.LINEAR)
+        self.positions_row_label.filter = (moderngl.NEAREST, moderngl.NEAREST)
+        self.positions_width_label.filter = (moderngl.NEAREST, moderngl.NEAREST)
+        self.char_width_label.filter = (moderngl.NEAREST, moderngl.NEAREST)
+
+        # ------------------------------------------------------------------------
+        # move to processing
+        self.char_index_label = self.context().texture(
+            (freefont_dict['char_index'].shape[0], 1), 1,
+            (freefont_dict['char_index'].astype('f4')/1000.).tobytes(),
+            dtype='f4')
+
+        self.char_index_label.filter = (moderngl.NEAREST, moderngl.NEAREST)
+
+        self.setUniforms(
+            label_texture_len=np.array([freefont_dict['positions_rows'].shape[0]]),
+            label_limit=np.array([len(freefont_dict['char_index'])]),
+            label_height=np.array([freetype_font.size]),
+            label_factor=np.array([1/freefont_dict['bitmap'].shape[0], 1/freefont_dict['bitmap'].shape[1]])
+        )
+        # ------------------------------------------------------------------------
+        self._cached_label_text = [font, size]
 
     def setTickFont(self, font: QtGui.QFont):
         """
@@ -245,8 +302,6 @@ class AxisView2D(GraphicsView3D):
         width = (self.texture_title.width) / screen_size[0] if screen_size[0] != 0 else 0
         height = (self.texture_title.height) / screen_size[1] if screen_size[1] != 0 else 0
 
-        half_height = height / 2
-        half_width = width / 2
         positions = np.array([
             [center[0], center[1], -1]
         ], dtype='f4')
