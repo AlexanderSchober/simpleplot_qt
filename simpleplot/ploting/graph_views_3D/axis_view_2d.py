@@ -22,7 +22,6 @@
 # *****************************************************************************
 
 from pathlib import Path
-
 # General imports
 from typing import Tuple
 
@@ -30,10 +29,9 @@ import moderngl
 import numpy as np
 # Personal imports
 from PyQt5 import QtGui
-from PyQt5.QtGui import QGuiApplication
 
 from .font_to_bitmap import getFontPaths, Font
-from .management.tick_management import tickValues, updateAutoSIPrefix
+from .management.tick_management import tickValues, updateAutoSIPrefix, tickStrings
 from ..views_3D.graphics_view_3D import GraphicsView3D
 
 SI_PREFIXES = str('yzafpnµm kMGTPEZY')
@@ -54,7 +52,7 @@ class AxisView2D(GraphicsView3D):
         initialisation
         """
         self._orientations = ['bottom', 'top', 'right', 'left']
-        self._tick_positions_1d = np.array([0, 0.5, 0.7, 1])
+        self._tick_values = np.array([0, 0.5, 0.7, 1])
         self.texture_title = None
         self._cached_text = None
         self._cached_label_text = None
@@ -80,6 +78,11 @@ class AxisView2D(GraphicsView3D):
         self._parameters['title_v_just'] = np.array([0])
         self._parameters['title_h_just'] = np.array([0])
 
+        self._parameters['label_color'] = np.array([0, 0, 0, 1])
+        self._parameters['label_angle'] = np.array([0])
+        self._parameters['label_v_just'] = np.array([0])
+        self._parameters['label_h_just'] = np.array([0])
+
     def initializeGL(self) -> None:
         """
         Initialize the OpenGl states
@@ -98,9 +101,9 @@ class AxisView2D(GraphicsView3D):
 
         self._createProgram(
             "labels",
-            vert_shader=self._vertexShader(),
-            frag_shader=self._fragmentShader('labels'),
-            geometry_shader=self._geometryShader('labels'))
+            vert_shader=self._vertexShader('labels'),
+            geometry_shader=self._geometryShader('labels'),
+            frag_shader=self._fragmentShader('labels'))
 
         self._createProgram(
             "title",
@@ -109,6 +112,7 @@ class AxisView2D(GraphicsView3D):
             frag_shader=self._fragmentShader('title'))
 
         self.setUniforms(**self._parameters)
+        self.setLabelFont('Arial', 20)
         self.setTitle('123', 'Arial', 20)
         self._updateAxis()
         self.setMVP()
@@ -131,7 +135,8 @@ class AxisView2D(GraphicsView3D):
         :return: None
         """
 
-        if self._cached_text is not None and self._cached_text[0] == text and self._cached_text[1] == font and self._cached_text[2] == size:
+        if self._cached_text is not None and self._cached_text[0] == text and self._cached_text[1] == font and \
+                self._cached_text[2] == size:
             return
 
         freetype_font = Font(self._family_to_path[font] if font != 'MS Shell Dlg 2'
@@ -140,27 +145,27 @@ class AxisView2D(GraphicsView3D):
 
         self.texture_title = self.context().texture(
             (freefont_dict['bitmap'].shape[1], freefont_dict['bitmap'].shape[0]), 1,
-            (freefont_dict['bitmap']/256).astype('f4').tobytes(),
+            (freefont_dict['bitmap'] / 256).astype('f4').tobytes(),
             dtype='f4')
 
         self.positions_row_title = self.context().texture(
             (freefont_dict['positions_rows'].shape[0], 1), 1,
-            (freefont_dict['positions_rows'].astype('f4')/1000.).tobytes(),
+            (freefont_dict['positions_rows'].astype('f4') / 1000.).tobytes(),
             dtype='f4')
 
         self.positions_width_title = self.context().texture(
             (freefont_dict['positions_width'].shape[0], 1), 1,
-            (freefont_dict['positions_width'].astype('f4')/1000.).tobytes(),
+            (freefont_dict['positions_width'].astype('f4') / 1000.).tobytes(),
             dtype='f4')
 
         self.char_width_title = self.context().texture(
             (freefont_dict['char_width'].shape[0], 1), 1,
-            (freefont_dict['char_width'].astype('f4')/1000.).tobytes(),
+            (freefont_dict['char_width'].astype('f4') / 1000.).tobytes(),
             dtype='f4')
 
         self.char_index_title = self.context().texture(
             (freefont_dict['char_index'].shape[0], 1), 1,
-            (freefont_dict['char_index'].astype('f4')/1000.).tobytes(),
+            (freefont_dict['char_index'].astype('f4') / 1000.).tobytes(),
             dtype='f4')
 
         self.texture_title.repeat_x = False
@@ -175,7 +180,7 @@ class AxisView2D(GraphicsView3D):
             title_texture_len=np.array([freefont_dict['positions_rows'].shape[0]]),
             limit=np.array([len(freefont_dict['char_index'])]),
             height=np.array([freetype_font.size]),
-            factor=np.array([1/freefont_dict['bitmap'].shape[0], 1/freefont_dict['bitmap'].shape[1]])
+            factor=np.array([1 / freefont_dict['bitmap'].shape[0], 1 / freefont_dict['bitmap'].shape[1]])
         )
 
         self._cached_text = [text, font, size]
@@ -188,31 +193,32 @@ class AxisView2D(GraphicsView3D):
         :return: None
         """
 
-        if self._cached_label_text is not None and self._cached_label_text[0] == font and self._cached_label_text[1] == size:
+        if self._cached_label_text is not None and\
+                self._cached_label_text[0] == font and self._cached_label_text[1] == size:
             return
 
-        freetype_font = Font(self._family_to_path[font] if font != 'MS Shell Dlg 2'
-                             else self._family_to_path['Arial'], size)
-        freefont_dict = freetype_font.render_text("")
+        self.label_font = Font(self._family_to_path[font] if font != 'MS Shell Dlg 2'
+                               else self._family_to_path['Arial'], size)
+        freefont_dict = self.label_font.render_text("")
 
         self.texture_label = self.context().texture(
             (freefont_dict['bitmap'].shape[1], freefont_dict['bitmap'].shape[0]), 1,
-            (freefont_dict['bitmap']/256).astype('f4').tobytes(),
+            (freefont_dict['bitmap'] / 256).astype('f4').tobytes(),
             dtype='f4')
 
         self.positions_row_label = self.context().texture(
             (freefont_dict['positions_rows'].shape[0], 1), 1,
-            (freefont_dict['positions_rows'].astype('f4')/1000.).tobytes(),
+            (freefont_dict['positions_rows'].astype('f4') / 1000.).tobytes(),
             dtype='f4')
 
         self.positions_width_label = self.context().texture(
             (freefont_dict['positions_width'].shape[0], 1), 1,
-            (freefont_dict['positions_width'].astype('f4')/1000.).tobytes(),
+            (freefont_dict['positions_width'].astype('f4') / 1000.).tobytes(),
             dtype='f4')
 
         self.char_width_label = self.context().texture(
             (freefont_dict['char_width'].shape[0], 1), 1,
-            (freefont_dict['char_width'].astype('f4')/1000.).tobytes(),
+            (freefont_dict['char_width'].astype('f4') / 1000.).tobytes(),
             dtype='f4')
 
         self.texture_label.repeat_x = False
@@ -222,38 +228,7 @@ class AxisView2D(GraphicsView3D):
         self.positions_width_label.filter = (moderngl.NEAREST, moderngl.NEAREST)
         self.char_width_label.filter = (moderngl.NEAREST, moderngl.NEAREST)
 
-        # ------------------------------------------------------------------------
-        # move to processing
-        self.char_index_label = self.context().texture(
-            (freefont_dict['char_index'].shape[0], 1), 1,
-            (freefont_dict['char_index'].astype('f4')/1000.).tobytes(),
-            dtype='f4')
-
-        self.char_index_label.filter = (moderngl.NEAREST, moderngl.NEAREST)
-
-        self.setUniforms(
-            label_texture_len=np.array([freefont_dict['positions_rows'].shape[0]]),
-            label_limit=np.array([len(freefont_dict['char_index'])]),
-            label_height=np.array([freetype_font.size]),
-            label_factor=np.array([1/freefont_dict['bitmap'].shape[0], 1/freefont_dict['bitmap'].shape[1]])
-        )
-        # ------------------------------------------------------------------------
         self._cached_label_text = [font, size]
-
-    def setTickFont(self, font: QtGui.QFont):
-        """
-        This will generate the font texture for the tick values.
-        Only the following is required:
-        0123456789
-        -+_,()[]
-        abcdefghijklm
-        nopqrstuvwxyz
-        ABCDEFGHIJKLM
-        NOPQRSTUVWXYZ
-
-        :param font:
-        :return: None
-        """
 
     def _updateAxis(self) -> None:
         """
@@ -261,18 +236,17 @@ class AxisView2D(GraphicsView3D):
         the present buffers
         """
         tick_range = self._getTickValues()
-        updateAutoSIPrefix(tick_range[0], tick_range[1])
-        self._tick_positions_1d = tickValues(
+        scale = updateAutoSIPrefix(tick_range[0], tick_range[1])
+        self._tick_values, spacing = tickValues(
             tick_range[0], tick_range[1],
             tick_range[1] - tick_range[0], 1)
-        self.ticks_positions_3d = self._getTickPositions(self._tick_positions_1d)
+        self.ticks_positions = self._getTickPositions(self._tick_values)
         title_positions, title_parameters = self._getTitleParameters()
 
         self._createVBO("axis", self.getAxisPositions())
         self._createVAO("axis", {"axis": ["3f", "in_vert"]})
-        self._createVBO("ticks", self.ticks_positions_3d)
+        self._createVBO("ticks", self.ticks_positions)
         self._createVAO("ticks", {"ticks": ["3f", "in_vert"]})
-        # self._createVAO("labels", {"ticks": ["3f", "in_vert"]})
         self._createVBO("title", title_positions)
         self._createVAO("title", {"title": ["3f", "in_vert"]})
 
@@ -291,6 +265,72 @@ class AxisView2D(GraphicsView3D):
                          tick_thickness=tick_thickness,
                          tick_length=tick_length,
                          title_parameters=title_parameters)
+
+        # ------------------------------------------------------------------------
+        # move to processing
+        self.label_positions, label_string = self._getLabelPositions(self._tick_values, scale, spacing)
+        freefont_dict = self.label_font.render_text(label_string)
+        self.char_index_label = self.context().texture(
+            (freefont_dict['char_index'].shape[0], 1), 1,
+            (freefont_dict['char_index'].astype('f4') / 1000.).tobytes(),
+            dtype='f4')
+        self.char_index_label.filter = (moderngl.NEAREST, moderngl.NEAREST)
+
+        # Create the labels
+        self._createVBO("labels", self.label_positions)
+        self._createVAO("labels", {"labels": ["4f", "in_vert"]})
+
+        self.setUniforms(
+            label_texture_len=np.array([freefont_dict['positions_rows'].shape[0]]),
+            label_limit=np.array([len(freefont_dict['char_index'])]),
+            label_height=np.array([self.label_font.size]),
+            label_factor=np.array([1 / freefont_dict['bitmap'].shape[0], 1 / freefont_dict['bitmap'].shape[1]])
+        )
+        # ------------------------------------------------------------------------
+
+    def _getLabelPositions(self, tick_values, scale, spacing):
+        """
+        This will determine the appropriate tick positioning on screen
+        :param tick_values: np.array(float), array of float values
+        :return: np.array(float), 3d array of float positions
+        """
+        axis_pos = self._parameters['axis_pos']
+        axis_margins = self._parameters['axis_margins']
+        x_range = self.renderer().camera()['Camera x range']
+        y_range = self.renderer().camera()['Camera y range']
+        delta_x = x_range[1] - x_range[0]
+        delta_y = y_range[1] - y_range[0]
+        screen_size = self.renderer().camera()['Screen size']
+
+        ticks_positions = np.zeros((tick_values.shape[0], 4))
+
+        if axis_pos == 'bottom':
+            ticks_positions[:, 0] = (tick_values - x_range[0]) / delta_x * 2 - 1
+            ticks_positions[:, 1] = axis_margins[1] / screen_size[1] * 2 - 1 \
+                if screen_size[1] != 0 else 0
+        elif axis_pos == 'top':
+            ticks_positions[:, 0] = (tick_values - x_range[0]) / delta_x * 2 - 1
+            ticks_positions[:, 1] = (screen_size[1] - axis_margins[3]) / screen_size[1] * 2 - 1 \
+                if screen_size[1] != 0 else 0
+        elif axis_pos == 'left':
+            ticks_positions[:, 1] = (tick_values - y_range[0]) / delta_y * 2 - 1
+            ticks_positions[:, 0] = axis_margins[0] / screen_size[0] * 2 - 1 \
+                if screen_size[0] != 0 else 0
+        elif axis_pos == 'right':
+            ticks_positions[:, 1] = (tick_values - y_range[0]) / delta_y * 2 - 1
+            ticks_positions[:, 0] = (screen_size[0] - axis_margins[2]) / screen_size[0] * 2 - 1 \
+                if screen_size[0] != 0 else 0
+
+        label_string = ""
+        start = 0
+        print(tick_values, scale, spacing)
+        for i, value in enumerate(tickStrings(tick_values, scale, min([space[0] for space in spacing]))):
+            label_string += value
+            ticks_positions[i, 2] = start
+            ticks_positions[i, 3] = start + len(value)
+            start += len(value)
+
+        return ticks_positions, label_string
 
     def _getTitleParameters(self) -> Tuple[np.array, np.array]:
         """
@@ -399,26 +439,26 @@ class AxisView2D(GraphicsView3D):
         delta_y = y_range[1] - y_range[0]
         screen_size = self.renderer().camera()['Screen size']
 
-        ticks_positions_3d = np.zeros((tick_values.shape[0], 3))
+        ticks_positions = np.zeros((tick_values.shape[0], 3))
 
         if axis_pos == 'bottom':
-            ticks_positions_3d[:, 0] = (tick_values - x_range[0]) / delta_x * 2 - 1
-            ticks_positions_3d[:, 1] = axis_margins[1] / screen_size[1] * 2 - 1 \
+            ticks_positions[:, 0] = (tick_values - x_range[0]) / delta_x * 2 - 1
+            ticks_positions[:, 1] = axis_margins[1] / screen_size[1] * 2 - 1 \
                 if screen_size[1] != 0 else 0
         elif axis_pos == 'top':
-            ticks_positions_3d[:, 0] = (tick_values - x_range[0]) / delta_x * 2 - 1
-            ticks_positions_3d[:, 1] = (screen_size[1] - axis_margins[3]) / screen_size[1] * 2 - 1 \
+            ticks_positions[:, 0] = (tick_values - x_range[0]) / delta_x * 2 - 1
+            ticks_positions[:, 1] = (screen_size[1] - axis_margins[3]) / screen_size[1] * 2 - 1 \
                 if screen_size[1] != 0 else 0
         elif axis_pos == 'left':
-            ticks_positions_3d[:, 1] = (tick_values - y_range[0]) / delta_y * 2 - 1
-            ticks_positions_3d[:, 0] = axis_margins[0] / screen_size[0] * 2 - 1 \
+            ticks_positions[:, 1] = (tick_values - y_range[0]) / delta_y * 2 - 1
+            ticks_positions[:, 0] = axis_margins[0] / screen_size[0] * 2 - 1 \
                 if screen_size[0] != 0 else 0
         elif axis_pos == 'right':
-            ticks_positions_3d[:, 1] = (tick_values - y_range[0]) / delta_y * 2 - 1
-            ticks_positions_3d[:, 0] = (screen_size[0] - axis_margins[2]) / screen_size[0] * 2 - 1 \
+            ticks_positions[:, 1] = (tick_values - y_range[0]) / delta_y * 2 - 1
+            ticks_positions[:, 0] = (screen_size[0] - axis_margins[2]) / screen_size[0] * 2 - 1 \
                 if screen_size[0] != 0 else 0
 
-        return ticks_positions_3d
+        return ticks_positions
 
     def paint(self):
         """
@@ -435,7 +475,19 @@ class AxisView2D(GraphicsView3D):
             self._vaos['ticks'].render(mode=moderngl.POINTS)
 
         if self._parameters['draw_values']:
-            self._vaos['values'].render(mode=moderngl.LINE_STRIP)
+            self.positions_row_label.use(0)
+            self._programs['labels']['positions_rows_label'].value = 0
+            self.positions_width_label.use(1)
+            self._programs['labels']['positions_width_label'].value = 1
+            self.char_width_label.use(2)
+            self._programs['labels']['char_width_label'].value = 2
+            self.char_index_label.use(3)
+            self._programs['labels']['char_index_label'].value = 3
+            self.texture_label.use(4)
+            self._programs['labels']['label_texture'].value = 4
+
+            self._programs['labels']['viewport_size'].value = tuple(self.context().viewport[2:])
+            self._vaos['labels'].render(mode=moderngl.POINTS)
 
         if self._parameters['draw_title']:
             self.positions_row_title.use(0)
@@ -454,10 +506,17 @@ class AxisView2D(GraphicsView3D):
 
         self.context().enable(moderngl.CULL_FACE)
 
-    def _vertexShader(self) -> str:
+    def _vertexShader(self, key: str = None) -> str:
         """
         Returns the vertex shader for this particular item
         """
+        if key == 'labels':
+            file = open(
+                Path(__file__).resolve().parent / 'shader_scripts' / 'axis_vertex_labels.glsl')
+            output = file.read()
+            file.close()
+            return output
+
         file = open(Path(__file__).resolve().parent / 'shader_scripts' / 'axis_vertex.glsl')
         output = file.read()
         file.close()
@@ -481,7 +540,7 @@ class AxisView2D(GraphicsView3D):
             return output
         elif key == 'labels':
             file = open(
-                Path(__file__).resolve().parent / 'shader_scripts' / 'axis_fragment_labels.glsl')
+                Path(__file__).resolve().parent / 'shader_scripts' / 'axis_fragment_label_2d.glsl')
             output = file.read()
             file.close()
             return output
@@ -517,7 +576,7 @@ class AxisView2D(GraphicsView3D):
             return output
         elif key == 'labels':
             file = open(
-                Path(__file__).resolve().parent / 'shader_scripts' / 'axis_geometry_labels.glsl')
+                Path(__file__).resolve().parent / 'shader_scripts' / 'axis_geometry_label_2d.glsl')
             output = file.read()
             file.close()
             return output

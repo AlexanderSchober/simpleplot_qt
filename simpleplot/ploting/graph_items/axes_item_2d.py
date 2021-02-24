@@ -22,13 +22,14 @@
 # *****************************************************************************
 
 from functools import partial
+
 import numpy as np
 from PyQt5 import QtGui
 
 from ..graph_views_3D.axis_view_2d import AxisView2D
+from ..graph_views_3D.font_to_bitmap import getFontPaths
 from ..graphics_items.graphics_item import GraphicsItem
 from ...models.parameter_class import ParameterHandler
-from ..graph_views_3D.font_to_bitmap import getFontPaths
 
 
 class AxesItem2D(GraphicsItem):
@@ -80,7 +81,7 @@ class AxesItem2D(GraphicsItem):
                 'Visible', [
                     True if pos in ['bottom', 'left'] else False,
                     True if pos in ['bottom', 'left'] else False,
-                    False,
+                    True if pos in ['bottom', 'left'] else False,
                     True if pos in ['bottom', 'left'] else False],
                 names=['Axis', 'Ticks', 'Values', 'Title'],
                 method=partial(self.setParameters, i))
@@ -153,7 +154,7 @@ class AxesItem2D(GraphicsItem):
                       'draw_title': handler['Visible'][3],
 
                       'axis_widths': np.array([item['Axis visual'][1]
-                                              for item in self._handlers]),
+                                               for item in self._handlers]),
                       'axis_color': np.array(handler['Axis visual'][0].getRgbF()),
                       'axis_margins': np.array(self._main_handler['Margins (px)']),
                       'tick_length': np.array(handler['Tick visual'][2]),

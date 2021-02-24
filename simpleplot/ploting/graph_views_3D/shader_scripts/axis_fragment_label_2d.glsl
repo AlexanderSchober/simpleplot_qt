@@ -3,7 +3,7 @@
 in vec4 texture_coordinate;
 out vec4 fragment_color;
 uniform vec4 label_color = vec4(0,1,0,1);
-uniform sampler2D text_texture;
+uniform sampler2D label_texture;
 
 in vec4 texture_coords;
 in vec2 center_pixel_position;
@@ -16,8 +16,8 @@ void main() {
         (texture_coords.y - fragment_position.y) * texture_coords.a
     );
     fragment_color = vec4(
-        title_color.rgb,
-        texture(text_texture, vec2(texture_pos.x, texture_pos.y)).r * title_color.a
+        label_color.rgb,
+        texture(label_texture, vec2(texture_pos.x, texture_pos.y)).r * label_color.a
     );
 }
 
