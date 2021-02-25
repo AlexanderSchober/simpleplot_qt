@@ -7,7 +7,7 @@ uniform sampler2D positions_width_label;
 uniform sampler2D char_index_label;
 uniform sampler2D char_width_label;
 
-uniform float z_near = -1;
+uniform float z_near = -0.9996;
 uniform vec2 viewport_size;
 
 uniform float label_texture_len;
@@ -84,19 +84,19 @@ void main()
         center_pixel_position = (rotatePoint(center_position,position.xy) + 1) / 2 * viewport_size;
 
         rotation_position = vec2(center_position.x - (char_width/2.)*viewport_pixel_size.x,center_position.y - height_scene/2);
-        gl_Position = vec4(rotatePoint(rotation_position, position.xy),-1,1);
+        gl_Position = vec4(rotatePoint(rotation_position, position.xy),z_near,1);
         EmitVertex();
 
         rotation_position = vec2(center_position.x + (char_width/2.)*viewport_pixel_size.x,center_position.y - height_scene/2);
-        gl_Position = vec4(rotatePoint(rotation_position, position.xy),-1,1);
+        gl_Position = vec4(rotatePoint(rotation_position, position.xy),z_near,1);
         EmitVertex();
 
         rotation_position = vec2(center_position.x - (char_width/2.)*viewport_pixel_size.x,center_position.y + height_scene/2);
-        gl_Position = vec4(rotatePoint(rotation_position, position.xy),-1,1);
+        gl_Position = vec4(rotatePoint(rotation_position, position.xy),z_near,1);
         EmitVertex();
 
         rotation_position = vec2(center_position.x + (char_width/2.)*viewport_pixel_size.x,center_position.y + height_scene/2);
-        gl_Position = vec4(rotatePoint(rotation_position, position.xy),-1,1);
+        gl_Position = vec4(rotatePoint(rotation_position, position.xy),z_near,1);
         EmitVertex();
 
         EndPrimitive();

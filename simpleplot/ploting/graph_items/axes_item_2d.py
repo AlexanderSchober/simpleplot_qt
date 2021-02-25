@@ -55,7 +55,9 @@ class AxesItem2D(GraphicsItem):
         self._tick_directions = [[0, 1, 0], [0, -1, 0], [1, 0, 0], [-1, 0, 0]]
         self._colors = ['black', 'black', 'black', 'black']
         self._angles = [0, 0, 90, -90]
+        self._angles_labels = [0, 0, 0, 0]
         self._center_choices = [['Center', 'Left', 'Right'], ['Center', 'Top', 'Bottom']]
+        self._center_labels = [['Center', 'Center', 'Right', 'Left'], ['Bottom', 'Top', 'Center', 'Center']]
         self._axes_list = []
 
         # self.initialize()
@@ -100,7 +102,7 @@ class AxesItem2D(GraphicsItem):
 
             self._handlers[i].addParameter(
                 'Axis title',
-                ['No Title', 25, 20, QtGui.QColor('black'), self._angles[i]],
+                ['No Title', 15, 20, QtGui.QColor('black'), self._angles[i]],
                 names=['Title', 'Size', 'Position', 'Color', 'Angle'],
                 method=partial(self.setParameters, i))
 
@@ -121,7 +123,7 @@ class AxesItem2D(GraphicsItem):
 
             self._handlers[i].addParameter(
                 'Axis label',
-                [25, 20, QtGui.QColor('black'), self._angles[i]],
+                [15, 10, QtGui.QColor('black'), self._angles_labels[i]],
                 names=['Size', 'Position', 'Color', 'Angle'],
                 method=partial(self.setParameters, i))
 
@@ -131,12 +133,12 @@ class AxesItem2D(GraphicsItem):
                 method=partial(self.setParameters, i))
 
             self._handlers[i].addParameter(
-                'Axis label justify vertical', 'Center',
+                'Axis label justify vertical', self._center_labels[1][i],
                 choices=self._center_choices[1],
                 method=partial(self.setParameters, i))
 
             self._handlers[i].addParameter(
-                'Axis label justify horizontal', 'Center',
+                'Axis label justify horizontal', self._center_labels[0][i],
                 choices=self._center_choices[0],
                 method=partial(self.setParameters, i))
 

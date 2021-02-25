@@ -77,6 +77,7 @@ class AxisView2D(GraphicsView3D):
 
         self._parameters['label_color'] = np.array([0, 0, 0, 1])
         self._parameters['label_angle'] = np.array([0])
+        self._parameters['label_position'] = np.array([0])
         self._parameters['label_v_just'] = np.array([0])
         self._parameters['label_h_just'] = np.array([0])
 
@@ -237,7 +238,7 @@ class AxisView2D(GraphicsView3D):
         self._tick_values, spacing = tickValues(
             tick_range[0], tick_range[1],
             tick_range[1] - tick_range[0], scale)
-        self.ticks_positions = self._getTickPositions(self._tick_values)
+        self.ticks_positions = self._getTickPositions(self._tick_values*scale)
         title_positions, title_parameters = self._getTitleParameters()
 
         self._createVBO("axis", self.getAxisPositions())
@@ -265,7 +266,7 @@ class AxisView2D(GraphicsView3D):
 
         # ------------------------------------------------------------------------
         # move to processing
-        self.label_positions, label_string = self._getLabelPositions(self._tick_values, scale, spacing)
+        self.label_positions, label_string = self._getLabelPositions(self._tick_values*scale)
         freefont_dict = self.label_font.render_text(label_string)
         self.char_index_label = self.context().texture(
             (freefont_dict['char_index'].shape[0], 1), 1,
@@ -285,7 +286,7 @@ class AxisView2D(GraphicsView3D):
         )
         # ------------------------------------------------------------------------
 
-    def _getLabelPositions(self, tick_values, scale, spacing):
+    def _getLabelPositions(self, tick_values):
         """
         This will determine the appropriate tick positioning on screen
         :param tick_values: np.array(float), array of float values
@@ -298,35 +299,38 @@ class AxisView2D(GraphicsView3D):
         delta_x = x_range[1] - x_range[0]
         delta_y = y_range[1] - y_range[0]
         screen_size = self.renderer().camera()['Screen size']
+        label_pos = self._parameters['label_position']
 
         ticks_positions = np.zeros((tick_values.shape[0], 4))
 
         if axis_pos == 'bottom':
             ticks_positions[:, 0] = (tick_values - x_range[0]) / delta_x * 2 - 1
-            ticks_positions[:, 1] = axis_margins[1] / screen_size[1] * 2 - 1 \
+            ticks_positions[:, 1] = (axis_margins[1] - label_pos) / screen_size[1] * 2 - 1 \
                 if screen_size[1] != 0 else 0
         elif axis_pos == 'top':
             ticks_positions[:, 0] = (tick_values - x_range[0]) / delta_x * 2 - 1
-            ticks_positions[:, 1] = (screen_size[1] - axis_margins[3]) / screen_size[1] * 2 - 1 \
+            ticks_positions[:, 1] = (screen_size[1] - axis_margins[3] + label_pos) / screen_size[1] * 2 - 1 \
                 if screen_size[1] != 0 else 0
         elif axis_pos == 'left':
             ticks_positions[:, 1] = (tick_values - y_range[0]) / delta_y * 2 - 1
-            ticks_positions[:, 0] = axis_margins[0] / screen_size[0] * 2 - 1 \
+            ticks_positions[:, 0] = (axis_margins[0] - label_pos) / screen_size[0] * 2 - 1 \
                 if screen_size[0] != 0 else 0
         elif axis_pos == 'right':
             ticks_positions[:, 1] = (tick_values - y_range[0]) / delta_y * 2 - 1
-            ticks_positions[:, 0] = (screen_size[0] - axis_margins[2]) / screen_size[0] * 2 - 1 \
+            ticks_positions[:, 0] = (screen_size[0] - axis_margins[2] + label_pos) / screen_size[0] * 2 - 1 \
                 if screen_size[0] != 0 else 0
 
         label_string = ""
         start = 0
-        for i, value in enumerate(tickStrings(tick_values, scale, spacing[0][0])):
-            insert = str(value)
-            label_string += insert
+        for i, value in enumerate(tick_values):
+            if abs(value) > 1e3:
+                instance = u"{:.2e}".format(value)
+            else:
+                instance = str("%g" % value)
+            label_string += instance
             ticks_positions[i, 2] = start
-            ticks_positions[i, 3] = start + len(insert)
-            start += len(insert)
-
+            ticks_positions[i, 3] = start + len(instance)
+            start += len(instance)
         return ticks_positions, label_string
 
     def _getTitleParameters(self) -> Tuple[np.array, np.array]:

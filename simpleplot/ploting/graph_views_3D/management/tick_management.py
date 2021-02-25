@@ -49,6 +49,7 @@ def tickValues(min_value, max_value, size, scale):
     all_values = np.array([])
     for i in range(len(tick_level)):
         spacing, offset = tick_level[i]
+        spacing /= scale
         start = (np.ceil((min_value - offset) / spacing) * spacing) + offset
         num = int((max_value - start) / spacing) + 1
         values = (np.arange(num) * spacing + start) / scale
@@ -148,7 +149,7 @@ def siScale(x, min_value=1e-25, allow_unicode=True):
 
     return p, pref
 
-def tickStrings(values, scale, spacing):
+def tickStrings(values):
     """Return the strings that should be placed next to ticks. This method is called
     when redrawing the axis and is a good method to override in subclasses.
     The method is called with a list of tick values, a scaling factor (see below), and the
@@ -161,14 +162,7 @@ def tickStrings(values, scale, spacing):
     be accompanied by a scale value of 1000. This indicates that the label is displaying 'mV', and
     thus the tick should display 0.001 * 1000 = 1.
     """
-    places = max(0, np.ceil(-np.log10(spacing*scale)))
-    print(values, places, scale, spacing)
     strings = []
     for v in values:
-        vs = v * scale
-        if abs(vs) < .001 or abs(vs) >= 10000:
-            vstr = "%g" % vs
-        else:
-            vstr = ("%%0.%df" % places) % vs
-        strings.append(vstr)
+        strings.append("%g" % v)
     return strings
