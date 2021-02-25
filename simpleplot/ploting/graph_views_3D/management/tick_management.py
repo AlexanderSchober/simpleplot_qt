@@ -107,8 +107,7 @@ def tickSpacing(min_value, max_value, size, scale):
 
 
 def updateAutoSIPrefix(min_value, max_val):
-    scale = siScale(max(abs(min_value), abs(max_val)))[0]
-    return scale
+    return siScale(max(abs(min_value), abs(max_val)))[0]
 
 
 def siScale(x, min_value=1e-25, allow_unicode=True):
@@ -163,6 +162,7 @@ def tickStrings(values, scale, spacing):
     thus the tick should display 0.001 * 1000 = 1.
     """
     places = max(0, np.ceil(-np.log10(spacing*scale)))
+    print(values, places, scale, spacing)
     strings = []
     for v in values:
         vs = v * scale

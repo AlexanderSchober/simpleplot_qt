@@ -22,13 +22,10 @@
 # *****************************************************************************
 
 from pathlib import Path
-# General imports
 from typing import Tuple
 
 import moderngl
 import numpy as np
-# Personal imports
-from PyQt5 import QtGui
 
 from .font_to_bitmap import getFontPaths, Font
 from .management.tick_management import tickValues, updateAutoSIPrefix, tickStrings
@@ -193,7 +190,7 @@ class AxisView2D(GraphicsView3D):
         :return: None
         """
 
-        if self._cached_label_text is not None and\
+        if self._cached_label_text is not None and \
                 self._cached_label_text[0] == font and self._cached_label_text[1] == size:
             return
 
@@ -239,7 +236,7 @@ class AxisView2D(GraphicsView3D):
         scale = updateAutoSIPrefix(tick_range[0], tick_range[1])
         self._tick_values, spacing = tickValues(
             tick_range[0], tick_range[1],
-            tick_range[1] - tick_range[0], 1)
+            tick_range[1] - tick_range[0], scale)
         self.ticks_positions = self._getTickPositions(self._tick_values)
         title_positions, title_parameters = self._getTitleParameters()
 
@@ -323,12 +320,12 @@ class AxisView2D(GraphicsView3D):
 
         label_string = ""
         start = 0
-        print(tick_values, scale, spacing)
-        for i, value in enumerate(tickStrings(tick_values, scale, min([space[0] for space in spacing]))):
-            label_string += value
+        for i, value in enumerate(tickStrings(tick_values, scale, spacing[0][0])):
+            insert = str(value)
+            label_string += insert
             ticks_positions[i, 2] = start
-            ticks_positions[i, 3] = start + len(value)
-            start += len(value)
+            ticks_positions[i, 3] = start + len(insert)
+            start += len(insert)
 
         return ticks_positions, label_string
 
