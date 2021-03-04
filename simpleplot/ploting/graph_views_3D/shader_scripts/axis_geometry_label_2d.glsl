@@ -55,7 +55,7 @@ void main()
     texture_rotation = mat2(cos(rotation_angle), sin(rotation_angle), - sin(rotation_angle), cos(rotation_angle));
 
     float x_pos = position.x;
-    if (label_h_just == 0){x_pos -= (width_pixel/2)*viewport_pixel_size.x;};
+    if (label_h_just == 0){x_pos -= (width_pixel/2.)*viewport_pixel_size.x;};
     if (label_h_just == 2){x_pos -= (width_pixel)*viewport_pixel_size.x;};
 
     float y_pos = position.y;

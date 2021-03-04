@@ -122,7 +122,7 @@ class AxisView2D(GraphicsView3D):
         """
         self._parameters.update(kwargs)
         self.setUniforms(**self._parameters)
-        self._updateAxis()
+        # self._updateAxis()
         self.update()
 
     def setTitle(self, text: str, font: str, size: int) -> None:

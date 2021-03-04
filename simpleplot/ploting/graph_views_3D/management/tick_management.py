@@ -33,10 +33,10 @@ def tickValues(min_value, max_value, size, scale):
     """
     Return the values and spacing of ticks to draw::
 
-        [  
-            (spacing, [major ticks]), 
-            (spacing, [minor ticks]), 
-            ... 
+        [
+            (spacing, [major ticks]),
+            (spacing, [minor ticks]),
+            ...
         ]
 
     By default, this method calls tickSpacing to determine the correct tick locations.
@@ -77,33 +77,36 @@ def tickSpacing(min_value, max_value, size, scale):
     """
     min_value *= scale
     max_value *= scale
+    size *= scale
 
     dif = abs(max_value - min_value)
     if dif == 0:
         return []
 
     # decide optimal minor tick spacing in pixels (this is just aesthetics)
-    optimal_tick_count = max(4., np.log(max(size, 1e-8)))
+    optimal_tick_count = max(6., np.log(max(size, 1e-8)))
+    print('opt size', optimal_tick_count)
     # optimal minor tick spacing 
     optimal_spacing = dif / optimal_tick_count
+    print('opt spacing', optimal_spacing)
     # the largest power-of-10 spacing which is smaller than optimal
     p10unit = 10 ** np.floor(np.log10(optimal_spacing))
+    print('punit', p10unit)
     # Determine major/minor tick spacings which flank the optimal spacing.
-    intervals = np.array([1., 2., 10., 20., 100.]) * p10unit
+    intervals = np.array([1., 2., 5., 10., 20., 50., 100.]) * p10unit
     minor_index = 0
     while intervals[minor_index + 1] <= optimal_spacing:
         minor_index += 1
 
     levels = [
-        (intervals[minor_index + 2], 0),
-        (intervals[minor_index + 1], 0),
+        (intervals[minor_index], 0)
         # (intervals[minor_index], 0)    # Pretty, but eats up CPU
     ]
     # decide whether to include the last level of ticks
-    min_spacing = min(size / 20., 30.)
-    max_tick_count = size / min_spacing
-    if dif / intervals[minor_index] <= max_tick_count:
-        levels.append((intervals[minor_index], 0))
+    # min_spacing = min(size / 20., 30.)
+    # max_tick_count = size / min_spacing
+    # if dif / intervals[minor_index] <= max_tick_count:
+    #     levels.append((intervals[minor_index], 0))
     return levels
 
 

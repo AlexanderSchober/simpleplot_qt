@@ -70,7 +70,7 @@ class AxesItem2D(GraphicsItem):
         """
         self._main_handler.addParameter(
             'Margins (px)',
-            [40, 40, 20, 20],
+            [60, 60, 40, 40],
             names=['Left', 'Bottom', 'Right', 'Top'],
             method=self.refreshAuto)
 
@@ -123,7 +123,7 @@ class AxesItem2D(GraphicsItem):
 
             self._handlers[i].addParameter(
                 'Axis label',
-                [15, 10, QtGui.QColor('black'), self._angles_labels[i]],
+                [11, 15, QtGui.QColor('black'), self._angles_labels[i]],
                 names=['Size', 'Position', 'Color', 'Angle'],
                 method=partial(self.setParameters, i))
 
