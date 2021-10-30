@@ -58,6 +58,7 @@ class AxisView2D(GraphicsView3D):
         self._parameters['draw_ticks'] = True
         self._parameters['draw_values'] = False
         self._parameters['draw_title'] = False
+        self._parameters['draw_edge'] = True
 
         self._parameters['axis_widths'] = np.array([0.05, 0.05, 0.05, 0.05])
         self._parameters['axis_color'] = np.array([1, 0, 0, 1])
@@ -80,6 +81,8 @@ class AxisView2D(GraphicsView3D):
         self._parameters['label_position'] = np.array([0])
         self._parameters['label_v_just'] = np.array([0])
         self._parameters['label_h_just'] = np.array([0])
+
+        self._parameters['edge_color'] = np.array([1, 1, 1, 1])
 
     def initializeGL(self) -> None:
         """
@@ -109,6 +112,12 @@ class AxisView2D(GraphicsView3D):
             geometry_shader=self._geometryShader('title'),
             frag_shader=self._fragmentShader('title'))
 
+        self._createProgram(
+            "edge",
+            vert_shader=self._vertexShader(),
+            geometry_shader=self._geometryShader('edge'),
+            frag_shader=self._fragmentShader('edge'))
+
         self.setUniforms(**self._parameters)
         self.setLabelFont('Arial', 20)
         self.setTitle('123', 'Arial', 20)
@@ -122,7 +131,6 @@ class AxisView2D(GraphicsView3D):
         """
         self._parameters.update(kwargs)
         self.setUniforms(**self._parameters)
-        # self._updateAxis()
         self.update()
 
     def setTitle(self, text: str, font: str, size: int) -> None:
@@ -247,6 +255,8 @@ class AxisView2D(GraphicsView3D):
         self._createVAO("ticks", {"ticks": ["3f", "in_vert"]})
         self._createVBO("title", title_positions)
         self._createVAO("title", {"title": ["3f", "in_vert"]})
+        self._createVBO("edge", self._getEdgePositions())
+        self._createVAO("edge", {"edge": ["3f", "in_vert"]})
 
         if self._parameters['axis_pos'] in ['bottom', 'top']:
             axis_thickness = self._parameters['axis_widths'][self._orientations.index(self._parameters['axis_pos'])] \
@@ -461,6 +471,45 @@ class AxisView2D(GraphicsView3D):
 
         return ticks_positions
 
+    def _getEdgePositions(self):
+        """
+        This will determine the appropriate tick positioning on screen
+        :return: np.array(float), 3d array of float positions
+        """
+        axis_pos = self._parameters['axis_pos']
+        axis_margins = self._parameters['axis_margins']
+        cam_method = self.renderer().camera().getPixelScreenValue
+        if axis_pos == 'bottom':
+            pos = cam_method(None, axis_margins[1])
+            return np.array([
+                [-1, pos, 0], [ 1, pos, 0], [-1, -1, 0],
+                [-1,  -1, 0], [ 1, pos, 0], [ 1, -1, 0]
+            ])
+        elif axis_pos == 'top':
+            pos = cam_method(None, -axis_margins[3])
+            return np.array([
+                [-1, pos, 0], [ 1, pos, 0], [-1,  1, 0],
+                [-1,   1, 0], [ 1, pos, 0], [ 1,  1, 0]
+            ])
+        elif axis_pos == 'left':
+            pos = cam_method(axis_margins[0], None)
+            return np.array([
+                [pos, -1, 0], [pos, 1, 0], [-1, -1, 0],
+                [-1,  -1, 0], [pos, 1, 0], [-1,  1, 0]
+            ])
+        elif axis_pos == 'right':
+            pos = cam_method(-axis_margins[2], None)
+            return np.array([
+                [pos, -1, 0], [pos, 1, 0], [ 1, -1, 0],
+                [ 1,  -1, 0], [pos, 1, 0], [ 1,  1, 0]
+            ])
+        else:
+            return np.array([
+                list(cam_method(0, 0)) + [0],
+                list(cam_method(1, 1)) + [0]
+            ])
+
+
     def paint(self):
         """
         Paint the elements of the axis.
@@ -474,6 +523,9 @@ class AxisView2D(GraphicsView3D):
 
         if self._parameters['draw_ticks']:
             self._vaos['ticks'].render(mode=moderngl.POINTS)
+
+        if self._parameters['draw_edge']:
+            self._vaos['edge'].render(mode=moderngl.TRIANGLE_STRIP)
 
         if self._parameters['draw_values']:
             self.positions_row_label.use(0)
@@ -551,6 +603,12 @@ class AxisView2D(GraphicsView3D):
             output = file.read()
             file.close()
             return output
+        elif key == 'edge':
+            file = open(
+                Path(__file__).resolve().parent / 'shader_scripts' / 'axis_fragment_edge_2d.glsl')
+            output = file.read()
+            file.close()
+            return output
         else:
             return None
 
@@ -584,6 +642,12 @@ class AxisView2D(GraphicsView3D):
         elif key == 'title':
             file = open(
                 Path(__file__).resolve().parent / 'shader_scripts' / 'axis_geometry_title_2d.glsl')
+            output = file.read()
+            file.close()
+            return output
+        elif key == 'edge':
+            file = open(
+                Path(__file__).resolve().parent / 'shader_scripts' / 'axis_geometry_edge_2d.glsl')
             output = file.read()
             file.close()
             return output

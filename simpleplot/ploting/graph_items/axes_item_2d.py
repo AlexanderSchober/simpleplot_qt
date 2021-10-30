@@ -54,13 +54,12 @@ class AxesItem2D(GraphicsItem):
         self._directions = [[0, 1, 0], [0, 1, 0], [1, 0, 0], [1, 0, 0]]
         self._tick_directions = [[0, 1, 0], [0, -1, 0], [1, 0, 0], [-1, 0, 0]]
         self._colors = ['black', 'black', 'black', 'black']
+        self._edge_color = 'white'
         self._angles = [0, 0, 90, -90]
         self._angles_labels = [0, 0, 0, 0]
         self._center_choices = [['Center', 'Left', 'Right'], ['Center', 'Top', 'Bottom']]
         self._center_labels = [['Center', 'Center', 'Right', 'Left'], ['Bottom', 'Top', 'Center', 'Center']]
         self._axes_list = []
-
-        # self.initialize()
 
     def initialize(self):
         """
@@ -74,6 +73,10 @@ class AxesItem2D(GraphicsItem):
             names=['Left', 'Bottom', 'Right', 'Top'],
             method=self.refreshAuto)
 
+        self._main_handler.addParameter(
+            'Edge color', QtGui.QColor(self._edge_color),
+            method=partial(self.refreshAuto))
+
         for i, pos in enumerate(self._positions):
             self._axes_list.append(AxisView2D())
             self.canvas.view.addGraphItem(self._axes_list[-1])
@@ -84,8 +87,9 @@ class AxesItem2D(GraphicsItem):
                     True if pos in ['bottom', 'left'] else False,
                     True if pos in ['bottom', 'left'] else False,
                     True if pos in ['bottom', 'left'] else False,
-                    True if pos in ['bottom', 'left'] else False],
-                names=['Axis', 'Ticks', 'Values', 'Title'],
+                    True if pos in ['bottom', 'left'] else False,
+                    True],
+                names=['Axis', 'Ticks', 'Values', 'Title', 'edge'],
                 method=partial(self.setParameters, i))
 
             self._handlers[i].addParameter(
@@ -154,6 +158,7 @@ class AxesItem2D(GraphicsItem):
                       'draw_ticks': handler['Visible'][1],
                       'draw_values': handler['Visible'][2],
                       'draw_title': handler['Visible'][3],
+                      'draw_edge': handler['Visible'][4],
 
                       'axis_widths': np.array([item['Axis visual'][1]
                                                for item in self._handlers]),
@@ -175,7 +180,9 @@ class AxesItem2D(GraphicsItem):
                       'label_color': np.array(handler['Axis label'][2].getRgbF()),
                       'label_angle': np.array(handler['Axis label'][3]),
                       'label_v_just': np.array(self._center_choices[1].index(handler['Axis label justify vertical'])),
-                      'label_h_just': np.array(self._center_choices[0].index(handler['Axis label justify horizontal']))
+                      'label_h_just': np.array(self._center_choices[0].index(handler['Axis label justify horizontal'])),
+
+                      'edge_color': np.array(self._main_handler['Edge color'].getRgbF())
                       }
 
         self._axes_list[i].setTitle(handler['Axis title'][0], handler['Axis title font'], handler['Axis title'][1])

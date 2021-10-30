@@ -98,7 +98,7 @@ class Camera(ParameterHandler):
         """
         self['Screen size'] = [x, y]
 
-    def getPixelScreenValue(self, x: int, y: int) -> List[float]:
+    def getPixelScreenValue(self, x: int = None, y: int = None) -> List[float]:
         """
         This will return a position on the screen from
         a given pixel position. This can be useful
@@ -108,13 +108,22 @@ class Camera(ParameterHandler):
         :return: List[float]
         """
         size = self['Screen size']
-        pos_x = x if x >= 0 else size[0] + x
-        pos_y = y if y >= 0 else size[1] + y
 
-        return [
-            (pos_x / size[0]) * 2. - 1 if size[0] != 0 else 0.,
-            (pos_y / size[1]) * 2. - 1 if size[1] != 0 else 0.
-        ]
+        # process x
+        if x is not None:
+            pos_x = x if x >= 0 else size[0] + x
+            out_x = (pos_x / size[0]) * 2. - 1 if size[0] != 0 else 0.
+            if y is None:
+                return out_x
+
+        # process y
+        if y is not None:
+            pos_y = y if y >= 0 else size[1] + y
+            out_y = (pos_y / size[1]) * 2. - 1 if size[1] != 0 else 0.
+            if x is None:
+                return out_y
+                
+        return [out_x,out_y]
 
     def getPixelSize(self) -> List[float]:
         """
