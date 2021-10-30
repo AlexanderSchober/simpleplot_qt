@@ -58,7 +58,7 @@ installation = setup(
 
 import site
 import glob
-site_package_path = site.getsitepackages()[0]
+site_package_path = site.getsitepackages()[1]
 search = os.path.sep.join(site_package_path.split(os.path.sep)+['SimplePlot*'])
 simpleplot_package_path = glob.glob(search)[0]
 os.mkdir(os.path.sep.join([simpleplot_package_path] + ['simpleplot'] + ['ressources'] + ['settings']))

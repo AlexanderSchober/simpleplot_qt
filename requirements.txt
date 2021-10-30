@@ -1,5 +1,4 @@
 PyQt5
-SimplePlot
 setuptools
 numpy
 pyrr
@@ -10,5 +9,5 @@ Pybind11
 mako
 pyopengl
 scipy
-pyopencl
+# pyopencl
 freetype-py
