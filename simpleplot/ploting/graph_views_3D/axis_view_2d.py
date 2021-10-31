@@ -23,6 +23,7 @@
 
 from pathlib import Path
 from typing import Tuple
+from PyQt5.QtCore import pyqtSignal
 
 import moderngl
 import numpy as np
@@ -36,6 +37,8 @@ SI_PREFIXES_ASCII = 'yzafpnum kMGTPEZY'
 
 
 class AxisView2D(GraphicsView3D):
+    ticks_updated = pyqtSignal()
+
     def __init__(self, **opts):
         """
         """
@@ -53,6 +56,9 @@ class AxisView2D(GraphicsView3D):
         self.texture_title = None
         self._cached_text = None
         self._cached_label_text = None
+        self._ticks_positions = None
+        self._title_position = None
+        self._title_parameters = None
 
         self._parameters['draw_axis'] = True
         self._parameters['draw_ticks'] = True
@@ -241,41 +247,37 @@ class AxisView2D(GraphicsView3D):
         Here we will order the software to inject the main data into
         the present buffers
         """
+        # ------------------------------------------------------------------------
+        # process the axis
+        self._createVBO("axis", self.getAxisPositions())
+        self._createVAO("axis", {"axis": ["3f", "in_vert"]})
+
+        # ------------------------------------------------------------------------
+        # Process the tick positions
         tick_range = self._getTickValues()
         scale = updateAutoSIPrefix(tick_range[0], tick_range[1])
         self._tick_values, spacing = tickValues(
             tick_range[0], tick_range[1],
             tick_range[1] - tick_range[0], scale)
-        self.ticks_positions = self._getTickPositions(self._tick_values*scale)
-        title_positions, title_parameters = self._getTitleParameters()
-
-        self._createVBO("axis", self.getAxisPositions())
-        self._createVAO("axis", {"axis": ["3f", "in_vert"]})
-        self._createVBO("ticks", self.ticks_positions)
-        self._createVAO("ticks", {"ticks": ["3f", "in_vert"]})
-        self._createVBO("title", title_positions)
-        self._createVAO("title", {"title": ["3f", "in_vert"]})
-        self._createVBO("edge", self._getEdgePositions())
-        self._createVAO("edge", {"edge": ["3f", "in_vert"]})
-
-        if self._parameters['axis_pos'] in ['bottom', 'top']:
-            axis_thickness = self._parameters['axis_widths'][self._orientations.index(self._parameters['axis_pos'])] \
-                             * float(self.renderer().camera().getPixelSize()[1])
-            tick_thickness = self._parameters['tick_width'] * float(self.renderer().camera().getPixelSize()[0])
-            tick_length = self._parameters['tick_length'] * float(self.renderer().camera().getPixelSize()[1])
-
-        else:
-            axis_thickness = self._parameters['axis_widths'][self._orientations.index(self._parameters['axis_pos'])] \
-                             * float(self.renderer().camera().getPixelSize()[0])
-            tick_thickness = self._parameters['tick_width'] * float(self.renderer().camera().getPixelSize()[1])
-            tick_length = self._parameters['tick_length'] * float(self.renderer().camera().getPixelSize()[0])
-        self.setUniforms(axis_thickeness=axis_thickness,
-                         tick_thickness=tick_thickness,
-                         tick_length=tick_length,
-                         title_parameters=title_parameters)
+        ticks_positions_temp = self._getTickPositions(self._tick_values*scale)
+        if not np.array_equal(ticks_positions_temp, self._ticks_positions):
+            self._ticks_positions = ticks_positions_temp
+            self._createVBO("ticks", self._ticks_positions)
+            self._createVAO("ticks", {"ticks": ["3f", "in_vert"]})
 
         # ------------------------------------------------------------------------
-        # move to processing
+        # Process the title
+        title_positions_temp, title_parameters_temp = self._getTitleParameters()
+        if not np.array_equal(title_positions_temp, self._title_position) or not np.array_equal(title_parameters_temp, self._title_parameters):
+            self._title_position = title_positions_temp
+            self._title_parameters = title_parameters_temp
+            self._createVBO("title", self._title_position)
+            self._createVAO("title", {"title": ["3f", "in_vert"]})
+        self._createVBO("edge", self._getEdgePositions())
+        self._createVAO("edge", {"edge": ["3f", "in_vert"]})
+        
+        # ------------------------------------------------------------------------
+        # process labels
         self.label_positions, label_string = self._getLabelPositions(self._tick_values*scale)
         freefont_dict = self.label_font.render_text(label_string)
         self.char_index_label = self.context().texture(
@@ -287,14 +289,32 @@ class AxisView2D(GraphicsView3D):
         # Create the labels
         self._createVBO("labels", self.label_positions)
         self._createVAO("labels", {"labels": ["4f", "in_vert"]})
+        
+        # ------------------------------------------------------------------------
+        # Finnaly process some cosmethiques and send off uniforms
+        pixel_size = self.renderer().camera().getPixelSize()
+        if self._parameters['axis_pos'] in ['bottom', 'top']:
+            axis_thickness = self._parameters['axis_widths'][self._orientations.index(self._parameters['axis_pos'])] \
+                             * float(pixel_size[1])
+            tick_thickness = self._parameters['tick_width'] * float(pixel_size[0])
+            tick_length = self._parameters['tick_length'] * float(pixel_size[1])
+
+        else:
+            axis_thickness = self._parameters['axis_widths'][self._orientations.index(self._parameters['axis_pos'])] \
+                             * float(pixel_size[0])
+            tick_thickness = self._parameters['tick_width'] * float(pixel_size[1])
+            tick_length = self._parameters['tick_length'] * float(pixel_size[0])
 
         self.setUniforms(
+            axis_thickeness=axis_thickness,
+            tick_thickness=tick_thickness,
+            tick_length=tick_length,
+            title_parameters=self._title_parameters,
             label_texture_len=np.array([freefont_dict['positions_rows'].shape[0]]),
             label_limit=np.array([len(freefont_dict['char_index'])]),
             label_height=np.array([self.label_font.size]),
             label_factor=np.array([1 / freefont_dict['bitmap'].shape[0], 1 / freefont_dict['bitmap'].shape[1]])
         )
-        # ------------------------------------------------------------------------
 
     def _getLabelPositions(self, tick_values):
         """
