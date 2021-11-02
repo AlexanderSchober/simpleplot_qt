@@ -2,10 +2,6 @@
 layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
-uniform mat4 u_proj_mat;
-uniform mat4 u_view_mat;
-uniform mat4 u_model_mat;
-
 uniform float tick_length;
 uniform float small_ticks;
 uniform vec3 tick_direction;

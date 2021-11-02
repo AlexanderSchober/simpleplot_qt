@@ -146,7 +146,6 @@ class AxisView2D(GraphicsView3D):
         :param font: QtGui.QFont
         :return: None
         """
-
         if self._cached_text is not None and self._cached_text[0] == text and self._cached_text[1] == font and \
                 self._cached_text[2] == size:
             return

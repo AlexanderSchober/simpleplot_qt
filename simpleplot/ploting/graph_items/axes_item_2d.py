@@ -234,3 +234,7 @@ class AxesItem2D(GraphicsItem):
         #
         # if not self.parent() is None:
         #     self.parent().childFromName('Grids').refreshAuto()
+
+    def getMargins(self):
+        return self._main_handler['Margins (px)']
+        
