@@ -85,13 +85,10 @@ def tickSpacing(min_value, max_value, size, scale):
 
     # decide optimal minor tick spacing in pixels (this is just aesthetics)
     optimal_tick_count = max(6., np.log(max(size, 1e-8)))
-    print('opt size', optimal_tick_count)
     # optimal minor tick spacing 
     optimal_spacing = dif / optimal_tick_count
-    print('opt spacing', optimal_spacing)
     # the largest power-of-10 spacing which is smaller than optimal
     p10unit = 10 ** np.floor(np.log10(optimal_spacing))
-    print('punit', p10unit)
     # Determine major/minor tick spacings which flank the optimal spacing.
     intervals = np.array([1., 2., 5., 10., 20., 50., 100.]) * p10unit
     minor_index = 0
