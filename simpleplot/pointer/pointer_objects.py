@@ -62,7 +62,7 @@ class PointerObject:
 
         pos_max = QtCore.QPointF(self.ranges[0][1],self.ranges[1][1])
         pos_max = self.parent.canvas.view.mapViewToDevice(pos_max)
-        pos_max = QtCore.QPoint(pos_max.x(), pos_max.y())
+        pos_max = QtCore.QPoint(int(pos_max.x()), int(pos_max.y()))
         pos_max = self.parent._pointer_view.mapToScene(pos_max)
 
         self.view_ranges = [[pos_min.x(),pos_max.x()],[pos_min.y(),pos_max.y()]]
