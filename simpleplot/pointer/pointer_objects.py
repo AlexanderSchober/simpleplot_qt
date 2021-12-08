@@ -55,12 +55,12 @@ class PointerObject:
         '''
         self.ranges = self.parent.canvas.draw_surface.vb.viewRange()
 
-        pos_min = QtCore.QPointF(self.ranges[0][0],self.ranges[1][0])
+        pos_min = QtCore.QPointF(int(self.ranges[0][0]), int(self.ranges[1][0]))
         pos_min = self.parent.canvas.view.mapViewToDevice(pos_min)
         pos_min = QtCore.QPoint(int(pos_min.x()), int(pos_min.y()-2))
         pos_min = self.parent._pointer_view.mapToScene(pos_min)
 
-        pos_max = QtCore.QPointF(self.ranges[0][1],self.ranges[1][1])
+        pos_max = QtCore.QPointF(int(self.ranges[0][1]), int(self.ranges[1][1]))
         pos_max = self.parent.canvas.view.mapViewToDevice(pos_max)
         pos_max = QtCore.QPoint(int(pos_max.x()), int(pos_max.y()))
         pos_max = self.parent._pointer_view.mapToScene(pos_max)
@@ -79,9 +79,9 @@ class PointerObject:
         if y < self.ranges[1][0]: y = self.ranges[1][0]
         if y > self.ranges[1][1]: y = self.ranges[1][1]
 
-        pos = QtCore.QPointF(x,y)
+        pos = QtCore.QPointF(int(x),int(y))
         pos = self.parent.canvas.view.mapViewToDevice(pos)
-        pos = QtCore.QPoint(pos.x()-2, pos.y()-2)
+        pos = QtCore.QPoint(int(pos.x()-2), int(pos.y()-2))
         pos = self.parent._pointer_view.mapToScene(pos)
         return pos
         
