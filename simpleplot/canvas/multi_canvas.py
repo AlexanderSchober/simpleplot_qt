@@ -205,8 +205,7 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
             try:
                 self.setRowStretch(j,self.handler['y_ratios'][j] if not zeros else 0)
             except:
-                if self.Verbose:
-                    print('Could not set the row weight for: ',j)
+                print('Could not set the row weight for: ',j)
 
     def _selectPlot(self):
         '''
