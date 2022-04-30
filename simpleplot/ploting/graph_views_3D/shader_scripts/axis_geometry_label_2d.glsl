@@ -102,7 +102,7 @@ void main()
         EndPrimitive();
 
         current_pos = vec2(
-            current_pos.x + (char_width * viewport_pixel_size.x)+0.01,
+            current_pos.x + (char_width * viewport_pixel_size.x),
             current_pos.y
         );
     }

@@ -166,9 +166,9 @@ class GraphicsView3D(QtCore.QObject):
             being used to point towards a vbo definition
         """
         if not name in self._programs.keys():
-            print("Program not found for creating the vao")
+            print("Program %s not found for creating the vao" % name)
             return
-
+        
         self._vaos[name] = self.context().vertex_array(
             self._programs[name],
             [(self._vbos[vbo_name], *attr_lists[vbo_name])

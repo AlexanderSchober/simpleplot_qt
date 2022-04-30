@@ -53,7 +53,7 @@ void main()
 
     float x_pos = position.x;
     if (title_h_just == 0){x_pos -= (width_pixel/2)*viewport_pixel_size.x;};
-    if (title_h_just == 2){x_pos -= (width_pixel)*viewport_pixel_size.x;};
+    if (title_h_just == 2){x_pos += (width_pixel/2)*viewport_pixel_size.x;};
 
     float y_pos = position.y;
     if (title_v_just == 1){y_pos += height_scene/2;};
@@ -68,8 +68,8 @@ void main()
         float position_width = 1000.*float(texture(positions_width_title, vec2((char_index+0.5)/title_texture_len, 0.5)).r);
 
         texture_coords = vec4(
-            position_width + char_width/2,
-            position_row + height/2,
+            position_width + char_width/2.,
+            position_row + height/2.,
             factor.y,factor.x
         );
 
@@ -78,28 +78,28 @@ void main()
             current_pos.y
         );
 
-        center_pixel_position = (rotatePoint(center_position,position.xy) + 1) / 2 * viewport_size;
+        center_pixel_position = (rotatePoint(center_position, position.xy) + 1.) / 2. * viewport_size;
 
         rotation_position = vec2(center_position.x - (char_width/2.)*viewport_pixel_size.x,center_position.y - height_scene/2);
-        gl_Position = vec4(rotatePoint(rotation_position, position.xy),-1,1);
+        gl_Position = vec4(rotatePoint(rotation_position, position.xy),-1.,1.);
         EmitVertex();
 
         rotation_position = vec2(center_position.x + (char_width/2.)*viewport_pixel_size.x,center_position.y - height_scene/2);
-        gl_Position = vec4(rotatePoint(rotation_position, position.xy),-1,1);
+        gl_Position = vec4(rotatePoint(rotation_position, position.xy),-1.,1.);
         EmitVertex();
 
         rotation_position = vec2(center_position.x - (char_width/2.)*viewport_pixel_size.x,center_position.y + height_scene/2);
-        gl_Position = vec4(rotatePoint(rotation_position, position.xy),-1,1);
+        gl_Position = vec4(rotatePoint(rotation_position, position.xy),-1.,1.);
         EmitVertex();
 
         rotation_position = vec2(center_position.x + (char_width/2.)*viewport_pixel_size.x,center_position.y + height_scene/2);
-        gl_Position = vec4(rotatePoint(rotation_position, position.xy),-1,1);
+        gl_Position = vec4(rotatePoint(rotation_position, position.xy),-1.,1.);
         EmitVertex();
 
         EndPrimitive();
 
         current_pos = vec2(
-            current_pos.x + (char_width * viewport_pixel_size.x)+0.01,
+            current_pos.x + (char_width * viewport_pixel_size.x),
             current_pos.y
         );
     }

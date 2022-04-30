@@ -58,7 +58,7 @@ class AxisView2D(GraphicsView3D):
         self._cached_label_text = None
         self._ticks_positions = None
         self._title_position = None
-        self._title_parameters = None
+        self._need_update = False
 
         self._parameters['draw_axis'] = True
         self._parameters['draw_ticks'] = True
@@ -137,7 +137,7 @@ class AxisView2D(GraphicsView3D):
         """
         self._parameters.update(kwargs)
         self.setUniforms(**self._parameters)
-        self.update()
+        self._need_update = True
 
     def setTitle(self, text: str, font: str, size: int) -> None:
         """
@@ -266,10 +266,9 @@ class AxisView2D(GraphicsView3D):
 
         # ------------------------------------------------------------------------
         # Process the title
-        title_positions_temp, title_parameters_temp = self._getTitleParameters()
-        if not np.array_equal(title_positions_temp, self._title_position) or not np.array_equal(title_parameters_temp, self._title_parameters):
+        title_positions_temp = self._getTitleParameters()
+        if not np.array_equal(title_positions_temp, self._title_position):
             self._title_position = title_positions_temp
-            self._title_parameters = title_parameters_temp
             self._createVBO("title", self._title_position)
             self._createVAO("title", {"title": ["3f", "in_vert"]})
         self._createVBO("edge", self._getEdgePositions())
@@ -308,12 +307,13 @@ class AxisView2D(GraphicsView3D):
             axis_thickeness=axis_thickness,
             tick_thickness=tick_thickness,
             tick_length=tick_length,
-            title_parameters=self._title_parameters,
             label_texture_len=np.array([freefont_dict['positions_rows'].shape[0]]),
             label_limit=np.array([len(freefont_dict['char_index'])]),
             label_height=np.array([self.label_font.size]),
             label_factor=np.array([1 / freefont_dict['bitmap'].shape[0], 1 / freefont_dict['bitmap'].shape[1]])
         )
+        
+        self._need_update = False
 
     def _getLabelPositions(self, tick_values):
         """
@@ -368,16 +368,13 @@ class AxisView2D(GraphicsView3D):
         :return: Tuple[np.array, np.array]
         """
         center = self._getTitleCenter()
-        screen_size = self.renderer().camera()['Screen size']
-        width = (self.texture_title.width) / screen_size[0] if screen_size[0] != 0 else 0
-        height = (self.texture_title.height) / screen_size[1] if screen_size[1] != 0 else 0
 
         positions = np.array([
             [center[0], center[1], -1]
         ], dtype='f4')
 
-        return positions, np.array([center[0], center[1], width, height], dtype="object")
-
+        return positions
+    
     def _getTitleCenter(self) -> np.array:
         """
         Get the center position of the title depending
@@ -536,7 +533,10 @@ class AxisView2D(GraphicsView3D):
         the ticks and the labels
         """
         self.context().disable(moderngl.CULL_FACE)
-        self._updateAxis()
+        
+        if self._need_update:
+            self._updateAxis()
+            
         if self._parameters['draw_axis']:
             self._vaos['axis'].render(mode=moderngl.LINE_STRIP)
 

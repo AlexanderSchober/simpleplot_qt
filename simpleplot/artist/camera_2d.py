@@ -109,6 +109,7 @@ class Camera2D(Camera):
              cursor_pos[1] + y_range / 2],
             method=False)
 
+        self.parent().view.contextClass().setGraphItemsUpdatable()
         self._buildMVP()
 
     def pan(self, diff_x: float, diff_y: float) -> None:
@@ -141,6 +142,7 @@ class Camera2D(Camera):
              y_corners[1] - direction * y_range * diff_y / screen_size[1]],
             method=False)
 
+        self.parent().view.contextClass().setGraphItemsUpdatable()
         self._buildMVP()
 
     def moveXY(self, diff_x: float, diff_y: float, width: float) -> None:
@@ -169,6 +171,7 @@ class Camera2D(Camera):
              y_corners[1] - y_range * diff_y / screen_size[1]],
             method=False)
 
+        self.parent().view.contextClass().setGraphItemsUpdatable()
         self._buildMVP()
 
     def _buildMVP(self):

@@ -220,7 +220,14 @@ class ContextClass(QtCore.QObject):
                     self.context().viewport[2] / self.context().viewport[3])
                 self._camera.setScreenSize(width, height)
 
+        self.setGraphItemsUpdatable()
+
         self.render()
+
+    def setGraphItemsUpdatable(self):
+        for item in self.graph_items:
+            if hasattr(item, '_need_update'):
+                item._need_update = True
 
     def getPickingRay(self, x: int, y: int):
         """

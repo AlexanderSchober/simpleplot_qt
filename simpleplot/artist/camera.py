@@ -122,7 +122,6 @@ class Camera(ParameterHandler):
             out_y = (pos_y / size[1]) * 2. - 1 if size[1] != 0 else 0.
             if x is None:
                 return out_y
-                
         return [out_x,out_y]
 
     def getPixelSize(self) -> List[float]:

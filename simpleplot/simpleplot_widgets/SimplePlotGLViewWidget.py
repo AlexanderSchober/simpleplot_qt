@@ -338,8 +338,8 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         if self.contextClass() is not None:
             self.contextClass().resizeEvent(
                 0, 0,
-                ev.size().width() * self.devicePixelRatio(),
-                ev.size().height() * self.devicePixelRatio())
+                ev.size().width(),
+                ev.size().height())
 
         super().resizeEvent(ev)
 

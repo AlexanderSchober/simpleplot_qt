@@ -45,6 +45,8 @@ class GridView2D(GraphicsView3D):
         This is a placeholder for the parameter
         initialisation
         """
+        self._need_update = False
+        
         self._tick_values = np.array([0, 0.5, 0.7, 1])
         self._orientations = {
             'vertical': np.array([0, 1, 0]), 
@@ -173,6 +175,8 @@ class GridView2D(GraphicsView3D):
             small_grid_periodicty_length=self._parameters['small_grid_periodicty_length']
 
         )
+        
+        self._need_update = False
 
     def _generatePeriodicityTextures(self)->np.array:
         """
@@ -301,7 +305,10 @@ class GridView2D(GraphicsView3D):
         the ticks and the lables
         """
         self.context().disable(moderngl.CULL_FACE)
-        self._updateGrid()
+        
+        if self._need_update:
+            self._updateGrid()
+            
         if self._parameters['draw_grid']:
             self.grid_texture.use(0)
             self._programs['grid']['grid_texture'].value = 0

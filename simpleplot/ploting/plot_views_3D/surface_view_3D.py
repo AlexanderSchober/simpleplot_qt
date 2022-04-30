@@ -26,8 +26,8 @@ import moderngl
 import numpy as np
 import OpenGL.GL as gl
 
-import pyopencl as cl
-import pyopencl.array as cl_array
+# import pyopencl as cl
+# import pyopencl.array as cl_array
 
 from pathlib import Path
 

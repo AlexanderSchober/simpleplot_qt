@@ -28,6 +28,7 @@ from simpleplot.artist.light import LightSource
 from simpleplot.models.session_node import SessionNode
 from simpleplot.ploting.graph_items.axes_item_2d import AxesItem2D
 from simpleplot.ploting.graph_items.grid_item_2d import GridItem2D
+from simpleplot.ploting.graph_items.pointer_item_2d import PointerItem2D
 # from simpleplot.ploting.graph_items.axes_orientation_item_3D import AxesOrientationItem3D
 # from simpleplot.ploting.graph_items.grid_item_3D import GridItem3D
 
@@ -70,6 +71,11 @@ class Artist2DNode(SessionNode, Artist):
             self.grids = GridItem2D(self, self.canvas, self.axes)
             self.model().appendRow(self.grids, self)
             self.grids.initialize()
+
+        if self.pointer is None:
+            self.pointer = PointerItem2D(self, self.canvas, self.axes)
+            self.model().appendRow(self.pointer, self)
+            self.pointer.initialize()
 
     def connect(self):
         """

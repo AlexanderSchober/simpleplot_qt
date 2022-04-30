@@ -26,7 +26,7 @@ from PyQt5 import QtWidgets
 import sys
 
 # The local imports
-from simpleplot.canvas.multi_canvas import MultiCanvasItem
+from ..canvas.multi_canvas import MultiCanvasItem
 
 def exampleItems():
     #set upt the window and the plot widget

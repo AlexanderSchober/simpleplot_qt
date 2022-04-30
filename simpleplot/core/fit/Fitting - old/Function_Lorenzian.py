@@ -196,8 +196,6 @@ class Lorenzian:
         #set the parameters
         Parameters = [X]
         
-        print self.Parameters
-        print self.Info.ParameterNumber
         #pack the parameters
         for i in range(0, self.Info.ParameterNumber ):
             

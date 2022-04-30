@@ -20,7 +20,7 @@
 #   Alexander Schober <alexander.schober@mac.com>
 #
 # *****************************************************************************
-
+from PyQt5.QtWidgets import QApplication
 import numpy as np
 
 

@@ -27,10 +27,7 @@ import sys
 import numpy as np
 
 # The local imports
-from PyQt5.QtGui import QFont
-
-from simpleplot.canvas.multi_canvas import MultiCanvasItem
-
+from ..canvas.multi_canvas import MultiCanvasItem
 
 def exampleLine():
     # set upt the window and the plot widget
