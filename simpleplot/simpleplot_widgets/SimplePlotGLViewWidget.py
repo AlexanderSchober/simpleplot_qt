@@ -334,12 +334,12 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         -------------------------------------
         ev : QtGui.QResizeEvent
         """
-        self.resized_signal.emit()
         if self.contextClass() is not None:
             self.contextClass().resizeEvent(
                 0, 0,
                 ev.size().width(),
                 ev.size().height())
+        self.resized_signal.emit()
 
         super().resizeEvent(ev)
 

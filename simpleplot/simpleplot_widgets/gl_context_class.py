@@ -23,7 +23,6 @@
 from typing import Union
 
 import moderngl
-import numpy as np
 from PyQt5 import QtCore
 from pyrr import Vector4
 
@@ -220,11 +219,10 @@ class ContextClass(QtCore.QObject):
                     self.context().viewport[2] / self.context().viewport[3])
                 self._camera.setScreenSize(width, height)
 
-        self.setGraphItemsUpdatable()
-
+        self.setGraphItemsUpdateable()
         self.render()
 
-    def setGraphItemsUpdatable(self):
+    def setGraphItemsUpdateable(self):
         for item in self.graph_items:
             if hasattr(item, '_need_update'):
                 item._need_update = True
