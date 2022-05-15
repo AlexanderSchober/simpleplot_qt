@@ -133,7 +133,7 @@ class Mouse:
         self.release_methods = []
         self.drag_methods = []
 
-    def move(self, ev):
+    def move(self, ev, pos = None):
         """
         This method will manage the motion of the 
         mouse and send it out.
@@ -141,7 +141,7 @@ class Mouse:
         Input: 
         - Qt based mouse ev
         """
-        mousePoint = ev.pos()
+        mousePoint = ev.pos() if pos is None else pos
         self.cursor_x = mousePoint.x()
         self.cursor_y = mousePoint.y()
         self.transmitMotion(self.cursor_x, self.cursor_y)

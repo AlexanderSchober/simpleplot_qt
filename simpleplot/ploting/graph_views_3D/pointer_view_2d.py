@@ -28,6 +28,7 @@ import moderngl
 import numpy as np
 
 # Personal imports
+from .font_to_bitmap import getFontPaths, Font
 from ..views_3D.graphics_view_3D import GraphicsView3D
 
 
@@ -36,6 +37,7 @@ class PointerView2D(GraphicsView3D):
         """
         """
         super().__init__(**opts)
+        self._family_to_path = getFontPaths()
         self._initParameters()
 
     def _initParameters(self):
@@ -44,21 +46,27 @@ class PointerView2D(GraphicsView3D):
         initialisation
         """
         self._need_update = False
+        self._cached_label_text = None
+        self._pointer_position = np.array([[0, 0, 0, 0]], dtype='f4')
+        self._label_position = np.array([[0, 0, 0, 0]], dtype='f4')
+        self._label_texts = ['', '']
         
-        self._position = np.array([0,0])
-        self._parameters['position'] = self._position
-        self._parameters['draw_pointer'] = 'True'
+        self._parameters['draw_pointer'] = True
 
         self._parameters['pointer_type'] = 'Default'
-        self._parameters['pointer_size'] = 10
-        self._parameters['pointer_thickness'] = 2
+        self._parameters['pointer_size'] = np.array([50.])
+        self._parameters['pointer_thickness'] = np.array([10.])
         self._parameters['pointer_color'] = np.array([0, 0, 0, 1])
 
-        self._parameters['draw_label_box'] = 'False'
+        self._parameters['draw_label_box'] = np.array([1])
         self._parameters['label_box_color'] = np.array([0, 0, 0, 1])
+        self._parameters['label_box_width'] = np.array([0])
 
-        self._parameters['draw_label'] = 'False'
+        self._parameters['draw_label'] = True
         self._parameters['label_color'] = np.array([0, 0, 0, 1])
+        self._parameters['label_font_size'] = 12
+        self._parameters['label_sci'] = [True, True]
+        self._parameters['label_sci_prec'] = [4, 4]
 
     def initializeGL(self) -> None:
         """
@@ -66,11 +74,18 @@ class PointerView2D(GraphicsView3D):
         """
         self._createProgram(
             "pointer",
-            vert_shader=self._vertexShader(),
-            frag_shader=self._fragmentShader(),
-            geometry_shader=self._geometryShader())
+            vert_shader=self._vertexShader('pointer'),
+            frag_shader=self._fragmentShader('pointer'),
+            geometry_shader=self._geometryShader('pointer'))
+
+        self._createProgram(
+            "label",
+            vert_shader=self._vertexShader('label'),
+            geometry_shader=self._geometryShader('label'),
+            frag_shader=self._fragmentShader('label'))
 
         self.setUniforms(**self._parameters)
+        self.setLabelFont('Arial', self._parameters['label_font_size'])
         self._updatePointer()
         self.setMVP()
         self.setLight()
@@ -88,26 +103,119 @@ class PointerView2D(GraphicsView3D):
         Set the properties to diplay the graph
         """
         screen_size = self.renderer().camera()['Screen size']
+        x_range = self.renderer().camera()['Camera x range']
+        y_range = self.renderer().camera()['Camera y range']
         
-        self._position = np.array([
-            (x / screen_size[0] * 2 - 1)*1,
-            ((1- y / screen_size[1])* 2 - 1)*1])
-
-        self._parameters['position'] = self._position
-        self.setUniforms(position=self._parameters['position'])
+        self._pointer_position = np.array([[
+            (x / screen_size[0] * 2 - 1),
+            ((1- y / screen_size[1])* 2 - 1), 0, 0]])
+        
+        self._label_position = np.array([self._pointer_position[0], self._pointer_position[0]])
+        start = 0
+        char_widths = []
+        # Do x
+        if abs((((self._label_position[0, 0]+1)/2*(x_range[1]-x_range[0]))+x_range[0])) > 1e3 or self._parameters['label_sci'][0]:
+            self._label_texts[0] = ("x={:."+str(self._parameters['label_sci_prec'][0])+"e}").format(((self._label_position[0, 0]+1)/2*(x_range[1]-x_range[0]))+x_range[0])
+        else:
+            self._label_texts[0] = str("x=%g" % (((self._label_position[0, 0]+1)/2*(x_range[1]-x_range[0]))+x_range[0]))
+        self._label_position[0, 2] = start
+        self._label_position[0, 3] = start + len(self._label_texts[0])
+        start += len(self._label_texts[0])
+        
+        freefont_dict = self.label_font.render_text(self._label_texts[0])
+        char_widths.append(sum(freefont_dict['char_width'][freefont_dict['char_index']]))
+        
+        # Do y
+        if abs(((self._label_position[0, 1]+1)/2*(y_range[1]-y_range[0]))+y_range[0]) > 1e3 or self._parameters['label_sci'][1]:
+            self._label_texts[1] = ("y={:."+str(self._parameters['label_sci_prec'][1])+"e}").format(((self._label_position[0, 1]+1)/2*(y_range[1]-y_range[0]))+y_range[0])
+        else:
+            self._label_texts[1] = str("y=%g" % (((self._label_position[0, 1]+1)/2*(y_range[1]-y_range[0]))+y_range[0]))
+        self._label_position[1, 2] = start
+        self._label_position[1, 3] = start + len(self._label_texts[1])
+        
+        freefont_dict = self.label_font.render_text(self._label_texts[1])
+        char_widths.append(sum(freefont_dict['char_width'][freefont_dict['char_index']]))
+        
+        self._parameters['label_box_width'] = np.array([max(char_widths)])
+        
         self._need_update = True
         self.update()
+
+    def setLabelFont(self, font: str, size: int) -> None:
+        """
+        This method will effectively build the texture for the text
+        :param text: str, the text to set
+        :param font: QtGui.QFont
+        :return: None
+        """
+
+        if self._cached_label_text is not None and \
+                self._cached_label_text[0] == font and self._cached_label_text[1] == size:
+            return
+
+        self.label_font = Font(self._family_to_path[font] if font != 'MS Shell Dlg 2'
+                               else self._family_to_path['Arial'], size)
+        freefont_dict = self.label_font.render_text("")
+
+        self.texture_label = self.context().texture(
+            (freefont_dict['bitmap'].shape[1], freefont_dict['bitmap'].shape[0]), 1,
+            (freefont_dict['bitmap'] / 256).astype('f4').tobytes(),
+            dtype='f4')
+
+        self.positions_row_label = self.context().texture(
+            (freefont_dict['positions_rows'].shape[0], 1), 1,
+            (freefont_dict['positions_rows'].astype('f4') / 1000.).tobytes(),
+            dtype='f4')
+
+        self.positions_width_label = self.context().texture(
+            (freefont_dict['positions_width'].shape[0], 1), 1,
+            (freefont_dict['positions_width'].astype('f4') / 1000.).tobytes(),
+            dtype='f4')
+
+        self.char_width_label = self.context().texture(
+            (freefont_dict['char_width'].shape[0], 1), 1,
+            (freefont_dict['char_width'].astype('f4') / 1000.).tobytes(),
+            dtype='f4')
+
+        self.texture_label.repeat_x = False
+        self.texture_label.repeat_y = False
+        self.texture_label.filter = (moderngl.LINEAR, moderngl.LINEAR)
+        self.positions_row_label.filter = (moderngl.NEAREST, moderngl.NEAREST)
+        self.positions_width_label.filter = (moderngl.NEAREST, moderngl.NEAREST)
+        self.char_width_label.filter = (moderngl.NEAREST, moderngl.NEAREST)
+
+        self._cached_label_text = [font, size]
 
     def _updatePointer(self) -> None:
         """
         Here we will order the software to inject the main data into
         the present buffers
         """
-        self.pointer_position = np.array([[0,0,0]], dtype='f4')
-        self._createVBO("pointer", self.pointer_position)
-        self._createVAO("pointer", {"pointer": ["3f", "in_vert"]})
 
-        self.setUniforms(**self._parameters)
+        # ------------------------------------------------------------------------
+        # Process the tick positions
+        self._createVBO("pointer", self._pointer_position)
+        self._createVAO("pointer", {"pointer": ["4f", "in_vert"]})
+
+        # ------------------------------------------------------------------------
+        # process labels
+        freefont_dict = self.label_font.render_text(''.join(self._label_texts))
+        self.char_index_label = self.context().texture(
+            (freefont_dict['char_index'].shape[0], 1), 1,
+            (freefont_dict['char_index'].astype('f4') / 1000.).tobytes(),
+            dtype='f4')
+        self.char_index_label.filter = (moderngl.NEAREST, moderngl.NEAREST)
+
+        # Create the labels
+        self._createVBO("label", self._label_position)
+        self._createVAO("label", {"label": ["4f", "in_vert"]})
+        
+        self.setUniforms(
+            label_texture_len=np.array([freefont_dict['positions_rows'].shape[0]]),
+            label_limit=np.array([len(freefont_dict['char_index'])]),
+            label_height=np.array([self.label_font.size]),
+            label_factor=np.array([1 / freefont_dict['bitmap'].shape[0], 1 / freefont_dict['bitmap'].shape[1]]),
+            label_box_width=self._parameters['label_box_width'])
         self._need_update = False
 
     def paint(self):
@@ -122,17 +230,46 @@ class PointerView2D(GraphicsView3D):
             self._updatePointer()
         
         if self._parameters['draw_pointer']:
+            self._programs['pointer']['viewport_size'].value = tuple(self.context().viewport[2:])
             self._vaos['pointer'].render(mode=moderngl.POINTS)
+            
+        if self._parameters['draw_label']:
+            self.positions_row_label.use(0)
+            self._programs['label']['positions_rows_label'].value = 0
+            self.positions_width_label.use(1)
+            self._programs['label']['positions_width_label'].value = 1
+            self.char_width_label.use(2)
+            self._programs['label']['char_width_label'].value = 2
+            self.char_index_label.use(3)
+            self._programs['label']['char_index_label'].value = 3
+            self.texture_label.use(4)
+            self._programs['label']['label_texture'].value = 4
+
+            self._programs['label']['viewport_size'].value = tuple(self.context().viewport[2:])
+            self._vaos['label'].render(mode=moderngl.POINTS)
+            
         self.context().enable(moderngl.CULL_FACE)
 
-    def _vertexShader(self) -> str:
+    def _vertexShader(self, key: str = None) -> str:
         """
         Returns the vertex shader for this particular item
         """
-        file = open(Path(__file__).resolve().parent / 'shader_scripts' / 'pointer_vertex_2d.glsl')
-        output = file.read()
-        file.close()
-        return output
+        if key == 'pointer':
+            file = open(
+                Path(__file__).resolve().parent / 'shader_scripts' / 'pointer_vertex_2d.glsl')
+            output = file.read()
+            file.close()
+            return output
+
+        elif key == 'label':
+            file = open(
+                Path(__file__).resolve().parent / 'shader_scripts' / 'pointer_vertex_label_2d.glsl')
+            output = file.read()
+            file.close()
+            return output
+        
+        else:
+            return None
 
     def _fragmentShader(self, key: str = 'pointer') -> str:
         """
@@ -144,7 +281,17 @@ class PointerView2D(GraphicsView3D):
             output = file.read()
             file.close()
             return output
-
+        
+        elif key == 'label':
+            file = open(
+                Path(__file__).resolve().parent / 'shader_scripts' / 'pointer_fragment_label_2d.glsl')
+            output = file.read()
+            file.close()
+            return output
+        
+        else:
+            return None
+        
     def _geometryShader(self, key: str = 'pointer') -> str:
         """
         Returns the fragment shader for this particular item
@@ -160,4 +307,14 @@ class PointerView2D(GraphicsView3D):
             output = file.read()
             file.close()
             return output
+        
+        elif key == 'label':
+            file = open(
+                Path(__file__).resolve().parent / 'shader_scripts' / 'pointer_geometry_label_2d.glsl')
+            output = file.read()
+            file.close()
+            return output
+        
+        else:
+            return None
         

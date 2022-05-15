@@ -21,11 +21,12 @@
 #
 # *****************************************************************************
 
+#import dependencies
 from functools import partial
-
 import numpy as np
 from PyQt5 import QtGui
 
+#import personal dependencies
 from ..graph_views_3D.axis_view_2d import AxisView2D
 from ..graph_views_3D.font_to_bitmap import getFontPaths
 from ..graphics_items.graphics_item import GraphicsItem
