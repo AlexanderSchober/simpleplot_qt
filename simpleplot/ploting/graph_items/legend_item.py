@@ -22,6 +22,7 @@
 # *****************************************************************************
 
 #import dependencies
+from turtle import width
 from PyQt5 import QtGui
 from functools import partial
 import numpy as np
@@ -52,7 +53,13 @@ class LegendItem(GraphicsItem):
             'Position (edge)',
             [100, 100],
             method = self.setParameters)
-        
+
+        self.addParameter(
+            'Icon size',
+            [15, 15],
+            names=['width', 'heigh'],
+            method = self.setParameters)
+
         self.addParameter(
             'Font',
             self.font().family() if self.font().family() != 'MS Shell Dlg 2' else 'Arial',
@@ -140,8 +147,8 @@ class LegendItem(GraphicsItem):
         for plot_handler in self.canvas._plot_root._children:
             for element in plot_handler._children:
                 if hasattr(element, 'legendItems'):
-                    icons.append(element.legendItems())
+                    icons.append(element.legendItems(*self['Icon size']))
                     titles.append(element._name)
-        print(icons)
-        self._legend_view.setLegend([1]*len(titles), titles)
+
+        self._legend_view.setLegend(icons, titles)
         

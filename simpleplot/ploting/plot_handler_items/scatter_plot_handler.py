@@ -21,13 +21,15 @@
 #
 # *****************************************************************************
 
+# General imports
+from PyQt5 import QtGui, QtCore
+
 # Personal imports
 from .plot_handler                  import PlotHandler
 from ..plot_data_types.line_data    import LineData
 from ..plot_items.scatter_plot      import ScatterPlot
 from ..plot_items.line_plot         import LinePlot
 from ..plot_items.error_plot        import ErrorPlot
-from ..plot_items.SimpleItemSample  import SimpleItemSample
 
 class ScatterPlotHandler(PlotHandler):
 
@@ -58,8 +60,16 @@ class ScatterPlotHandler(PlotHandler):
         if not self._model is None:
             self._model.dataChanged.emit(self._plot_data.index(),self._plot_data.index())
 
-    def legendItems(self):
+    def legendItems(self, size_w, size_h):
         '''
         return to the legend the items to be used
         '''
-        return SimpleItemSample([self.childFromName('Line'), self.childFromName('Scatter'), self.childFromName('Error')])
+
+        pixmap = QtGui.QPixmap(size_w, size_h)
+        pixmap.fill(QtCore.Qt.transparent)
+        
+        self.childFromName('Line').drawLegendIcon(size_w, size_h, pixmap)
+        self.childFromName('Scatter').drawLegendIcon(size_w, size_h, pixmap)
+        # self.childFromName('Error')
+        
+        return pixmap

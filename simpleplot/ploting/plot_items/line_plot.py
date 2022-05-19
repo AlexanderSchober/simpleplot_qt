@@ -22,7 +22,7 @@
 # *****************************************************************************
 
 # General imports
-from PyQt5 import QtGui, QtCore
+from PyQt5 import QtGui
 import numpy as np
 from .plot_items_helpers import mkPen, mkBrush
 
@@ -70,7 +70,7 @@ class LinePlot(GraphicsItem):
             tags     = ['2D', '3D'],
             method  = self.setVisual)
         self.addParameter(
-            'Line width', float(kwargs['Thickness']) if 'Thickness' in kwargs.keys() else 2. ,
+            'Line width', float(kwargs['Thickness']) if 'Thickness' in kwargs.keys() else 3. ,
             tags     = ['2D', '3D'],
             method  = self.setVisual)
         self.addParameter(
@@ -140,6 +140,7 @@ class LinePlot(GraphicsItem):
             self.redraw()
             return
 
+        
         kwargs = {}
         kwargs['line_draw'] = self['Visible']
         kwargs['fill_draw'] = self['Fill']
@@ -163,7 +164,6 @@ class LinePlot(GraphicsItem):
         data = self.parent()._plot_data.getData(['x','y','z'])
         self.draw_items[0].setData(vertices = np.vstack(data).transpose())
 
-
     def drawGL(self, target_view = None):
         '''
         Draw the objects.
@@ -179,3 +179,43 @@ class LinePlot(GraphicsItem):
             self.default_target.addItem(self.draw_items[-1])
             self.setPlotData()
             self.setVisual()
+            
+    def drawLegendIcon(self, size_w, size_h, pixmap):
+        '''
+        This will draw the symbol on a pixmap of size given by
+        the current 
+        '''
+        self.setPens()
+        self.line_pen = mkPen({
+            'color': self['Line color'],
+            'width': self['Line width']})
+        
+        size   = size_w
+        painter = QtGui.QPainter(pixmap)
+        
+        painter.setRenderHint(QtGui.QPainter.Antialiasing, True)
+        painter.setRenderHint(QtGui.QPainter.HighQualityAntialiasing, True)
+        painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, True)
+        
+        fill_path = QtGui.QPainterPath()
+        fill_path.moveTo(0,1)
+        fill_path.lineTo(1,0)
+        fill_path.lineTo(1,1)
+        fill_path.lineTo(0,1)
+        
+        line_path = QtGui.QPainterPath()
+        line_path.moveTo(0,1)
+        line_path.lineTo(1,0)
+
+        painter.scale(size, size)
+        
+        if self['Fill']:
+            painter.setPen(mkPen({'color': (0,0,0,0)}))
+            painter.setBrush(self.fill_brush)
+            painter.drawPath(fill_path)
+        
+        painter.setPen(self.line_pen)
+        painter.setBrush(mkBrush((0,0,0,0)))
+        painter.drawPath(line_path)
+    
+        painter.end()

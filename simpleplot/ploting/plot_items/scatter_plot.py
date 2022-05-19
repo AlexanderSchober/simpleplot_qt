@@ -198,20 +198,19 @@ class ScatterPlot(GraphicsItem):
             self.default_target.addItem(self.draw_items[-1])
             self.setPlotData()
             self.setVisual()
-            self.drawLegendIcon(30,30)
             
-    def drawLegendIcon(self, size_w, size_h):
+    def drawLegendIcon(self, size_w, size_h, pixmap):
         '''
         This will draw the symbol on a pixmap of size given by
         the current 
         '''
+        self._setPens()
+
         opts    = self.getLegendDictionary()
         pen     = mkPen(opts['symbolPen'])
         brush   = mkBrush(opts['symbolBrush'])
         size    = 2*size_w/3
         
-        pixmap = QtGui.QPixmap(size_w, size_h)
-        pixmap.fill(QtCore.Qt.transparent)
         painter = QtGui.QPainter(pixmap)
         painter.setRenderHint(QtGui.QPainter.Antialiasing, True)
         painter.setRenderHint(QtGui.QPainter.HighQualityAntialiasing, True)
@@ -219,7 +218,6 @@ class ScatterPlot(GraphicsItem):
         painter.translate(size_w / 2, size_h / 2)
         drawSymbol(painter, opts['symbol'], size, pen, brush)
         painter.end()
-        pixmap.save('lol.png')
         
             
 ## Build all symbol paths
