@@ -55,13 +55,13 @@ def exampleLine():
     first = ax.addPlot(
         'Scatter',
         Name='sin',
-        Style=['-', 'd', 'r', 0.2],
+        Style=['-', 'd', 'r', 0.02],
         Log=[False, False],
         Color='red')
     second = ax.addPlot(
         'Scatter',
         Name='cos',
-        Style=['d', 'r', 0.1],
+        Style=['d', 'r', 0.01],
         Log=[False, False])
     third = ax.addPlot(
         'Scatter',

@@ -54,9 +54,9 @@ vec4 get_lightning(vec3 p, vec3 a, vec3 b, mat4 transform)
 void main()
 {
     vec3 positions[3] = vec3[](
-        gl_in[0].gl_Position.xyz,
-        gl_in[1].gl_Position.xyz,
-        gl_in[2].gl_Position.xyz
+        (u_proj_mat*u_view_mat*u_model_mat*gl_in[0].gl_Position).xyz,
+        (u_proj_mat*u_view_mat*u_model_mat*gl_in[1].gl_Position).xyz,
+        (u_proj_mat*u_view_mat*u_model_mat*gl_in[2].gl_Position).xyz
     );
 
     //******************************************************************************
@@ -102,7 +102,7 @@ void main()
     ); 
     for(int i = 0; i < 14;++i ){
         color_vertex = get_lightning(outputs[i].xyz, positions[0], positions[1], transform);
-        gl_Position = u_proj_mat*u_view_mat*u_model_mat*vec4((transform*outputs[i]).xyz,1);
+        gl_Position = vec4((transform*outputs[i]).xyz,1);
         EmitVertex();
     }
     EndPrimitive();
@@ -156,7 +156,7 @@ void main()
 
     for(int j = 0; j < 20;++j){
         color_vertex = get_lightning(frame[indices[j]].xyz, positions[0], positions[2], transform);
-        gl_Position = u_proj_mat*u_view_mat*u_model_mat*vec4(frame[indices[j]].xyz,1);
+        gl_Position = vec4(frame[indices[j]].xyz,1);
         EmitVertex();
     }
 

@@ -70,7 +70,7 @@ class LinePlot(GraphicsItem):
             tags     = ['2D', '3D'],
             method  = self.setVisual)
         self.addParameter(
-            'Line width', float(kwargs['Thickness']) if 'Thickness' in kwargs.keys() else 3. ,
+            'Line width', float(kwargs['Thickness']) if 'Thickness' in kwargs.keys() else 0.3 ,
             tags     = ['2D', '3D'],
             method  = self.setVisual)
         self.addParameter(
@@ -188,7 +188,7 @@ class LinePlot(GraphicsItem):
         self.setPens()
         self.line_pen = mkPen({
             'color': self['Line color'],
-            'width': self['Line width']})
+            'width': self['Line width']*10})
         
         size   = size_w
         painter = QtGui.QPainter(pixmap)

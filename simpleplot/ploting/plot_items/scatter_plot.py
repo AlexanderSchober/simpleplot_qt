@@ -73,9 +73,9 @@ class ScatterPlot(GraphicsItem):
             if isinstance(style[-1], int) or isinstance(style[-1], float):
                 size   = style[-1]
             else:
-                size = 10
+                size = 0.01
         else:
-            size = 10
+            size = 0.01
 
         self.items['Visible'].updateValue(any(scatter_bool), method = False)
 
@@ -148,6 +148,7 @@ class ScatterPlot(GraphicsItem):
         self._setPens()
         parameters = {}
         parameters['drawFaces']     = True
+        parameters['drawEdges']     = False
         parameters['drawEdges']     = False
 
         self.draw_items[0].setProperties(**parameters)
