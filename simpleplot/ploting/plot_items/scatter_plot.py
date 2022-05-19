@@ -22,10 +22,10 @@
 # *****************************************************************************
 
 # General imports
-from PyQt5 import QtGui
+from http.server import BaseHTTPRequestHandler
+from PyQt5 import QtGui, QtCore
 import numpy as np
-from ...pyqtgraph                   import pyqtgraph as pg
-from ..custom_pg_items.SimplePlotDataItem import SimplePlotDataItem
+from .plot_items_helpers import mkPen, mkBrush
 
 # Personal imports
 from ..graphics_items.graphics_item import GraphicsItem
@@ -114,10 +114,10 @@ class ScatterPlot(GraphicsItem):
         '''
         Set the visual of the given shape element
         '''
-        self.symbol_pen = pg.mkPen({
+        self.symbol_pen = mkPen({
             'color': self['Line color'],
             'width': self['Line width']})
-        self.symbol_brush = pg.mkBrush(
+        self.symbol_brush = mkBrush(
             self['Fill color'])
 
     def _getDictionary(self):
@@ -144,17 +144,13 @@ class ScatterPlot(GraphicsItem):
         if not hasattr(self, 'draw_items'):
             self.redraw()
             return
+        
+        self._setPens()
+        parameters = {}
+        parameters['drawFaces']     = True
+        parameters['drawEdges']     = False
 
-        if self._mode == '2D':
-            self.draw_items[0].setData(**self._getDictionary())
-
-        elif self._mode == '3D':
-
-            parameters = {}
-            parameters['drawFaces']     = True
-            parameters['drawEdges']     = False
-
-            self.draw_items[0].setProperties(**parameters)
+        self.draw_items[0].setProperties(**parameters)
 
     def getLegendDictionary(self)->dict:
         '''
@@ -187,26 +183,6 @@ class ScatterPlot(GraphicsItem):
             vertices = vertices,
             colors = colors)
 
-    def draw(self, target_surface = None):
-        '''
-        Draw the objects.
-        '''
-        self.removeItems()
-        self._mode = '2D'
-        if not target_surface == None:
-            self.default_target = target_surface.draw_surface.vb
-            self.setCurrentTags(['2D'])
-
-        if self['Visible']:
-            self.draw_items = []
-            kwargs          = self._getDictionary()
-            self.draw_items = [SimplePlotDataItem(**kwargs)]
-            self.draw_items[-1].setZValue(self['Depth'])
-            self.draw_items[-1].scatter.opts['useCache'] = False
-
-            for curve in self.draw_items:
-                self.default_target.addItem(curve)
-
     def drawGL(self, target_view = None):
         '''
         Draw the objects.
@@ -222,3 +198,73 @@ class ScatterPlot(GraphicsItem):
             self.default_target.addItem(self.draw_items[-1])
             self.setPlotData()
             self.setVisual()
+            self.drawLegendIcon(30,30)
+            
+    def drawLegendIcon(self, size_w, size_h):
+        '''
+        This will draw the symbol on a pixmap of size given by
+        the current 
+        '''
+        opts    = self.getLegendDictionary()
+        pen     = mkPen(opts['symbolPen'])
+        brush   = mkBrush(opts['symbolBrush'])
+        size    = 2*size_w/3
+        
+        pixmap = QtGui.QPixmap(size_w, size_h)
+        pixmap.fill(QtCore.Qt.transparent)
+        painter = QtGui.QPainter(pixmap)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing, True)
+        painter.setRenderHint(QtGui.QPainter.HighQualityAntialiasing, True)
+        painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, True)
+        painter.translate(size_w / 2, size_h / 2)
+        drawSymbol(painter, opts['symbol'], size, pen, brush)
+        painter.end()
+        pixmap.save('lol.png')
+        
+            
+## Build all symbol paths
+Symbols = {name: QtGui.QPainterPath() for name in ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']}
+Symbols['o'].addEllipse(QtCore.QRectF(-0.5, -0.5, 1, 1))
+Symbols['s'].addRect(QtCore.QRectF(-0.5, -0.5, 1, 1))
+coords = {
+    't': [(-0.5, -0.5), (0, 0.5), (0.5, -0.5)],
+    't1': [(-0.5, 0.5), (0, -0.5), (0.5, 0.5)],
+    't2': [(-0.5, -0.5), (-0.5, 0.5), (0.5, 0)],
+    't3': [(0.5, 0.5), (0.5, -0.5), (-0.5, 0)],
+    'd': [(0., -0.5), (-0.4, 0.), (0, 0.5), (0.4, 0)],
+    '+': [
+        (-0.5, -0.05), (-0.5, 0.05), (-0.05, 0.05), (-0.05, 0.5),
+        (0.05, 0.5), (0.05, 0.05), (0.5, 0.05), (0.5, -0.05),
+        (0.05, -0.05), (0.05, -0.5), (-0.05, -0.5), (-0.05, -0.05)
+    ],
+    'p': [(0, -0.5), (-0.4755, -0.1545), (-0.2939, 0.4045),
+          (0.2939, 0.4045), (0.4755, -0.1545)],
+    'h': [(0.433, 0.25), (0., 0.5), (-0.433, 0.25), (-0.433, -0.25),
+          (0, -0.5), (0.433, -0.25)],
+    'star': [(0, -0.5), (-0.1123, -0.1545), (-0.4755, -0.1545),
+             (-0.1816, 0.059), (-0.2939, 0.4045), (0, 0.1910),
+             (0.2939, 0.4045), (0.1816, 0.059), (0.4755, -0.1545),
+             (0.1123, -0.1545)]
+}
+for k, c in coords.items():
+    Symbols[k].moveTo(*c[0])
+    for x,y in c[1:]:
+        Symbols[k].lineTo(x, y)
+    Symbols[k].closeSubpath()
+tr = QtGui.QTransform()
+tr.rotate(45)
+Symbols['x'] = tr.map(Symbols['+'])
+
+
+def drawSymbol(painter, symbol, size, pen, brush):
+    if symbol is None:
+        return
+    
+    painter.scale(size, size)
+    painter.setPen(pen)
+    painter.setBrush(brush)
+    if isinstance(symbol, str):
+        symbol = Symbols[symbol]
+    if np.isscalar(symbol):
+        symbol = list(Symbols.values())[symbol % len(Symbols)]
+    painter.drawPath(symbol)

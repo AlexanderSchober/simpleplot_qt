@@ -22,10 +22,9 @@
 # *****************************************************************************
 
 # General imports
-from PyQt5 import QtGui
+from PyQt5 import QtGui, QtCore
 import numpy as np
-from ...pyqtgraph import pyqtgraph as pg
-from ..custom_pg_items.SimplePlotDataItem import SimplePlotDataItem
+from .plot_items_helpers import mkPen, mkBrush
 
 # Personal imports
 from ..graphics_items.graphics_item import GraphicsItem
@@ -114,15 +113,15 @@ class LinePlot(GraphicsItem):
         This method will initialise the Qpen as the
         the QPainter method
         '''
-        self.line_pen = pg.mkPen({
+        self.line_pen = mkPen({
             'color': self['Line color'],
             'width': self['Line width']})
 
-        self.shadow_pen = pg.mkPen({
+        self.shadow_pen = mkPen({
             'color': self['Shadow color'],
             'width': self['Shadow width']})
 
-        self.fill_brush = pg.mkBrush(self['Fill color'])
+        self.fill_brush = mkBrush(self['Fill color'])
 
     def getLegendDictionary(self)->dict:
         '''
@@ -141,34 +140,18 @@ class LinePlot(GraphicsItem):
             self.redraw()
             return
 
-        if self._mode == '2D':
-            self.setPens()
-            data = self.parent()._plot_data.getData()
+        kwargs = {}
+        kwargs['line_draw'] = self['Visible']
+        kwargs['fill_draw'] = self['Fill']
+        
+        kwargs['line_color'] = np.array(self['Line color'].getRgbF())
+        kwargs['line_width'] = np.array([self['Line width']/100.])
 
-            kwargs = {}
-            kwargs['x']         = data[0]
-            kwargs['y']         = data[1]
-            kwargs['connect']   = 'all'
-            kwargs['pen']       = self.line_pen
-            kwargs['shadowPen'] = self.shadow_pen
-            kwargs['antialias'] = True
-            kwargs['brush']     = self.fill_brush if self['Fill'] else None
-            kwargs['fillLevel'] = self['Fill level'] if self['Fill'] else None
-            self.draw_items[0].setData(**kwargs)
+        kwargs['fill_color'] = np.array(self['Fill color'].getRgbF())
+        kwargs['fill_axis_start'] = np.array([self['Fill line start']])
+        kwargs['fill_axis_end'] = np.array([self['Fill line end']])
 
-        elif self._mode == '3D':
-            kwargs = {}
-            kwargs['line_draw'] = self['Visible']
-            kwargs['fill_draw'] = self['Fill']
-            
-            kwargs['line_color'] = np.array(self['Line color'].getRgbF())
-            kwargs['line_width'] = np.array([self['Line width']/100.])
-
-            kwargs['fill_color'] = np.array(self['Fill color'].getRgbF())
-            kwargs['fill_axis_start'] = np.array([self['Fill line start']])
-            kwargs['fill_axis_end'] = np.array([self['Fill line end']])
-
-            self.draw_items[0].setProperties(**kwargs)
+        self.draw_items[0].setProperties(**kwargs)
 
     def setPlotData(self):
         '''
@@ -180,25 +163,6 @@ class LinePlot(GraphicsItem):
         data = self.parent()._plot_data.getData(['x','y','z'])
         self.draw_items[0].setData(vertices = np.vstack(data).transpose())
 
-    def draw(self, target_surface = None):
-        '''
-        Draw the objects.
-        '''
-        self.removeItems()
-        self._mode = '2D'
-        if not target_surface == None:
-            self.default_target = target_surface.draw_surface.vb
-            self.setCurrentTags(['2D'])
-
-        if self['Visible']:
-            self.draw_items = []
-            self.draw_items = [SimplePlotDataItem()]
-            self.draw_items[0].setZValue(self['Depth'])
-            self.setPlotData()
-            self.setVisual()
-
-            for curve in self.draw_items:
-                self.default_target.addItem(curve)
 
     def drawGL(self, target_view = None):
         '''

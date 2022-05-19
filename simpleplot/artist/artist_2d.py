@@ -29,6 +29,7 @@ from simpleplot.models.session_node import SessionNode
 from simpleplot.ploting.graph_items.axes_item_2d import AxesItem2D
 from simpleplot.ploting.graph_items.grid_item_2d import GridItem2D
 from simpleplot.ploting.graph_items.pointer_item_2d import PointerItem2D
+from simpleplot.ploting.graph_items.legend_item import LegendItem
 # from simpleplot.ploting.graph_items.axes_orientation_item_3D import AxesOrientationItem3D
 # from simpleplot.ploting.graph_items.grid_item_3D import GridItem3D
 
@@ -76,6 +77,11 @@ class Artist2DNode(SessionNode, Artist):
             self.pointer = PointerItem2D(self, self.canvas, self.axes)
             self.model().appendRow(self.pointer, self)
             self.pointer.initialize()
+            
+        if self.legend is None:
+            self.legend = LegendItem(self, self.canvas)
+            self.model().appendRow(self.legend, self)
+            self.legend.initialize()
 
     def connect(self):
         """
@@ -103,6 +109,7 @@ class Artist2DNode(SessionNode, Artist):
                 and self.canvas.plotModel().itemAt(index).name in ['Data', 'Transform']):
             self.axes.refreshAuto()
             self.grids.refreshAuto()
+            self.legend.buildLegend()
 
     def draw(self):
         """
@@ -194,8 +201,6 @@ class Artist2DNode(SessionNode, Artist):
     #     and thus the some things have to be done
     #     """
     #     if not self.canvas.plotModel().itemAt(index) is None and self.canvas.plotModel().itemAt(index).name == 'Data':
-    #         self.pointer.refreshPlotData()
-    #         self.zoomer.zoom()
     #         self.legend.buildLegend()
     #
     # def draw(self):

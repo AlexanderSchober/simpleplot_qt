@@ -23,14 +23,12 @@
 
 #import dependencies
 from PyQt5 import QtGui
-from functools import partial
 import numpy as np
 
 #import personal dependencies
 from ..graphics_items.graphics_item import GraphicsItem
 from ..graph_views_3D.font_to_bitmap import getFontPaths
 from ..graph_views_3D.pointer_view_2d  import PointerView2D
-from ...models.parameter_class      import ParameterHandler 
 
 class PointerItem2D(GraphicsItem): 
     def __init__(self, parent, canvas, axis_items):
@@ -38,7 +36,6 @@ class PointerItem2D(GraphicsItem):
         self.canvas = canvas
         self._fonts = getFontPaths()
         self._axis_items = axis_items
-        self._handler = ParameterHandler(name = 'Pointer', parent = self)
         self._pointer_view = None
 
     def initialize(self):
@@ -47,34 +44,34 @@ class PointerItem2D(GraphicsItem):
         self._pointer_view = PointerView2D()
         self.canvas.view.addGraphItem(self._pointer_view)
 
-        self._handler.addParameter(
+        self.addParameter(
             'Active',  True,
             method = self.setParameters)
 
-        self._handler.addParameter(
+        self.addParameter(
             'Thickness', 2.,
             method = self.setParameters)
 
-        self._handler.addParameter(
+        self.addParameter(
             'Size', 20.,
             method = self.setParameters)
         
-        self._handler.addParameter(
+        self.addParameter(
             'Color', QtGui.QColor(0, 0, 0, 255),
             method = self.setParameters)
         
-        self._handler.addParameter(
+        self.addParameter(
             'Label',
             [True, 16, QtGui.QColor('black'), True, QtGui.QColor.fromRgbF(0,0,0,0.2)],
             names=['Draw', 'Size', 'Color','Draw Backg.', 'Background'],
             method=self.setParameters)
         
-        self._handler.addParameter(
+        self.addParameter(
             'Label font', self.font().family() if self.font().family() != 'MS Shell Dlg 2' else 'Arial',
             choices=[key for key in self._fonts.keys()],
             method=self.setParameters)
 
-        self._handler.addParameter(
+        self.addParameter(
             'Label scientific',
             [True, 4, True, 4],
             choices=[key for key in self._fonts.keys()],
@@ -88,20 +85,20 @@ class PointerItem2D(GraphicsItem):
         '''
         '''
         parameters = {}
-        parameters['draw_pointer']        = self._handler['Active']
-        parameters['pointer_thickness']   = np.array([self._handler['Thickness']])
-        parameters['pointer_size']        = np.array([self._handler['Size']])
-        parameters['pointer_color']       = np.array(self._handler['Color'].getRgbF())
+        parameters['draw_pointer']        = self['Active']
+        parameters['pointer_thickness']   = np.array([self['Thickness']])
+        parameters['pointer_size']        = np.array([self['Size']])
+        parameters['pointer_color']       = np.array(self['Color'].getRgbF())
         
-        parameters['draw_label']          = self._handler['Label'][0]
-        parameters['label_color']         = np.array(self._handler['Label'][2].getRgbF())
-        parameters['draw_label_box']      = np.array([int(self._handler['Label'][3])])
-        parameters['label_box_color']     = np.array(self._handler['Label'][4].getRgbF())
+        parameters['draw_label']          = self['Label'][0]
+        parameters['label_color']         = np.array(self['Label'][2].getRgbF())
+        parameters['draw_label_box']      = np.array([int(self['Label'][3])])
+        parameters['label_box_color']     = np.array(self['Label'][4].getRgbF())
         
-        parameters['label_sci']            = [self._handler['Label scientific'][0], self._handler['Label scientific'][2]]
-        parameters['label_sci_prec']       = [self._handler['Label scientific'][1], self._handler['Label scientific'][3]]
+        parameters['label_sci']            = [self['Label scientific'][0], self['Label scientific'][2]]
+        parameters['label_sci_prec']       = [self['Label scientific'][1], self['Label scientific'][3]]
         
-        self._pointer_view.setLabelFont(self._handler['Label font'], self._handler['Label'][1])
+        self._pointer_view.setLabelFont(self['Label font'], self['Label'][1])
         self._pointer_view.setProperties(**parameters)
 
     def refreshAuto(self):

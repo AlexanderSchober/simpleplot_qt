@@ -105,7 +105,41 @@ class Font(object):
 
         return output_dict
 
+    def renderTextBitmap(self, text):
+        """
 
+        """
+        output_dict = {
+            'bitmap': self._numpy_bitmap,
+            'positions_rows': self._positions_rows,
+            'positions_width': self._positions_width,
+            'char_width': self._char_width
+        }
+
+        char_index = np.zeros(len(text), dtype=np.uint16)
+        for i, char in enumerate(text):
+            char_index[i] = self.glyph_buffer[char]['unicode_idx']
+        output_dict['char_index'] = char_index
+
+        # Get the width of the text
+        width = sum([output_dict['char_width'][index] for index in output_dict['char_index']])
+        numpy_bitmap = np.zeros((self.size, width), dtype=np.uint8)
+        position = 0
+        for char_idx in output_dict['char_index']:
+            
+            numpy_bitmap[:, position:position+output_dict['char_width'][char_idx]] = self._numpy_bitmap[
+                output_dict['positions_rows'][char_idx]:output_dict['positions_rows'][char_idx]+self.size,
+                output_dict['positions_width'][char_idx]:output_dict['positions_width'][char_idx]+output_dict['char_width'][char_idx],
+            ]
+            position += output_dict['char_width'][char_idx]
+            
+        # from PIL import Image
+        # im = Image.fromarray(numpy_bitmap)
+        # im.save("your_file.jpeg")
+        
+        return numpy_bitmap
+    
+    
 def getFontPaths():
     font_paths = QStandardPaths.standardLocations(QStandardPaths.FontsLocation)
     accounted = []
@@ -134,12 +168,12 @@ if __name__ == '__main__':
     # Be sure to place 'helvetica.ttf' (or any other ttf / otf font file) in the working directory.
     family_to_path = getFontPaths()
     start = time.time_ns()
-    fnt = Font(family_to_path['Courier New'], 100)
+    fnt = Font(family_to_path['Courier New'], 20)
     end = time.time_ns()
     print(1e-9 * (end - start))
 
     # Choosing the baseline correctly
     start = time.time_ns()
-    print(fnt.render_text('No Title'))
+    print(fnt.renderTextBitmap('No Title'))
     end = time.time_ns()
     print(1e-9 * (end - start))
