@@ -24,7 +24,6 @@
 # General imports
 import moderngl
 import numpy as np
-import OpenGL.GL as gl
 from pathlib import Path
 
 # Personal imports
@@ -37,6 +36,11 @@ class DistributionView3D(GraphicsView3D):
     '''
     def __init__(self, **opts):
         super().__init__(**opts)
+        self._parameters = {}
+        self._parameters['mode'] = np.array([1.])
+        self._parameters['drawFaces'] = True
+        self._parameters['drawEdges'] = True
+        self._parameters['line_width'] = np.array([5.])
 
     def initializeGL(self)->None:
         '''
@@ -52,8 +56,9 @@ class DistributionView3D(GraphicsView3D):
             frag_shader=self._fragmentShader(),
             geometry_shader=self._geometryShader('edges'))
 
-        self._vertices  = np.zeros((100,4))
-        self._colors    = np.zeros((100,4))
+        self._vertices    = np.zeros((100,4))
+        self._fill_colors = np.zeros((100,4))
+        self._line_colors = np.zeros((100,4))
         
         self._updateTilesVBO()
         self.setMVP()
@@ -65,6 +70,7 @@ class DistributionView3D(GraphicsView3D):
         Set the properties to diplay the graph
         '''
         self._parameters.update(kwargs)
+        self.setUniforms(**self._parameters)
         self._updateTilesVBO()
         self.update()
 
@@ -75,7 +81,7 @@ class DistributionView3D(GraphicsView3D):
         self._parameters_colors.update(kwargs)
         self.update()
 
-    def setData(self, vertices:np.array, colors:np.array)->None:
+    def setData(self, vertices:np.array, fill_colors:np.array, line_colors:np.array)->None:
         '''
         Set the data for display
 
@@ -86,8 +92,9 @@ class DistributionView3D(GraphicsView3D):
         faces : np.arrays
             The list of faces for the ibo
         '''
-        self._vertices  = vertices
-        self._colors    = colors
+        self._vertices    = vertices
+        self._fill_colors = fill_colors
+        self._line_colors = line_colors
 
         self._updateTilesVBO()
         self.update()
@@ -104,21 +111,26 @@ class DistributionView3D(GraphicsView3D):
         Here we will order the software to inject the main data into
         the present buffers
         '''
-        self._createVBO("tiles", self._vertices, self._colors)
+        self._createVBO("tiles", self._vertices, self._fill_colors)
         self._createVAO("tiles", {"tiles": ["4f 4f", "in_vert", "in_color"]})
-        self._createVAO("edges", {"tiles": ["4f 4f", "in_vert", "in_color"]})
+        self._createVBO("edges", self._vertices, self._line_colors)
+        self._createVAO("edges", {"edges": ["4f 4f", "in_vert", "in_color"]})
 
     def _paintTiles(self)->None:
         '''
         This will paint the tiles of the shape onto the canvas
         '''
         if self._parameters['drawFaces']:
+            self._programs['tiles']['viewport_size'].value = tuple(self.context().viewport[2:])
+            self.context().disable(moderngl.CULL_FACE | moderngl.DEPTH_TEST)
             self._vaos['tiles'].render(mode = moderngl.POINTS)
+            self.context().enable(moderngl.CULL_FACE | moderngl.DEPTH_TEST)
 
         if self._parameters['drawEdges']:
-            gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE)
+            self._programs['edges']['viewport_size'].value = tuple(self.context().viewport[2:])
+            self.context().disable(moderngl.CULL_FACE | moderngl.DEPTH_TEST)
             self._vaos['edges'].render(mode = moderngl.POINTS)
-            gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
+            self.context().enable(moderngl.CULL_FACE | moderngl.DEPTH_TEST)
 
     def _vertexShader(self)->str:
         '''

@@ -41,8 +41,8 @@ class ScatterPlotHandler(PlotHandler):
         self._plot_data = LineData(**kwargs)
         self.addChild(self._plot_data)
 
-        self.addChild(ScatterPlot(**kwargs))
         self.addChild(LinePlot(**kwargs))
+        self.addChild(ScatterPlot(**kwargs))
         self.addChild(ErrorPlot(**kwargs))
 
     def setPlotData(self, **kwargs):

@@ -13,6 +13,7 @@ uniform vec3 u_light_color;
 
 uniform vec4 line_color;
 uniform float line_width;
+uniform float draw_flat = 1;
 
 out vec4 color_vertex;
 
@@ -102,7 +103,7 @@ void main()
     ); 
     for(int i = 0; i < 14;++i ){
         color_vertex = get_lightning(outputs[i].xyz, positions[0], positions[1], transform);
-        gl_Position = vec4((transform*outputs[i]).xyz,1);
+        gl_Position = vec4((transform*outputs[i]).x, (transform*outputs[i]).y, draw_flat==1 ? 0 : (transform*outputs[i]).z ,1);
         EmitVertex();
     }
     EndPrimitive();
@@ -156,7 +157,7 @@ void main()
 
     for(int j = 0; j < 20;++j){
         color_vertex = get_lightning(frame[indices[j]].xyz, positions[0], positions[2], transform);
-        gl_Position = vec4(frame[indices[j]].xyz,1);
+        gl_Position = vec4(frame[indices[j]].x, frame[indices[j]].y, draw_flat==1 ? 0 : frame[indices[j]].z ,1);
         EmitVertex();
     }
 

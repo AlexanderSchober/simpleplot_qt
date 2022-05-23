@@ -22,7 +22,6 @@
 # *****************************************************************************
 
 # General imports
-from http.server import BaseHTTPRequestHandler
 from PyQt5 import QtGui, QtCore
 import numpy as np
 from .plot_items_helpers import mkPen, mkBrush
@@ -63,48 +62,63 @@ class ScatterPlot(GraphicsItem):
             will override the predefined values
         '''
         style           = kwargs.get('Style', [])
-        options         = ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']
-        scatter_bool    = [option in style for option in options]
+        self.options    = ['o', 't', 't1', 't2', 't3', 'd', 's', 'p', 'h', '+', 'x', 'star']
+        scatter_bool    = [option in style for option in self.options ]
 
-        symbol = options[scatter_bool.index(True)] if any(scatter_bool) else 'o'
+        symbol = self.options [scatter_bool.index(True)] if any(scatter_bool) else 'o'
         color  = QtGui.QColor(kwargs.get('Color', QtGui.QColor('blue')))
 
         if any(scatter_bool):
             if isinstance(style[-1], int) or isinstance(style[-1], float):
                 size   = style[-1]
             else:
-                size = 0.01
+                size = 1
         else:
-            size = 0.01
+            size = 1
 
         self.items['Visible'].updateValue(any(scatter_bool), method = False)
 
         self.addParameter(
             'Type', symbol ,
-            choices = options,
-            names   = options,
-            tags     = ['2D'],
+            choices = self.options ,
+            tags     = ['2D', '3D'],
             method  = self.setVisual)
+        
         self.addParameter(
             'Size', float(size) ,
             tags     = ['2D', '3D'],
             method  = self.setPlotData)
+        
+        self.addParameter(
+            'Fill', True ,
+            tags     = ['2D', '3D'],
+            method  = self.setVisual)
+        
         self.addParameter(
             'Fill color', color ,
             tags     = ['2D', '3D'],
             method  = self.setPlotData)
+        
+        self.addParameter(
+            'Line', True ,
+            tags     = ['2D', '3D'],
+            method  = self.setVisual)
+
         self.addParameter(
             'Line color', QtGui.QColor('black') ,
             tags     = ['2D', '3D'],
             method  = self.setVisual)
+        
         self.addParameter(
-            'Line width', 3 ,
+            'Line width', 3. ,
             tags     = ['2D', '3D'],
             method  = self.setVisual)
+        
         self.addParameter(
             'Antialiassing', True ,
             tags     = ['2D', '3D'],
             method  = self.setVisual)
+        
         self.addParameter(
             'Depth', 1.,
             tags     = ['2D'],
@@ -147,9 +161,10 @@ class ScatterPlot(GraphicsItem):
         
         self._setPens()
         parameters = {}
-        parameters['drawFaces']     = True
-        parameters['drawEdges']     = False
-        parameters['drawEdges']     = False
+        parameters['mode'] = np.array([float(self.options.index(self['Type']))])
+        parameters['drawFaces'] = self['Fill']
+        parameters['drawEdges'] = self['Line']
+        parameters['line_width'] = np.array([float(self['Line width']/10)])
 
         self.draw_items[0].setProperties(**parameters)
 
@@ -177,12 +192,14 @@ class ScatterPlot(GraphicsItem):
         vertices = np.ones((data.shape[0],4), dtype=np.float)
         vertices *= self['Size']
         vertices[:,:3] = data
-        colors = np.ones((data.shape[0],4))
-        colors *= np.array(self['Fill color'].getRgbF())
-
+        fill_colors = np.ones((data.shape[0],4))
+        fill_colors *= np.array(self['Fill color'].getRgbF())
+        line_colors = np.ones((data.shape[0],4))
+        line_colors *= np.array(self['Line color'].getRgbF())
         self.draw_items[0].setData(
             vertices = vertices,
-            colors = colors)
+            fill_colors = fill_colors,
+            line_colors = line_colors)
 
     def drawGL(self, target_view = None):
         '''
@@ -226,19 +243,19 @@ Symbols = {name: QtGui.QPainterPath() for name in ['o', 's', 't', 't1', 't2', 't
 Symbols['o'].addEllipse(QtCore.QRectF(-0.5, -0.5, 1, 1))
 Symbols['s'].addRect(QtCore.QRectF(-0.5, -0.5, 1, 1))
 coords = {
-    't': [(-0.5, -0.5), (0, 0.5), (0.5, -0.5)],
-    't1': [(-0.5, 0.5), (0, -0.5), (0.5, 0.5)],
-    't2': [(-0.5, -0.5), (-0.5, 0.5), (0.5, 0)],
-    't3': [(0.5, 0.5), (0.5, -0.5), (-0.5, 0)],
-    'd': [(0., -0.5), (-0.4, 0.), (0, 0.5), (0.4, 0)],
+    't': [(-0.5, -0.5), (0, 0.5), (0.5, -0.5)], # triangle inverted
+    't1': [(-0.5, 0.5), (0, -0.5), (0.5, 0.5)], # triangle normal
+    't2': [(-0.5, -0.5), (-0.5, 0.5), (0.5, 0)], # triangle right
+    't3': [(0.5, 0.5), (0.5, -0.5), (-0.5, 0)], # triangle left
+    'd': [(0., -0.5), (-0.4, 0.), (0, 0.5), (0.4, 0)], # diamond
     '+': [
         (-0.5, -0.05), (-0.5, 0.05), (-0.05, 0.05), (-0.05, 0.5),
         (0.05, 0.5), (0.05, 0.05), (0.5, 0.05), (0.5, -0.05),
         (0.05, -0.05), (0.05, -0.5), (-0.05, -0.5), (-0.05, -0.05)
     ],
-    'p': [(0, -0.5), (-0.4755, -0.1545), (-0.2939, 0.4045),
+    'p': [(0, -0.5), (-0.4755, -0.1545), (-0.2939, 0.4045), # penthagon
           (0.2939, 0.4045), (0.4755, -0.1545)],
-    'h': [(0.433, 0.25), (0., 0.5), (-0.433, 0.25), (-0.433, -0.25),
+    'h': [(0.433, 0.25), (0., 0.5), (-0.433, 0.25), (-0.433, -0.25), # hexagone
           (0, -0.5), (0.433, -0.25)],
     'star': [(0, -0.5), (-0.1123, -0.1545), (-0.4755, -0.1545),
              (-0.1816, 0.059), (-0.2939, 0.4045), (0, 0.1910),
