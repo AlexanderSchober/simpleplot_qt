@@ -297,12 +297,17 @@ class CanvasNode(SessionNode):
             self.loadFromFile(self.handler['Config. path'])
             self.handler.items['Config. path'].updateValue(temp_path, False)
             self._ignore_path_change = False
-
+        elif not  self._ignore_path_change:
+            self._ignore_path_change = True
+            self.handler.runAll()
+            self._ignore_path_change = False
+        
     def _configurationActiveSet(self):
         """
         This will tell the model to either follow the
         changes of the active configuration and write them 
         on file or not
+        
         """
         if self.handler['Actively write config.']:
             self.model().dataChanged.connect(self._saveToCurrent)

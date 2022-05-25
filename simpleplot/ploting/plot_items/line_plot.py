@@ -34,7 +34,7 @@ class LinePlot(GraphicsItem):
     '''
     This class will be the scatter plots. 
     '''
-    def __init__(self,*args, **kwargs):
+    def __init__(self, *args, **kwargs):
         '''
         Initialisation of the class and super class
 
@@ -69,40 +69,49 @@ class LinePlot(GraphicsItem):
             'Line color', color ,
             tags     = ['2D', '3D'],
             method  = self.setVisual)
+        
         self.addParameter(
             'Line width', float(kwargs['Thickness']) if 'Thickness' in kwargs.keys() else 0.3 ,
             tags     = ['2D', '3D'],
             method  = self.setVisual)
+        
         self.addParameter(
             'Shadow color', QtGui.QColor('black') ,
             tags     = ['2D'],
             method  = self.setVisual)
+        
         self.addParameter(
             'Shadow width', 0 ,
             tags     = ['2D'],
             method  = self.setVisual)
+        
         self.addParameter(
             'Fill', False ,
             tags     = ['2D', '3D'],
             method  = self.setVisual)
+        
         self.addParameter(
             'Fill level', 0. ,
             tags     = ['2D'],
             method  = self.setVisual)
+        
         self.addParameter(
             'Fill line start', [0.,0.,0.],
             names   = ['x','y','z'], 
             tags    = ['3D'],
             method  = self.setVisual)
+        
         self.addParameter(
             'Fill line end', [1.,0.,0.],
             names   = ['x','y','z'], 
             tags    = ['3D'],
             method  = self.setVisual)
+        
         self.addParameter(
             'Fill color', QtGui.QColor('blue') ,
             tags     = ['2D', '3D'],
             method  = self.setVisual)
+        
         self.addParameter(
             'Depth', 0.,
             tags     = ['2D'],
@@ -136,11 +145,6 @@ class LinePlot(GraphicsItem):
         '''
         Set the visual of the given shape element
         '''
-        if not hasattr(self, 'draw_items'):
-            self.redraw()
-            return
-
-        
         kwargs = {}
         kwargs['line_draw'] = self['Visible']
         kwargs['fill_draw'] = self['Fill']

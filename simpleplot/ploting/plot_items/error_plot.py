@@ -21,43 +21,25 @@
 #
 # *****************************************************************************
 
+# General imports
 from PyQt5 import QtGui
-from copy import deepcopy
 import numpy as np
+from .plot_items_helpers import mkPen, mkBrush
 
-from ...pyqtgraph                   import pyqtgraph as pg
-from ...pyqtgraph.pyqtgraph         import opengl as gl
+# Personal imports
+from ..graphics_items.graphics_item import GraphicsItem
+from ..plot_views_3D.error_bar_view_3D import ErrorBarView
 
-from ..custom_pg_items.SimplePlotDataItem import SimplePlotDataItem
-from ..custom_pg_items.SimpleErrorBarItem import SimpleErrorBarItem
-
-from ...models.parameter_class       import ParameterHandler 
-
-class ErrorPlot(ParameterHandler): 
+class ErrorBarItem(GraphicsItem): 
     '''
     This class will be the scatter plots. 
     '''
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         '''
-        This class serves as envelope for the 
-        PlotDataItem. Note that the axis of y will be
-        changed to z in case of a 3D representation while the 
-        y axis will be set to 0. This seems more
-        natural.
 
-        Parameters
-        -----------
-        x : 1D numpy array
-            the x data
-        y : 1D numpy array
-            the y data
-        z : 1D numpy array
-            the z data
-        error: dict of float arrays
-            The error of each point
         '''
-        ParameterHandler.__init__(self, 'Error')
+        super().__init__('Error', *args, transformer = False, **kwargs)
         self._initialize(**kwargs)
         self._mode = '2D'
 
@@ -75,121 +57,74 @@ class ErrorPlot(ParameterHandler):
             'Visible', True , 
             tags    = ['2D'],
             method = self.refresh)
-        self.addParameter(
-            'Antialiassing', True ,
-            tags    = ['2D'],
-            method  = self.refresh)
+
         self.addParameter(
             'Line color', QtGui.QColor('grey') ,
             tags    = ['2D'],
-            method  = self.refresh)
+            method  = self.setPlotData)
+        
         self.addParameter(
-            'Line width', 2,
+            'Line width', 0.2,
             tags    = ['2D'],
-            method  = self.refresh)
+            method  = self.setVisual)
+        
         self.addParameter(
-            'Beam', 0.1 ,
+            'Beam', 5 ,
             tags    = ['2D'],
-            method  = self.refresh)
-        self.addParameter(
-            'Depth', -1,
-            tags     = ['2D'],
-            method  = self.refresh)
+            method  = self.setVisual)
+        
 
-    def _setVisual(self):
+    def setVisual(self):
         '''
         This method will initialise the Qpen as the
         the QPainter method
         '''
-        self.line_pen = pg.mkPen({
-            'color': self['Line color'],
-            'width': self['Line width']})
+        parameters = {}
+        parameters['line_width'] = np.array([self['Line width']])
+        parameters['beam_width'] = np.array([self['Beam']])
+        self.draw_items[0].setProperties(**parameters)
 
-    def _getDictionary(self):
+    def setPlotData(self):
         '''
         Build the dictionary used for plotting
         '''
-        kwargs = {}
-        if self._mode == '2D':
+        data = self.parent()._plot_data.getData(['x','y','z'])
+        error = self.parent()._plot_data.getError()
 
-            self._setVisual()
-            data    = self.parent()._plot_data.getData()
-            error   = self.parent()._plot_data.getError()
-
-            if error is None:
-                error = {'width':0, 'height':0}
-                kwargs['x']         = data[0]
-                kwargs['y']         = data[1]
-                kwargs['pen']       = self.line_pen
-                kwargs['beam']      = 0
-                kwargs = {**kwargs, **error}
-            else:
-                kwargs['x']         = data[0]
-                kwargs['y']         = data[1]
-                kwargs['pen']       = self.line_pen
-                kwargs['beam']      = self['Beam']
-                kwargs = {**kwargs, **error}
-                
-        return kwargs
+        data = np.vstack(data).transpose()
+        vertice_data = np.ones((data.shape[0],4), dtype=np.float)
+        vertice_data[:,:3] = data
+        
+        self.draw_items[0].setData(
+            vertices = vertice_data, 
+            line_colors = np.repeat(
+                np.array([self['Line color'].getRgbF()]),
+                data.shape[0],
+                axis=0),
+            error_x=error['x'],
+            error_y=error['y'],
+            error_z=error['z'],
+            )
+        self.setVisual()
 
     def refresh(self):
         '''
         Set the data of the plot manually after the plot item 
         has been actualized
         '''
-        if hasattr(self, 'draw_items'):
-            if self['Visible'] and self._mode == '2D':
-                kwargs = self._getDictionary()
-                self.draw_items[0].setData(**kwargs)
-                self.draw_items[0].setZValue(self['Depth'])
-            else:
-                for i in range(len(self.draw_items))[::-1]:
-                    if self._mode == '2D':
-                        self.default_target.draw_surface.removeItem(self.draw_items[i])
-                del self.draw_items
-        else:
-            if self['Visible'] and self._mode == '2D':
-                self.draw()
-
-    def draw(self, target_surface = None):
-        '''
-        Draw the objects.
-        '''
-        self._mode = '2D'
-        if not target_surface == None:
-            self.default_target = target_surface
-            self.setCurrentTags(['2D'])
-
-        self.draw_items = []
-        kwargs          = self._getDictionary()
-        self.draw_items.append(SimpleErrorBarItem(**kwargs))
-        self.draw_items[0].setZValue(self['Depth'])
-
-        for curve in self.draw_items:
-            self.default_target.draw_surface.addItem(curve)
+        self.setPlotData()
 
     def drawGL(self, target_view = None):
         '''
         Draw the objects.
         '''
+        self.removeItems()
         self._mode = '3D'
-        
         if not target_view == None:
-            self.default_target = target_view
-            self.setCurrentTags(['3D'])
+            self.default_target = target_view.view
 
-        self.draw_items = []
-
-    def removeItems(self):
-        '''
-        Remove the objects.
-        '''
-        if hasattr(self, 'draw_items'):
-            for curve in self.draw_items:
-                self.default_target.draw_surface.removeItem(curve)
-
-    def processRay(self, ray):
-        '''
-        try to process the ray intersection
-        '''
-        pass
+        if self['Visible']:
+            self.draw_items = [ErrorBarView()]
+            self.default_target.addItem(self.draw_items[-1])
+            self.setPlotData()
+            self.setVisual()

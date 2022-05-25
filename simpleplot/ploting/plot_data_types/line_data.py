@@ -37,6 +37,8 @@ class LineData(PlotData, SessionNode):
         SessionNode.__init__(self, 'Data')
 
         self._axes = ['x','y','z']
+        self._data = None
+
         self.setPlotData(**kwargs)
         
     def setPlotData(self, **kwargs):
@@ -62,18 +64,56 @@ class LineData(PlotData, SessionNode):
             if element is None:
                 elements[i] = np.zeros(shape)
 
-        if 'error' in kwargs.keys():
-            self._setError(kwargs['error'])
-
         self._data = elements
         self._setBounds()
+        
+        if 'error' in kwargs.keys():
+            self._setError(kwargs['error'])
+        else:
+            self._error = {
+                'x': np.zeros((len(self._data[1]), 2)),
+                'y': np.zeros((len(self._data[1]), 2)),
+                'z': np.zeros((len(self._data[1]), 2))
+            }
 
     def _setError(self, error):
         '''
         set the local data manually even after
         initialization of the class
         '''
-        self._error = error
+        self._error = {
+            'x': np.zeros((len(self._data[1]), 2)),
+            'y': np.zeros((len(self._data[1]), 2)),
+            'z': np.zeros((len(self._data[1]), 2))
+        }
+
+        if 'width' in error.keys():
+            self._error['x'] = np.repeat(
+                np.array([[error['width']/2, error['width']/2]]),
+                len(self._data[1]), axis=0)
+            
+        if 'x' in error.keys():
+            if error['x'].shape == (len(self._data[1]), 1):
+                self._error['x'][:, 0] = error['y'][:]
+                self._error['x'][:, 1] = error['y'][:]
+            elif error['x'].shape == (len(self._data[1]), 2):
+                self._error['x'] = error['x']
+            else:
+                raise Exception('Wrong x Error shape')
+                
+        if 'height' in error.keys():
+            self._error['y'] = np.repeat(
+                np.array([[error['height']/2, error['height']/2]]),
+                len(self._data[1]), axis=0)
+
+        if 'y' in error.keys():
+            if error['y'].shape == (len(self._data[1]), 1):
+                self._error['y'][:, 0] = error['y'][:]
+                self._error['y'][:, 1] = error['y'][:]
+            elif error['y'].shape == (len(self._data[1]), 2):
+                self._error['y'] = error['y']
+            else:
+                raise Exception('Wrong y Error shape')
 
     def getData(self, axis = ['x', 'y']):
         '''

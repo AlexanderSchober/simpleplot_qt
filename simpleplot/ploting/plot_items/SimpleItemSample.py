@@ -6,7 +6,6 @@ from ...pyqtgraph.pyqtgraph import fn
 
 from ...ploting.plot_items.line_plot     import LinePlot
 from ...ploting.plot_items.scatter_plot  import ScatterPlot
-from ...ploting.plot_items.error_plot    import ErrorPlot
 
 class SimpleItemSample():
     '''

@@ -311,6 +311,27 @@ void main()
         }
         EndPrimitive();
 
-    }
+    } 
+    // else if (mode==7){
+
+    //     offset = vec4(-0.60 * (v_radius[0]-line_width)*10/viewport_size[0], -sin(ang*(i+1)) * (v_radius[0]-line_width)*10/viewport_size[1], 0.0, 0.0);
+    //     gl_Position = u_proj_mat*u_view_mat*u_model_mat*(gl_in[0].gl_Position) + offset;
+    //     EmitVertex();
+
+    //     offset = vec4(cos(ang*(i+1)) * (v_radius[0]+line_width)*10/viewport_size[0], -sin(ang*(i+1)) * (v_radius[0]+line_width)*10/viewport_size[1], 0.0, 0.0);
+    //     gl_Position = u_proj_mat*u_view_mat*u_model_mat*(gl_in[0].gl_Position) + offset;
+    //     EmitVertex();
+
+    //     offset = vec4(cos(ang*i) * (v_radius[0]-line_width)*10/viewport_size[0], -sin(ang*i) * (v_radius[0]-line_width)*10/viewport_size[1], 0.0, 0.0);
+    //     gl_Position = u_proj_mat*u_view_mat*u_model_mat*(gl_in[0].gl_Position) + offset;
+    //     EmitVertex();
+
+    //     offset = vec4(cos(ang*i) * (v_radius[0]+line_width)*10/viewport_size[0], -sin(ang*i) * (v_radius[0]+line_width)*10/viewport_size[1], 0.0, 0.0);
+    //     gl_Position = u_proj_mat*u_view_mat*u_model_mat*(gl_in[0].gl_Position) + offset;
+    //     EmitVertex();
+
+    //     EndPrimitive();
+    // }
+
     
 }

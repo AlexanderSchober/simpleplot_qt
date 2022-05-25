@@ -230,6 +230,30 @@ void main()
 
         EndPrimitive();
 
+    } else if (mode==11){
+
+        vec4 offset ;
+        offset = vec4(-0.60 * v_radius[0]*10/viewport_size[0], 0.77 * v_radius[0]*10/viewport_size[1], 0.0, 0.0);
+        gl_Position = u_proj_mat*u_view_mat*u_model_mat*(gl_in[0].gl_Position) + offset;
+        EmitVertex();
+
+        offset = vec4(-0.68 * v_radius[0]*10/viewport_size[0], 0.77 * v_radius[0]*10/viewport_size[1], 0.0, 0.0);
+        gl_Position = u_proj_mat*u_view_mat*u_model_mat*(gl_in[0].gl_Position) + offset;
+        EmitVertex();
+
+        offset = vec4(-0.7 * v_radius[0]*10/viewport_size[0], 0.68 * v_radius[0]*10/viewport_size[1], 0.0, 0.0);
+        gl_Position = u_proj_mat*u_view_mat*u_model_mat*(gl_in[0].gl_Position) + offset;
+        EmitVertex();
+
+        offset = vec4(-0.64 * v_radius[0]*10/viewport_size[0], 0.63 * v_radius[0]*10/viewport_size[1], 0.0, 0.0);
+        gl_Position = u_proj_mat*u_view_mat*u_model_mat*(gl_in[0].gl_Position) + offset;
+        EmitVertex();
+
+        offset = vec4(-0.58 * v_radius[0]*10/viewport_size[0], 0.68 * v_radius[0]*10/viewport_size[1], 0.0, 0.0);
+        gl_Position = u_proj_mat*u_view_mat*u_model_mat*(gl_in[0].gl_Position) + offset;
+        EmitVertex();
+
+        EndPrimitive();
     }
 
 }

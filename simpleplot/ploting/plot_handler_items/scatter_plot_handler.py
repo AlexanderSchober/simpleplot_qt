@@ -29,7 +29,7 @@ from .plot_handler                  import PlotHandler
 from ..plot_data_types.line_data    import LineData
 from ..plot_items.scatter_plot      import ScatterPlot
 from ..plot_items.line_plot         import LinePlot
-from ..plot_items.error_plot        import ErrorPlot
+from ..plot_items.error_plot        import ErrorBarItem
 
 class ScatterPlotHandler(PlotHandler):
 
@@ -41,9 +41,9 @@ class ScatterPlotHandler(PlotHandler):
         self._plot_data = LineData(**kwargs)
         self.addChild(self._plot_data)
 
+        self.addChild(ErrorBarItem(**kwargs))
         self.addChild(LinePlot(**kwargs))
         self.addChild(ScatterPlot(**kwargs))
-        self.addChild(ErrorPlot(**kwargs))
 
     def setPlotData(self, **kwargs):
         '''

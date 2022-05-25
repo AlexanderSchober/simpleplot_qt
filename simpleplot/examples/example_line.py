@@ -94,3 +94,5 @@ def exampleLine():
 
 if __name__ == '__main__':
     exampleLine()
+    # import cProfile
+    # cProfile.run('exampleLine()', sort='cumtime')
