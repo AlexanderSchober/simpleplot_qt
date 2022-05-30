@@ -45,7 +45,7 @@ class PointerView2D(GraphicsView3D):
         This is a placeholder for the parameter
         initialisation
         """
-        self._need_update = False
+        self._need_update = True
         self._cached_label_text = None
         self._pointer_position = np.array([[0, 0, 0, 0]], dtype='f4')
         self._label_position = np.array([[0, 0, 0, 0]], dtype='f4')
@@ -83,12 +83,8 @@ class PointerView2D(GraphicsView3D):
             vert_shader=self._vertexShader('label'),
             geometry_shader=self._geometryShader('label'),
             frag_shader=self._fragmentShader('label'))
-
-        self.setUniforms(**self._parameters)
-        self.setLabelFont('Arial', self._parameters['label_font_size'])
-        self._updatePointer()
-        self.setMVP()
-        self.setLight()
+            
+        self._need_update = True
 
     def setProperties(self, **kwargs) -> None:
         """

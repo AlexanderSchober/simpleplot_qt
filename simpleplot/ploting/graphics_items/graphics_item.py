@@ -135,22 +135,8 @@ class GraphicsItem(ParameterHandler):
         program decide which procedure to target Note
         that this routine aims at updating the data only
         '''
-        if hasattr(self, 'draw_items'):
-            if self['Visible']:
-                if self._mode == '2D':
-                    self.setVisual()
-                    self.setPlotData()
-                elif self._mode == '3D':
-                    self.setVisual()
-                    self.setPlotData()
-            else:
-                self.removeItems()
-
-        else:
-            if self['Visible'] and self._mode == '2D':
-                self.draw()
-            elif self['Visible'] and self._mode == '3D':
-                self.drawGL()
+        if not self.default_target is None:
+            self.drawGL()
 
     def setVisual(self):
         '''
@@ -223,7 +209,6 @@ class GraphicsItem(ParameterHandler):
                         self.default_target.removeItem(subcurve)
                 else:
                     self.default_target.removeItem(curve)
-            del self.draw_items
             
     def handleMove(self,coordinates:list):
         '''

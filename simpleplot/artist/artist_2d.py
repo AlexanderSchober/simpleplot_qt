@@ -104,11 +104,20 @@ class Artist2DNode(SessionNode, Artist):
         Send to the adequate elements that the plot data has changed
         and thus the some things have to be done
         """
-
+        print('LOL', self.canvas.plotModel().itemAt(index).name)
         if (self.canvas.plotModel().itemAt(index) is not None
                 and self.canvas.plotModel().itemAt(index).name in ['Data', 'Transform']):
+            self.refreshAuto()
+        else:
+            if self.legend:
+                self.legend.buildLegend()
+
+    def refreshAuto(self):
+        if self.axes:
             self.axes.refreshAuto()
+        if self.grids:
             self.grids.refreshAuto()
+        if self.legend:
             self.legend.buildLegend()
 
     def draw(self):
@@ -121,8 +130,7 @@ class Artist2DNode(SessionNode, Artist):
         for plot_handler in self.canvas.plotModel().root().children():
             plot_handler.draw(self.canvas)
 
-        self.axes.refreshAuto()
-        self.grids.refreshAuto()
+        self.refreshAuto()
 
     def redrawOverlay(self):
         """

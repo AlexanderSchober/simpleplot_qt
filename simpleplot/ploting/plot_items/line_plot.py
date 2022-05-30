@@ -50,6 +50,7 @@ class LinePlot(GraphicsItem):
         self.initializeMain(**kwargs)
         self.initialize(**kwargs)
         self._mode = '2D'
+        self.draw_items = [LineView3D()]
 
     def initialize(self, **kwargs):
         '''
@@ -141,7 +142,7 @@ class LinePlot(GraphicsItem):
         kwargs['pen']   = self.line_pen
         return kwargs
 
-    def setVisual(self):
+    def setVisual(self, silent=False):
         '''
         Set the visual of the given shape element
         '''
@@ -157,8 +158,10 @@ class LinePlot(GraphicsItem):
         kwargs['fill_axis_end'] = np.array([self['Fill line end']])
 
         self.draw_items[0].setProperties(**kwargs)
+        if not silent:
+            self.draw_items[0].update()
 
-    def setPlotData(self):
+    def setPlotData(self, silent=False):
         '''
         The preference implementation requires the ability to set
         colors without redrawing the entire data. As such we will 
@@ -167,6 +170,9 @@ class LinePlot(GraphicsItem):
         '''
         data = self.parent()._plot_data.getData(['x','y','z'])
         self.draw_items[0].setData(vertices = np.vstack(data).transpose())
+
+        if not silent:
+            self.draw_items[0].update()
 
     def drawGL(self, target_view = None):
         '''
@@ -179,11 +185,11 @@ class LinePlot(GraphicsItem):
             self.setCurrentTags(['3D'])
 
         if self['Visible']:
-            self.draw_items = [LineView3D()]
             self.default_target.addItem(self.draw_items[-1])
-            self.setPlotData()
-            self.setVisual()
-            
+            self.setPlotData(silent=True)
+            self.setVisual(silent=True)
+            self.draw_items[0].update()
+
     def drawLegendIcon(self, size_w, size_h, pixmap):
         '''
         This will draw the symbol on a pixmap of size given by

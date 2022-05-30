@@ -23,6 +23,7 @@
 
 # import general
 from PyQt5 import QtWidgets, QtGui, QtCore
+import time
 
 # import personal dependencies
 from .canvas import CanvasNode
@@ -62,7 +63,14 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         no_title allows to set titles or not
         """
         QtWidgets.QGridLayout.__init__(self)
+        self._verbose = True
+        self._time = None
+        if self._verbose:
+            self._time = time.time()
         self.grid = grid
+        if self._verbose:
+            print('MultiCanvas: Set up Grid: %s' % (time.time()-self._time))
+            self._time = time.time()
         self.element_types = element_types
         self.x_ratios = [float(e) for e in x_ratios]
         self.y_ratios = [float(e) for e in y_ratios]
@@ -70,14 +78,36 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         self.link_list = []
 
         self._setUp()
+        if self._verbose:
+            print('MultiCanvas: Set up : %s' % (time.time()-self._time))
+            self._time = time.time()
         self._processSubPlots(**kwargs)
+        if self._verbose:
+            print('MultiCanvas: Process Subplots: %s' % (time.time()-self._time))
+            self._time = time.time()
         self._initialise()
+        if self._verbose:
+            print('MultiCanvas: Init: %s' % (time.time()-self._time))
+            self._time = time.time()
 
         self._placeObjects()
+        if self._verbose:
+            print('MultiCanvas: Place_objects: %s' % (time.time()-self._time))
+            self._time = time.time()
+
         self._configureGrid()
+        if self._verbose:
+            print('MultiCanvas: Configure: %s' % (time.time()-self._time))
+            self._time = time.time()
         self._layoutManager()
+        if self._verbose:
+            print('MultiCanvas: Layout manager: %s' % (time.time()-self._time))
+            self._time = time.time()
 
         self._model.referenceModel()
+        if self._verbose:
+            print('MultiCanvas: Reference Model: %s' % (time.time()-self._time))
+            self._time = time.time()
 
     def setup(self):
         """
@@ -187,14 +217,15 @@ class MultiCanvasItem(QtWidgets.QGridLayout):
         Force al the default configurations on the 
         sub canvas items
         """
-        grid_loop = [
-            (i, j)
-            for i in range(len(self.grid))
-            for j in range(len(self.grid[0]))]
+        pass
+        # grid_loop = [
+        #     (i, j)
+        #     for i in range(len(self.grid))
+        #     for j in range(len(self.grid[0]))]
 
-        for i, j in grid_loop:
-            if not self.canvas_nodes[i][j][0] is None:
-                self.canvas_nodes[i][j][0].manageDefaultConfiguration()
+        # for i, j in grid_loop:
+        #     if not self.canvas_nodes[i][j][0] is None:
+        #         self.canvas_nodes[i][j][0].manageDefaultConfiguration()
 
     def _placeObjects(self):
         """

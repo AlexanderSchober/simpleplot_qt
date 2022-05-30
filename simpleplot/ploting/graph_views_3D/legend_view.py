@@ -46,7 +46,7 @@ class LegendView(GraphicsView3D):
         This is a placeholder for the parameter
         initialisation
         """
-        self._need_update = False
+        self._need_update = True
         self.width = 0
         self.height = 0
         
@@ -71,11 +71,8 @@ class LegendView(GraphicsView3D):
             geometry_shader=self._geometryShader('legend'),
             frag_shader=self._fragmentShader('legend'))
 
-        self.setUniforms(**self._parameters)
         self.setLegend([], [])
-        self._updateLegend()
-        self.setMVP()
-        self.setLight()
+        self._need_update = True
 
     def setProperties(self, **kwargs) -> None:
         """
@@ -182,7 +179,8 @@ class LegendView(GraphicsView3D):
             (self.legend_bitmap.shape[2], self.legend_bitmap.shape[1], self.legend_bitmap.shape[0]), 1,
             (self.legend_bitmap / 256).astype('f4').tobytes(),
             dtype='f4')
-        
+
+        self._need_update = True
         # print(self._parameters['legend_back_color'], self.legend_bitmap.flatten().tolist())
         # from PIL import Image
         # im = Image.fromarray(self.legend_bitmap)
@@ -205,6 +203,8 @@ class LegendView(GraphicsView3D):
             legend_width=np.array([self.width], dtype='f4'),
             legend_heigh=np.array([self.height], dtype='f4')
             )
+
+        self._need_update = False
 
     def paint(self):
         """

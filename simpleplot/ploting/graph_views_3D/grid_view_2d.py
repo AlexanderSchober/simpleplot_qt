@@ -45,7 +45,7 @@ class GridView2D(GraphicsView3D):
         This is a placeholder for the parameter
         initialisation
         """
-        self._need_update = False
+        self._need_update = True
         
         self._tick_values = np.array([0, 0.5, 0.7, 1])
         self._orientations = {
@@ -90,11 +90,7 @@ class GridView2D(GraphicsView3D):
             frag_shader=self._fragmentShader('small_grid'),
             geometry_shader=self._geometryShader('small_grid'))
 
-        self.setUniforms(**self._parameters)
-        self._generatePeriodicityTextures()
-        self._updateGrid()
-        self.setMVP()
-        self.setLight()
+        self._need_update = True
 
     def setProperties(self, **kwargs) -> None:
         """
@@ -102,7 +98,7 @@ class GridView2D(GraphicsView3D):
         """
         self._parameters.update(kwargs)
         self.setUniforms(**self._parameters)
-        self.update()
+        self._need_update = True
 
     def _updateGrid(self) -> None:
         """

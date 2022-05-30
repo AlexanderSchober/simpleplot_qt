@@ -96,9 +96,6 @@ class LegendItem(GraphicsItem):
             'Grid margin v',
             2,
             method = self.setParameters)
-        
-
-        self.setParameters()
 
     def setParameters(self)->None:
         '''
@@ -116,7 +113,6 @@ class LegendItem(GraphicsItem):
 
         self._legend_view.setProperties(**parameters)
         self.buildLegend()
-        
 
     def refreshAuto(self):
         '''

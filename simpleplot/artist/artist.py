@@ -109,10 +109,10 @@ class Artist:
 
         self.canvas.plotModel().referenceModel()
 
-        if self.artist_type == '2D':
-            output.draw(self.canvas)
-        elif self.artist_type == '3D':
-            output.drawGL(self.canvas)
+        # if self.artist_type == '2D':
+        #     output.draw(self.canvas)
+        # elif self.artist_type == '3D':
+        #     output.drawGL(self.canvas)
 
         return output
 

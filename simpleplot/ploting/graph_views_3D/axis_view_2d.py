@@ -58,7 +58,7 @@ class AxisView2D(GraphicsView3D):
         self._cached_label_text = None
         self._ticks_positions = None
         self._title_position = None
-        self._need_update = False
+        self._need_update = True
 
         self._parameters['draw_axis'] = True
         self._parameters['draw_ticks'] = True
@@ -127,9 +127,7 @@ class AxisView2D(GraphicsView3D):
         self.setUniforms(**self._parameters)
         self.setLabelFont('Arial', 20)
         self.setTitle('123', 'Arial', 20)
-        self._updateAxis()
-        self.setMVP()
-        self.setLight()
+        # self._updateAxis()
 
     def setProperties(self, **kwargs) -> None:
         """

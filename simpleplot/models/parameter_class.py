@@ -190,9 +190,13 @@ class ParameterHandler(SessionNode):
         '''
         Run all methods in the class
         '''
+        methods = set()
         for key in self.items.keys():
             if 'method' in self.items[key].kwargs.keys():
-                self.items[key].kwargs['method']()
+                methods.add(self.items[key].kwargs['method'])
+
+        for method in methods:
+            method()
 
     def save(self):
         '''

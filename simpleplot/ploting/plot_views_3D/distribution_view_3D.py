@@ -36,6 +36,13 @@ class DistributionView3D(GraphicsView3D):
     '''
     def __init__(self, **opts):
         super().__init__(**opts)
+        self._need_update = True
+
+    def _initParameters(self):
+        """
+        This is a placeholder for the parameter
+        initialisation
+        """
         self._parameters = {}
         self._parameters['mode'] = np.array([1.])
         self._parameters['drawFaces'] = True
@@ -60,10 +67,7 @@ class DistributionView3D(GraphicsView3D):
         self._fill_colors = np.zeros((100,4))
         self._line_colors = np.zeros((100,4))
         
-        self._updateTilesVBO()
-        self.setMVP()
-        self.setLight()
-        self.update()
+        self._need_update = True
 
     def setProperties(self, **kwargs)->None:
         '''
@@ -71,15 +75,14 @@ class DistributionView3D(GraphicsView3D):
         '''
         self._parameters.update(kwargs)
         self.setUniforms(**self._parameters)
-        self._updateTilesVBO()
-        self.update()
+        self._need_update = True
 
     def setColors(self, **kwargs)->None:
         '''
         Set the properties to diplay the graph
         '''
         self._parameters_colors.update(kwargs)
-        self.update()
+        self._need_update = True
 
     def setData(self, vertices:np.array, fill_colors:np.array, line_colors:np.array)->None:
         '''
@@ -95,15 +98,17 @@ class DistributionView3D(GraphicsView3D):
         self._vertices    = vertices
         self._fill_colors = fill_colors
         self._line_colors = line_colors
-
-        self._updateTilesVBO()
-        self.update()
+        self._need_update = True
 
     def paint(self):
         '''
         This method will set the visual representation of 
         the opengl opbject
         '''
+        if self._need_update:
+            self._updateTilesVBO()
+            self._need_update = False
+
         self._paintTiles()
 
     def _updateTilesVBO(self)->None:
@@ -171,3 +176,4 @@ class DistributionView3D(GraphicsView3D):
             return output
         else:
             return None
+            

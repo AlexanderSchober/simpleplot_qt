@@ -42,6 +42,7 @@ class ErrorBarItem(GraphicsItem):
         super().__init__('Error', *args, transformer = False, **kwargs)
         self._initialize(**kwargs)
         self._mode = '2D'
+        self.draw_items = [ErrorBarView()]
 
     def _initialize(self, **kwargs):
         '''
@@ -74,7 +75,7 @@ class ErrorBarItem(GraphicsItem):
             method  = self.setVisual)
         
 
-    def setVisual(self):
+    def setVisual(self, silent=False):
         '''
         This method will initialise the Qpen as the
         the QPainter method
@@ -83,8 +84,10 @@ class ErrorBarItem(GraphicsItem):
         parameters['line_width'] = np.array([self['Line width']])
         parameters['beam_width'] = np.array([self['Beam']])
         self.draw_items[0].setProperties(**parameters)
+        if not silent:
+            self.draw_items[0].update()
 
-    def setPlotData(self):
+    def setPlotData(self, silent=False):
         '''
         Build the dictionary used for plotting
         '''
@@ -105,14 +108,16 @@ class ErrorBarItem(GraphicsItem):
             error_y=error['y'],
             error_z=error['z'],
             )
-        self.setVisual()
-
+        if not silent:
+            self.draw_items[0].update()
+            
     def refresh(self):
         '''
         Set the data of the plot manually after the plot item 
         has been actualized
         '''
         self.setPlotData()
+        self.setVisual()
 
     def drawGL(self, target_view = None):
         '''
@@ -124,7 +129,6 @@ class ErrorBarItem(GraphicsItem):
             self.default_target = target_view.view
 
         if self['Visible']:
-            self.draw_items = [ErrorBarView()]
             self.default_target.addItem(self.draw_items[-1])
-            self.setPlotData()
-            self.setVisual()
+            self.setPlotData(silent=True)
+            self.setVisual(silent=True)

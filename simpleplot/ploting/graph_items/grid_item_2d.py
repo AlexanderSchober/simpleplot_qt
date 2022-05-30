@@ -62,46 +62,45 @@ class GridItem2D(GraphicsItem):
             self.canvas.view.addGraphItem(self._grid_views[-1])
             self._grid_views[-1].setProperties(grid_orientation=orientation)
 
+            method = partial(self.setParameters, i, True)
+
             self._handlers[2*i].addParameter(
                 'Active',  True,
-                method = partial(self.setParameters, i))
+                method=method)
 
             self._handlers[2*i].addParameter(
                 'Thickness', 1.,
-                method = partial(self.setParameters, i))
+                method=method)
 
             self._handlers[2*i].addParameter(
                 'Color', QtGui.QColor(0, 0, 0, 255),
-                method = partial(self.setParameters, i))
+                method=method)
 
             self._handlers[2*i].addParameter(
                 'Periodicity', '6, 2, 2, 2',
-                method = partial(self.setParameters, i))
+                method=method)
 
             self._handlers[2*i+1].addParameter(
                 'Active',  True,
-                method = partial(self.setParameters, i))       
+                method=method)       
 
             self._handlers[2*i+1].addParameter(
                 'Thickness', 0.5,
-                method = partial(self.setParameters, i))
+                method=method)
 
             self._handlers[2*i+1].addParameter(
                 'Color', QtGui.QColor(0, 0, 0, 255),
-                method = partial(self.setParameters, i))
+                method=method)
 
             self._handlers[2*i+1].addParameter(
                 'Periodicity', '6, 2, 2, 2',
-                method = partial(self.setParameters, i))
+                method=method)
 
             self._handlers[2*i+1].addParameter(
                 'Multiplicity', 4,
-                method = partial(self.setParameters, i))
+                method=method)
 
-        for i in range(len(self._orientations)):
-            self.setParameters(i)
-
-    def setParameters(self, i:int)->None:
+    def setParameters(self, i:int, update:bool=False)->None:
         '''
         Set the parameters of the axis items
         '''
@@ -123,6 +122,8 @@ class GridItem2D(GraphicsItem):
         parameters['small_grid_multiplicity'] = int(small_handler['Multiplicity'])
 
         self._grid_views[i].setProperties(**parameters)
+        if update:
+            self._grid_views[i].update()
 
     def refreshAuto(self):
         '''
@@ -130,4 +131,4 @@ class GridItem2D(GraphicsItem):
         based on the content
         '''
         for i in range(len(self._grid_views)):
-            self.setParameters(i)
+            self.setParameters(i, True)

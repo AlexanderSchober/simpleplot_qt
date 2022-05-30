@@ -30,6 +30,8 @@ import numpy as np
 from ..canvas.multi_canvas import MultiCanvasItem
 
 def exampleLine():
+    import time
+    start_time = time.time()
     # set upt the window and the plot widget
     app = QtWidgets.QApplication(sys.argv)
     widget = QtWidgets.QWidget()
@@ -50,6 +52,9 @@ def exampleLine():
     z = np.cos(x)
     y_1 = np.cos(x + 0.5)
     y_2 = np.cos(x) + 2 * np.sin(x)
+
+    
+    print("canvas --- %s seconds ---" % (time.time() - start_time))
 
     # set the ax plot
     first = ax.addPlot(
@@ -75,17 +80,27 @@ def exampleLine():
         Line_thickness=3,
         Style=['-'],
         Log=[False, False])
-    ax.draw()
+        
+    print("before draw --- %s seconds ---" % (time.time() - start_time))
+    # ax.draw()
+    
+    print("after draw --- %s seconds ---" % (time.time() - start_time))
 
     x_2 = np.linspace(0, 4 * np.pi, 100)
     y = np.sin(x_2)
     y_1 = np.cos(x_2 + 0.5)
     y_2 = np.sin(x_2)  # +2*np.sin(x_2)
 
+    print("SetAxes --- %s seconds ---" % (time.time() - start_time))
     first.setPlotData(x=x_2, y=y + 2)
+    print("SetData 1 --- %s seconds ---" % (time.time() - start_time))
     second.setPlotData(x=x_2, y=y_1 + 3, error={'width': 0.1, 'height': 0.5})
+    print("SetData 2 --- %s seconds ---" % (time.time() - start_time))
     third.setPlotData(x=x_2, y=y_2 + 1)
+    print("SetData 3 --- %s seconds ---" % (time.time() - start_time))
     fourth.setPlotData(x=x_2, z=y_2)
+    print("SetData 4 --- %s seconds ---" % (time.time() - start_time))
+    print("ALL --- %s seconds ---" % (time.time() - start_time))
 
     # show widget
     widget.show()

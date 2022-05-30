@@ -77,7 +77,6 @@ class PointerItem2D(GraphicsItem):
             choices=[key for key in self._fonts.keys()],
             method=self.setParameters)
 
-        
         self.setParameters()
         self.bindPointer()
 

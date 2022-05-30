@@ -36,6 +36,26 @@ class LineView3D(GraphicsView3D):
     '''
     def __init__(self, **opts):
         super().__init__(**opts)
+        self._initParameters()
+        self._need_update = True
+
+    def _initParameters(self):
+        """
+        This is a placeholder for the parameter
+        initialisation
+        """
+        self._vertices  = np.zeros((100,3))
+        self._faces     = np.zeros((100,3), dtype=np.int)
+
+        self._parameters['line_draw']   = True
+        self._parameters['line_color']  = np.array([1,1,1,1])
+        self._parameters['line_width']  = np.array([0.1])
+
+        self._parameters['fill_draw']   = True
+        self._parameters['fill_color']  = np.array([1,1,1,1])
+        self._parameters['fill_level']  = np.array([0])
+        self._parameters['fill_axis_start']   = np.array([0,0,0])
+        self._parameters['fill_axis_end']   = np.array([1,0,0])
 
     def initializeGL(self)->None:
         '''
@@ -53,24 +73,7 @@ class LineView3D(GraphicsView3D):
             frag_shader     = self._fragmentShader('fill'),
             geometry_shader = self._geometryShader('fill'))
 
-        self._vertices  = np.zeros((100,3))
-        self._faces     = np.zeros((100,3), dtype=np.int)
-
-        self._parameters['line_draw']   = True
-        self._parameters['line_color']  = np.array([1,1,1,1])
-        self._parameters['line_width']  = np.array([0.1])
-
-        self._parameters['fill_draw']   = True
-        self._parameters['fill_color']  = np.array([1,1,1,1])
-        self._parameters['fill_level']  = np.array([0])
-        self._parameters['fill_axis_start']   = np.array([0,0,0])
-        self._parameters['fill_axis_end']   = np.array([1,0,0])
-        
-        self._updateLineVBO()
-
-        self.setMVP()
-        self.setLight()
-        self.update()
+        self._need_update = True
 
     def setProperties(self, **kwargs)->None:
         '''
@@ -78,15 +81,14 @@ class LineView3D(GraphicsView3D):
         '''
         self._parameters.update(kwargs)
         self.setUniforms(**self._parameters)
-        self._updateLineVBO()
-        self.update()
+        self._need_update = True
 
     def setColors(self, **kwargs)->None:
         '''
         Set the properties to diplay the graph
         '''
         self._parameters_colors.update(kwargs)
-        self.update()
+        self._need_update = True
 
     def setData(self, vertices:np.array)->None:
         '''
@@ -102,15 +104,17 @@ class LineView3D(GraphicsView3D):
         self._vertices  = vertices
         self._faces     = np.array(
             [[i, i+1,i+2] for i in range(self._vertices.shape[0]-2)], dtype=np.int)
-
-        self._updateLineVBO()
-        self.update()
+        self._need_update = True
 
     def paint(self):
         '''
         This method will set the visual representation of 
         the opengl opbject
         '''
+        if self._need_update:
+            self._updateLineVBO()
+            self._need_update = False
+            
         self._paintTiles()
 
     def _updateLineVBO(self)->None:

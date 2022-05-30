@@ -54,7 +54,7 @@ class ContextClass(QtCore.QObject):
         else:
             return None
 
-    def addItem(self, item):
+    def addItem(self, item, silent:bool=True):
         """
         Add an item to be drawn
         """
@@ -64,11 +64,12 @@ class ContextClass(QtCore.QObject):
         if hasattr(item, 'initializeGL'):
             item.initializeGL()
 
-        self.setMVP(item)
-        self.setLight(item)
-        self.render()
+        self.setMVP(item, silent=True)
+        self.setLight(item, silent=True)
+        if not silent:
+            self.render()
 
-    def addGraphItem(self, item):
+    def addGraphItem(self, item, silent:bool=True):
         """
         Add an item to be drawn
         """
@@ -78,15 +79,19 @@ class ContextClass(QtCore.QObject):
         if hasattr(item, 'initializeGL'):
             item.initializeGL()
 
-        self.setMVP(item)
-        self.setLight(item)
-        self.render()
+        self.setMVP(item, silent=True)
+        self.setLight(item, silent=True)
+        if not silent:
+            self.render()
 
     def removeItem(self, item):
         """
         Remove an item
         """
-        self.items.remove(item)
+        try:
+            self.items.remove(item)
+        except:
+            pass
         self.render()
 
     def removeGraphItem(self, item):
@@ -153,7 +158,7 @@ class ContextClass(QtCore.QObject):
         """
         return self._camera
 
-    def setMVP(self, item=None) -> None:
+    def setMVP(self, item=None, silent=False) -> None:
         """
         Set all the mvps for the items
         in the item tree that support it
@@ -168,7 +173,8 @@ class ContextClass(QtCore.QObject):
             if hasattr(item, 'setMVP'):
                 item.setMVP(**self._camera.getDict())
 
-        self.render()
+        if not silent:
+            self.render()
 
     def setLightSource(self, light: LightSource) -> None:
         """
@@ -176,7 +182,7 @@ class ContextClass(QtCore.QObject):
         """
         self._light = light
 
-    def setLight(self, item=None) -> None:
+    def setLight(self, item=None, silent=False) -> None:
         """
         Set all the mvps for the items
         in the item tree that support it
@@ -194,9 +200,10 @@ class ContextClass(QtCore.QObject):
                     self._light.light_pos,
                     self._light.light_color)
 
-        self.render()
+        if not silent:
+            self.render()
 
-    def resizeEvent(self, x: float, y: float, width: float, height: float) -> None:
+    def resizeEvent(self, x: float, y: float, width: float, height: float, silent:bool=False) -> None:
         """
         Manage the resize event before sending it 
         to the inherited class
@@ -211,6 +218,8 @@ class ContextClass(QtCore.QObject):
             The width of the resize
         height : float
             The height of the resize
+        silent : bool
+            Do not redraw immediately
         """
         if not self.context() is None:
             self.context().viewport = (x, y, width, height)
@@ -220,7 +229,9 @@ class ContextClass(QtCore.QObject):
                 self._camera.setScreenSize(width, height)
 
         self.setGraphItemsUpdateable()
-        self.render()
+
+        if not silent:
+            self.render()
 
     def setGraphItemsUpdateable(self):
         for item in self.graph_items:

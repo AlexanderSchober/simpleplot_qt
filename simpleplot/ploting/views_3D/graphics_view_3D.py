@@ -48,7 +48,7 @@ class GraphicsView3D(QtCore.QObject):
         self._parameters.update(opts)
 
         # These are the items
-        self.__renderer = None
+        self._renderer = None
         self.__transform = Transform3D()
         self.__visible = True
         self.__depth_value = 0
@@ -61,17 +61,17 @@ class GraphicsView3D(QtCore.QObject):
 
     def setRenderer(self, renderer):
         """ setter for the renderer """
-        self.__renderer = renderer
+        self._renderer = renderer
 
     def renderer(self):
         """ getter for the renderer """
-        return self.__renderer
+        return self._renderer
 
     def context(self) -> moderngl.Context:
         """ getter for the context """
-        if self.__renderer is None:
+        if self._renderer is None:
             return None
-        return self.__renderer.context()
+        return self._renderer.context()
 
     def _createProgram(self, name: str, vert_shader: str = None, frag_shader: str = None, geometry_shader: str = None,
                        tess_control_shader: str = None, tess_evaluation_shader: str = None, varyings: tuple = ()):
@@ -456,9 +456,9 @@ class GraphicsView3D(QtCore.QObject):
         Indicates that this item needs to be redrawn, and schedules an update 
         with the view it is displayed in.
         """
-        if self.__renderer is None:
+        if self._renderer is None:
             return
-        self.__renderer.render()
+        self._renderer.render()
 
     def mapToParent(self, point):
         tr = self.transform()

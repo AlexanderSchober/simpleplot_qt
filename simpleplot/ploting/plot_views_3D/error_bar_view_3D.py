@@ -36,6 +36,14 @@ class ErrorBarView(GraphicsView3D):
     '''
     def __init__(self, **opts):
         super().__init__(**opts)
+        self._initParameters()
+        self._need_update = True
+
+    def _initParameters(self):
+        """
+        This is a placeholder for the parameter
+        initialisation
+        """
         self._parameters = {}
         self._parameters['draw_error_bar'] = True
         self._parameters['mode'] = np.array([0.])
@@ -46,6 +54,7 @@ class ErrorBarView(GraphicsView3D):
         '''
         IUnitialize the OpenGl states
         '''
+        print('CONTEXT:', self.context())
         self._createProgram(
             "error_bar",
             vert_shader=self._vertexShader('error_bar'),
@@ -57,11 +66,6 @@ class ErrorBarView(GraphicsView3D):
         self._error_x = np.zeros((100,2))
         self._error_y = np.zeros((100,2))
         # self._error_z = np.zeros((100,2)) For later when implementing shaders !
-        
-        self._updateVBO()
-        self.setMVP()
-        self.setLight()
-        self.update()
 
     def setProperties(self, **kwargs)->None:
         '''
@@ -69,15 +73,14 @@ class ErrorBarView(GraphicsView3D):
         '''
         self._parameters.update(kwargs)
         self.setUniforms(**self._parameters)
-        self._updateVBO()
-        self.update()
+        self._need_update = True
 
     def setColors(self, **kwargs)->None:
         '''
         Set the properties to diplay the graph
         '''
         self._parameters_colors.update(kwargs)
-        self.update()
+        self._need_update = True
 
     def setData(self, vertices:np.array, line_colors:np.array, error_x:np.array, error_y:np.array, error_z:np.array)->None:
         '''
@@ -94,10 +97,8 @@ class ErrorBarView(GraphicsView3D):
         self._line_colors = line_colors
         self._error_x = error_x
         self._error_y = error_y
-        print('DATA', self._vertices, self._line_colors,self._error_x)
-        
-        self._updateVBO()
-        self.update()
+
+        self._need_update = True
 
     def _updateVBO(self)->None:
         '''
@@ -117,6 +118,10 @@ class ErrorBarView(GraphicsView3D):
         '''
         This will paint the tiles of the shape onto the canvas
         '''
+        if self._need_update:
+            self._updateVBO()
+            self._need_update = False
+            
         if self._parameters['draw_error_bar']:
             self._programs['error_bar']['viewport_size'].value = tuple(self.context().viewport[2:])
             self.context().disable(moderngl.CULL_FACE | moderngl.DEPTH_TEST)

@@ -76,12 +76,14 @@ class AxesItem2D(GraphicsItem):
 
         self._main_handler.addParameter(
             'Edge color', QtGui.QColor(self._edge_color),
-            method=partial(self.refreshAuto))
+            method=self.refreshAuto)
 
         for i, pos in enumerate(self._positions):
             self._axes_list.append(AxisView2D())
             self.canvas.view.addGraphItem(self._axes_list[-1])
             self._axes_list[-1].setProperties(axis_pos=pos)
+
+            method = partial(self.setParameters, i, True)
 
             self._handlers[i].addParameter(
                 'Visible', [
@@ -91,66 +93,63 @@ class AxesItem2D(GraphicsItem):
                     True if pos in ['bottom', 'left'] else False,
                     True],
                 names=['Axis', 'Ticks', 'Values', 'Title', 'edge'],
-                method=partial(self.setParameters, i))
+                method=method)
 
             self._handlers[i].addParameter(
                 'Axis visual',
                 [QtGui.QColor(self._colors[i]), 5],
                 names=['Color', 'Thickness'],
-                method=partial(self.setParameters, i))
+                method=method)
 
             self._handlers[i].addParameter(
                 'Tick visual',
                 [QtGui.QColor(self._colors[i]), 3, 20, True],
                 names=['Color', 'Thickness', 'Length', 'Small ticks'],
-                method=partial(self.setParameters, i))
+                method=method)
 
             self._handlers[i].addParameter(
                 'Axis title',
                 ['No Title', 15, 20, QtGui.QColor('black'), self._angles[i]],
                 names=['Title', 'Size', 'Position', 'Color', 'Angle'],
-                method=partial(self.setParameters, i))
+                method=method)
 
             self._handlers[i].addParameter(
                 'Axis title font', self.font().family() if self.font().family() != 'MS Shell Dlg 2' else 'Arial',
                 choices=[key for key in self._fonts.keys()],
-                method=partial(self.setParameters, i))
+                method=method)
 
             self._handlers[i].addParameter(
                 'Axis title justify vertical', 'Center',
                 choices=self._center_choices[1],
-                method=partial(self.setParameters, i))
+                method=method)
 
             self._handlers[i].addParameter(
                 'Axis title justify horizontal', 'Center',
                 choices=self._center_choices[0],
-                method=partial(self.setParameters, i))
+                method=method)
 
             self._handlers[i].addParameter(
                 'Axis label',
                 [11, 15, QtGui.QColor('black'), self._angles_labels[i]],
                 names=['Size', 'Position', 'Color', 'Angle'],
-                method=partial(self.setParameters, i))
+                method=method)
 
             self._handlers[i].addParameter(
                 'Axis label font', self.font().family() if self.font().family() != 'MS Shell Dlg 2' else 'Arial',
                 choices=[key for key in self._fonts.keys()],
-                method=partial(self.setParameters, i))
+                method=method)
 
             self._handlers[i].addParameter(
                 'Axis label justify vertical', self._center_labels[1][i],
                 choices=self._center_choices[1],
-                method=partial(self.setParameters, i))
+                method=method)
 
             self._handlers[i].addParameter(
                 'Axis label justify horizontal', self._center_labels[0][i],
                 choices=self._center_choices[0],
-                method=partial(self.setParameters, i))
+                method=method)
 
-        for i in range(len(self._handlers)):
-            self.setParameters(i)
-
-    def setParameters(self, i: int) -> None:
+    def setParameters(self, i: int, update:bool=False) -> None:
         """
         Set the parameters of the axis items
         """
@@ -190,13 +189,16 @@ class AxesItem2D(GraphicsItem):
         self._axes_list[i].setLabelFont(handler['Axis label font'], handler['Axis label'][0])
         self._axes_list[i].setProperties(**parameters)
 
+        if update:
+            self._axes_list[i].update()
+
     def refreshAuto(self):
         """
         refresh the axes automatically
         based on the content
         """
         for i in range(len(self._axes_list)):
-            self.setParameters(i)
+            self.setParameters(i, True)
 
     def refreshAutoAxis(self, i: int):
         """

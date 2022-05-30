@@ -50,6 +50,7 @@ class ScatterPlot(GraphicsItem):
         self.initializeMain(**kwargs)
         self.initialize(**kwargs)
         self._mode = '2D'
+        self.draw_items = [DistributionView3D()]
 
     def initialize(self, **kwargs):
         '''
@@ -151,7 +152,7 @@ class ScatterPlot(GraphicsItem):
         kwargs['antialias']     = self['Antialiassing']
         return kwargs
 
-    def setVisual(self):
+    def setVisual(self, silent=False):
         '''
         Set the visual of the given shape element
         '''
@@ -167,6 +168,8 @@ class ScatterPlot(GraphicsItem):
         parameters['line_width'] = np.array([float(self['Line width']/10)])
 
         self.draw_items[0].setProperties(**parameters)
+        if not silent:
+            self.draw_items[0].update()
 
     def getLegendDictionary(self)->dict:
         '''
@@ -180,7 +183,7 @@ class ScatterPlot(GraphicsItem):
         kwargs['symbol']        = self['Type']
         return kwargs
 
-    def setPlotData(self):
+    def setPlotData(self, silent=False):
         '''
         The preference implementation requires the ability to set
         colors without redrawing the entire data. As such we will 
@@ -201,6 +204,9 @@ class ScatterPlot(GraphicsItem):
             fill_colors = fill_colors,
             line_colors = line_colors)
 
+        if not silent:
+            self.draw_items[0].update()
+
     def drawGL(self, target_view = None):
         '''
         Draw the objects.
@@ -212,10 +218,10 @@ class ScatterPlot(GraphicsItem):
             self.setCurrentTags(['3D'])
 
         if self['Visible']:
-            self.draw_items = [DistributionView3D()]
             self.default_target.addItem(self.draw_items[-1])
-            self.setPlotData()
-            self.setVisual()
+            self.setPlotData(silent=True)
+            self.setVisual(silent=True)
+            self.draw_items[0].update()
             
     def drawLegendIcon(self, size_w, size_h, pixmap):
         '''

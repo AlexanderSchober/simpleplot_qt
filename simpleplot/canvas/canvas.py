@@ -21,9 +21,9 @@
 #
 # *****************************************************************************
 
-import os
-
 # import dependencies
+import os
+import time
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 # personal imports
@@ -53,12 +53,22 @@ class CanvasNode(SessionNode):
         :param kwargs: dict, keyword arguments
         """
         super().__init__(name, parent)
+        self._verbose = True
+        self._time = None
+        if self._verbose:
+            self._time = time.time()
         self.multi_canvas = kwargs['multi_canvas']
         self._ignore_path_change = False
         self._artist = None
         self._para_group = None
         self._initialize(**kwargs)
+        if self._verbose:
+            print('Canvas: Initialize: %s' % (time.time()-self._time))
+            self._time = time.time()
         self._buildSupport()
+        if self._verbose:
+            print('Canvas: Build Support: %s' % (time.time()-self._time))
+            self._time = time.time()
 
     def _initialize(self, **kwargs):
         """
@@ -142,7 +152,13 @@ class CanvasNode(SessionNode):
             self._para_group.deleteLater()
 
         self._populate()
+        if self._verbose:
+            print('Canvas: Populate: %s' % (time.time()-self._time))
+            self._time = time.time()
         self._setBackground()
+        if self._verbose:
+            print('Canvas: Set Background: %s' % (time.time()-self._time))
+            self._time = time.time()
 
     def switch(self):
         """
