@@ -26,6 +26,8 @@ import moderngl
 from PyQt5 import QtCore
 from pyrr import Vector4
 
+from simpleplot.artist.space import SpaceRepresentation
+
 from ..artist.camera_2d import Camera2D
 from ..artist.camera_3d import Camera3D
 from ..artist.light import LightSource
@@ -43,6 +45,7 @@ class ContextClass(QtCore.QObject):
         self.graph_items = []
         self._background_color = (0, 0, 0)
         self._camera = None
+        self._space = None
 
     def context(self) -> moderngl.Context:
         """
@@ -54,7 +57,7 @@ class ContextClass(QtCore.QObject):
         else:
             return None
 
-    def addItem(self, item, silent:bool=True):
+    def addItem(self, item, silent: bool = True):
         """
         Add an item to be drawn
         """
@@ -69,7 +72,7 @@ class ContextClass(QtCore.QObject):
         if not silent:
             self.render()
 
-    def addGraphItem(self, item, silent:bool=True):
+    def addGraphItem(self, item, silent: bool = True):
         """
         Add an item to be drawn
         """
@@ -129,7 +132,8 @@ class ContextClass(QtCore.QObject):
             moderngl.SRC_ALPHA, moderngl.ONE_MINUS_SRC_ALPHA,
             moderngl.ONE, moderngl.ONE
         )
-        self._moderngl_context.enable_only(moderngl.DEPTH_TEST | moderngl.CULL_FACE | moderngl.BLEND)
+        self._moderngl_context.enable_only(
+            moderngl.DEPTH_TEST | moderngl.CULL_FACE | moderngl.BLEND)
         self.drawItemTree()
         self.update.emit()
 
@@ -149,7 +153,8 @@ class ContextClass(QtCore.QObject):
         """
         self._camera = camera
         if hasattr(self, '_moderngl_context'):
-            self._camera.setRatio(self._moderngl_context.viewport[2] / self._moderngl_context.viewport[3])
+            self._camera.setRatio(
+                self._moderngl_context.viewport[2] / self._moderngl_context.viewport[3])
 
     def camera(self) -> Union[Camera2D, Camera3D]:
         """
@@ -157,6 +162,19 @@ class ContextClass(QtCore.QObject):
         :return: Union[Camera2D, Camera3D]
         """
         return self._camera
+
+    def setSpace(self, space: SpaceRepresentation) -> None:
+        """
+        Set the canmera as the local item
+        """
+        self._space = space
+
+    def space(self) -> SpaceRepresentation:
+        """
+        retrieve the camera
+        :return: Union[Camera2D, Camera3D]
+        """
+        return self._space
 
     def setMVP(self, item=None, silent=False) -> None:
         """
@@ -203,7 +221,7 @@ class ContextClass(QtCore.QObject):
         if not silent:
             self.render()
 
-    def resizeEvent(self, x: float, y: float, width: float, height: float, silent:bool=False) -> None:
+    def resizeEvent(self, x: float, y: float, width: float, height: float, silent: bool = False) -> None:
         """
         Manage the resize event before sending it 
         to the inherited class
@@ -255,8 +273,10 @@ class ContextClass(QtCore.QObject):
         proj_mat = self._camera.mat_projection.inverse
 
         win_coord = (x, viewport[3] - y)
-        near_point = model_mat * proj_mat * Vector4([win_coord[0], win_coord[1], 0.0, 1.0])
-        far_point = model_mat * proj_mat * Vector4([win_coord[0], win_coord[1], 1.0, 1.0])
+        near_point = model_mat * proj_mat * \
+            Vector4([win_coord[0], win_coord[1], 0.0, 1.0])
+        far_point = model_mat * proj_mat * \
+            Vector4([win_coord[0], win_coord[1], 1.0, 1.0])
 
         return far_point - near_point
 

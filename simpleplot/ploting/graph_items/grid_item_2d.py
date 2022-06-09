@@ -26,28 +26,29 @@ from PyQt5 import QtGui
 from functools import partial
 import numpy as np
 
-#import personal dependencies
+# import personal dependencies
 from ..graphics_items.graphics_item import GraphicsItem
-from ..graph_views_3D.grid_view_2d  import GridView2D
-from ...models.parameter_class      import ParameterHandler 
+from ..graph_views_3D.grid_view_2d import GridView2D
+from ...models.parameter_class import ParameterHandler
 
-class GridItem2D(GraphicsItem): 
+
+class GridItem2D(GraphicsItem):
     def __init__(self, parent, canvas, axis_items):
         super().__init__('Grids', transformer=False, parent=parent)
         self.canvas = canvas
         self._axis_items = axis_items
 
         self._orientations = ['horizontal', 'vertical']
-        self._handlers   = [
+        self._handlers = [
             ParameterHandler(
-                name = 'Horitontal Grid (Main)', parent = self),
+                name='Horitontal Grid (Main)', parent=self),
             ParameterHandler(
-                name = 'Horitontal Grid (Secondary)', parent = self),
+                name='Horitontal Grid (Secondary)', parent=self),
             ParameterHandler(
-                name = 'Vertical Grid (Main)', parent = self),
+                name='Vertical Grid (Main)', parent=self),
             ParameterHandler(
-                name = 'Vertical Grid (Secondary)', parent = self)]
-        
+                name='Vertical Grid (Secondary)', parent=self)]
+
         self._grid_views = []
 
     def initialize(self):
@@ -82,7 +83,7 @@ class GridItem2D(GraphicsItem):
 
             self._handlers[2*i+1].addParameter(
                 'Active',  True,
-                method=method)       
+                method=method)
 
             self._handlers[2*i+1].addParameter(
                 'Thickness', 0.5,
@@ -100,7 +101,7 @@ class GridItem2D(GraphicsItem):
                 'Multiplicity', 4,
                 method=method)
 
-    def setParameters(self, i:int, update:bool=False)->None:
+    def setParameters(self, i: int, update: bool = False) -> None:
         '''
         Set the parameters of the axis items
         '''
@@ -109,17 +110,22 @@ class GridItem2D(GraphicsItem):
         small_handler = self._handlers[2*i+1]
 
         parameters = {}
-        parameters['draw_grid']         = main_handler['Active']
-        parameters['draw_small_grid']   = small_handler['Active']
+        parameters['draw_grid'] = main_handler['Active']
+        parameters['draw_small_grid'] = small_handler['Active']
 
-        parameters['grid_color']        = np.array(main_handler['Color'].getRgbF())
-        parameters['grid_thickness']    = np.array([main_handler['Thickness']])
-        parameters['grid_periodicity']  = np.array([int(val) for val in main_handler['Periodicity'].split(',')])
+        parameters['grid_color'] = np.array(main_handler['Color'].getRgbF())
+        parameters['grid_thickness'] = np.array([main_handler['Thickness']])
+        parameters['grid_periodicity'] = np.array(
+            [int(val) for val in main_handler['Periodicity'].split(',')])
 
-        parameters['small_grid_color']        = np.array(small_handler['Color'].getRgbF())
-        parameters['small_grid_thickness']    = np.array([small_handler['Thickness']])
-        parameters['small_grid_periodicity']  = np.array([int(val) for val in small_handler['Periodicity'].split(',')])
-        parameters['small_grid_multiplicity'] = int(small_handler['Multiplicity'])
+        parameters['small_grid_color'] = np.array(
+            small_handler['Color'].getRgbF())
+        parameters['small_grid_thickness'] = np.array(
+            [small_handler['Thickness']])
+        parameters['small_grid_periodicity'] = np.array(
+            [int(val) for val in small_handler['Periodicity'].split(',')])
+        parameters['small_grid_multiplicity'] = int(
+            small_handler['Multiplicity'])
 
         self._grid_views[i].setProperties(**parameters)
         if update:

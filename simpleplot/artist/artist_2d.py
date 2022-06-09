@@ -25,6 +25,7 @@ import numpy as np
 from simpleplot.artist.artist import Artist
 from simpleplot.artist.camera_2d import Camera2D
 from simpleplot.artist.light import LightSource
+from simpleplot.artist.space import SpaceRepresentation
 from simpleplot.models.session_node import SessionNode
 from simpleplot.ploting.graph_items.axes_item_2d import AxesItem2D
 from simpleplot.ploting.graph_items.grid_item_2d import GridItem2D
@@ -49,7 +50,9 @@ class Artist2DNode(SessionNode, Artist):
         self.canvas = canvas
         self.plot_handlers = []
         self.artist_type = '3D'
+        self.space = SpaceRepresentation()
         self.camera = Camera2D(canvas)
+        self.space.setCamera(self.camera)
         self.light = LightSource(canvas)
         self.connect()
 
@@ -77,7 +80,7 @@ class Artist2DNode(SessionNode, Artist):
             self.pointer = PointerItem2D(self, self.canvas, self.axes)
             self.model().appendRow(self.pointer, self)
             self.pointer.initialize()
-            
+
         if self.legend is None:
             self.legend = LegendItem(self, self.canvas)
             self.model().appendRow(self.legend, self)
@@ -104,7 +107,6 @@ class Artist2DNode(SessionNode, Artist):
         Send to the adequate elements that the plot data has changed
         and thus the some things have to be done
         """
-        print('LOL', self.canvas.plotModel().itemAt(index).name)
         if (self.canvas.plotModel().itemAt(index) is not None
                 and self.canvas.plotModel().itemAt(index).name in ['Data', 'Transform']):
             self.refreshAuto()

@@ -28,7 +28,6 @@ import moderngl
 import numpy as np
 
 # Personal imports
-from .management.tick_management import tickValues, updateAutoSIPrefix
 from ..views_3D.graphics_view_3D import GraphicsView3D
 
 
@@ -46,10 +45,10 @@ class GridView2D(GraphicsView3D):
         initialisation
         """
         self._need_update = True
-        
+
         self._tick_values = np.array([0, 0.5, 0.7, 1])
         self._orientations = {
-            'vertical': np.array([0, 1, 0]), 
+            'vertical': np.array([0, 1, 0]),
             'horizontal': np.array([1, 0, 0])}
 
         self._parameters['draw_grid'] = True
@@ -60,7 +59,7 @@ class GridView2D(GraphicsView3D):
         self._parameters['grid_color'] = np.array([0, 0, 0, 1])
         self._parameters['grid_thickness'] = np.array(2)
         self._parameters['grid_periodicty_length'] = np.array(1)
-        
+
         # small grid
         self._parameters['small_grid_periodicity'] = np.array([6, 2, 2, 2])
         self._parameters['small_grid_color'] = np.array([0.5, 0.5, 0.5, 1])
@@ -106,13 +105,10 @@ class GridView2D(GraphicsView3D):
         the present buffers
         """
         self._generatePeriodicityTextures()
-
-        tick_range = self._getTickValues()
-        scale = updateAutoSIPrefix(tick_range[0], tick_range[1])
-        self._tick_values, spacing = tickValues(
-            tick_range[0], tick_range[1],
-            tick_range[1] - tick_range[0], scale)
-        self.grids_positions, self.grids_length_temp = self._getGridPositions(self._tick_values * scale)
+        self._tick_values, self.grids_positions, _ = self.renderer().space().getTicks(
+            'x' if self._parameters['grid_orientation'] == 'vertical' else 'y')
+        self.grids_length_temp = self._getGridLengths()
+        self.grids_positions = self._getGridPositions(self.grids_positions)
 
         # main grid
         self._createVBO("grid", self.grids_positions)
@@ -121,32 +117,38 @@ class GridView2D(GraphicsView3D):
         self._parameters['grid_length'] = np.array([self.grids_length_temp])
         pixel_size = self.renderer().camera().getPixelSize()
         if self._parameters['grid_orientation'] == 'vertical':
-            grid_thickness = np.array(self._parameters['grid_thickness'] * float(pixel_size[0]))
-            small_grid_thickness = np.array(self._parameters['small_grid_thickness'] * float(pixel_size[0]))
+            grid_thickness = np.array(
+                self._parameters['grid_thickness'] * float(pixel_size[0]))
+            small_grid_thickness = np.array(
+                self._parameters['small_grid_thickness'] * float(pixel_size[0]))
         else:
-            grid_thickness = np.array(self._parameters['grid_thickness'] * float(pixel_size[1]))
-            small_grid_thickness = np.array(self._parameters['small_grid_thickness'] * float(pixel_size[0]))
+            grid_thickness = np.array(
+                self._parameters['grid_thickness'] * float(pixel_size[1]))
+            small_grid_thickness = np.array(
+                self._parameters['small_grid_thickness'] * float(pixel_size[0]))
 
         # small grid
         if self.grids_positions.shape[0] > 2:
-            small_grid_positions = np.zeros(((self._parameters['small_grid_multiplicity']-1)*(self.grids_positions.shape[0] + 1), 3))
+            small_grid_positions = np.zeros(
+                ((self._parameters['small_grid_multiplicity']-1)*(self.grids_positions.shape[0] + 1), 3))
             if self._parameters['grid_orientation'] == 'vertical':
                 step = self.grids_positions[1][0] - self.grids_positions[0][0]
                 small_step = step / self._parameters['small_grid_multiplicity']
                 fill_index = 0
-                small_grid_positions[:,1] = self.grids_positions[0, 1]
+                small_grid_positions[:, 1] = self.grids_positions[0, 1]
                 position = self.grids_positions[0][0] - step
             else:
                 step = self.grids_positions[1][1] - self.grids_positions[0][1]
                 small_step = step / self._parameters['small_grid_multiplicity']
                 fill_index = 1
-                small_grid_positions[:,0] = self.grids_positions[0, 0]
+                small_grid_positions[:, 0] = self.grids_positions[0, 0]
                 position = self.grids_positions[0][1] - step
 
-            for i in range(self.grids_positions.shape[0]+ 1):
+            for i in range(self.grids_positions.shape[0] + 1):
                 position += small_step
                 for j in range(self._parameters['small_grid_multiplicity']-1):
-                    small_grid_positions[i*(self._parameters['small_grid_multiplicity']-1)+j, fill_index] = position
+                    small_grid_positions[i*(
+                        self._parameters['small_grid_multiplicity']-1)+j, fill_index] = position
                     position += small_step
 
             self.small_grids_positions = small_grid_positions
@@ -157,9 +159,11 @@ class GridView2D(GraphicsView3D):
         self._createVAO("small_grid", {"small_grid": ["3f", "in_vert"]})
 
         if self._parameters['grid_orientation'] == 'vertical':
-            small_grid_thickness = np.array(self._parameters['small_grid_thickness'] * float(pixel_size[0]))
+            small_grid_thickness = np.array(
+                self._parameters['small_grid_thickness'] * float(pixel_size[0]))
         else:
-            small_grid_thickness = np.array(self._parameters['small_grid_thickness'] * float(pixel_size[1]))
+            small_grid_thickness = np.array(
+                self._parameters['small_grid_thickness'] * float(pixel_size[1]))
 
         self.setUniforms(
             grid_length=self._parameters['grid_length'],
@@ -171,10 +175,10 @@ class GridView2D(GraphicsView3D):
             small_grid_periodicty_length=self._parameters['small_grid_periodicty_length']
 
         )
-        
+
         self._need_update = False
 
-    def _generatePeriodicityTextures(self)->np.array:
+    def _generatePeriodicityTextures(self) -> np.array:
         """
         This will generate the necessary texture from the peridocty
         parameter.
@@ -196,7 +200,7 @@ class GridView2D(GraphicsView3D):
             for i in range(value):
                 grid_texture.append(current_bool)
             current_bool = not current_bool
-        
+
         grid_texture = np.array(grid_texture, dtype=np.int8)
         self.grid_texture = self.context().texture(
             (grid_texture.shape[0], 1), 1,
@@ -221,7 +225,7 @@ class GridView2D(GraphicsView3D):
             for i in range(value):
                 small_grid_texture.append(current_bool)
             current_bool = not current_bool
-        
+
         small_grid_texture = np.array(grid_texture, dtype=np.int8)
         self.small_grid_texture = self.context().texture(
             (small_grid_texture.shape[0], 1), 1,
@@ -232,55 +236,34 @@ class GridView2D(GraphicsView3D):
         self.small_grid_texture.repeat_y = True
         self.small_grid_texture.filter = (moderngl.NEAREST, moderngl.NEAREST)
 
-    def _getTickValues(self) -> np.array:
-        """
-        This function will determine the tick values to consider using
-        the camera values and margins and return the limits
-        :return:
-        """
-        grid_orientation = self._parameters['grid_orientation']
-        grid_margins = self._axis_items.getMargins()
-
-        x_range = self.renderer().camera()['Camera x range']
-        y_range = self.renderer().camera()['Camera y range']
-        screen_size = self.renderer().camera()['Screen size']
-
-        if grid_orientation == 'vertical':
-            return np.array([
-                x_range[0] + (x_range[1] - x_range[0]) * grid_margins[0] / screen_size[0],
-                x_range[1] - (x_range[1] - x_range[0]) * grid_margins[2] / screen_size[0],
-            ]) if screen_size[0] > 0 else np.array([0, 1])
-        else:
-            return np.array([
-                y_range[0] + (y_range[1] - y_range[0]) * grid_margins[1] / screen_size[1],
-                y_range[1] - (y_range[1] - y_range[0]) * grid_margins[3] / screen_size[1]
-            ]) if screen_size[1] > 0 else np.array([0, 1])
-
-    def _getGridPositions(self, tick_values):
+    def _getGridPositions(self, grid_positions):
         """
         This will determine the appropriate tick positioning on screen
         :param tick_values: np.array(float), array of float values
         :return: np.array(float), 3d array of float positions
         """
         grid_orientation = self._parameters['grid_orientation']
-        grid_margins = self._axis_items.getMargins()
-
-        x_range = self.renderer().camera()['Camera x range']
-        y_range = self.renderer().camera()['Camera y range']
-        delta_x = x_range[1] - x_range[0]
-        delta_y = y_range[1] - y_range[0]
+        axis_margins = self.renderer().camera()['Margins (px)']
         screen_size = self.renderer().camera()['Screen size']
 
-        grids_positions = np.zeros((tick_values.shape[0], 3))
-
         if grid_orientation == 'vertical':
-            grids_positions[:, 0] = (tick_values - x_range[0]) / delta_x * 2 - 1
-            grids_positions[:, 1] = grid_margins[1] / screen_size[1] * 2 - 1 \
+            grid_positions[:, 1] = axis_margins[1] / screen_size[1] * 2 - 1 \
                 if screen_size[1] != 0 else 0
         else:
-            grids_positions[:, 1] = (tick_values - y_range[0]) / delta_y * 2 - 1
-            grids_positions[:, 0] = grid_margins[0] / screen_size[0] * 2 - 1 \
+            grid_positions[:, 0] = axis_margins[0] / screen_size[0] * 2 - 1 \
                 if screen_size[0] != 0 else 0
+
+        return grid_positions
+
+    def _getGridLengths(self):
+        """
+        This will determine the appropriate tick positioning on screen
+        :param tick_values: np.array(float), array of float values
+        :return: np.array(float), 3d array of float positions
+        """
+        grid_orientation = self._parameters['grid_orientation']
+        grid_margins = self.renderer().camera()['Margins (px)']
+        screen_size = self.renderer().camera()['Screen size']
 
         if grid_orientation == 'vertical':
             grids_length = (
@@ -292,7 +275,7 @@ class GridView2D(GraphicsView3D):
                 ((screen_size[0] - grid_margins[2]) / screen_size[0] * 2 - 1)
                 - (grid_margins[0] / screen_size[0] * 2 - 1)) if screen_size[0] != 0 else 0
 
-        return grids_positions, grids_length
+        return grids_length
 
     def paint(self):
         """
@@ -301,10 +284,10 @@ class GridView2D(GraphicsView3D):
         the ticks and the lables
         """
         self.context().disable(moderngl.CULL_FACE)
-        
+
         if self._need_update:
             self._updateGrid()
-            
+
         if self._parameters['draw_grid']:
             self.grid_texture.use(0)
             self._programs['grid']['grid_texture'].value = 0
@@ -321,7 +304,8 @@ class GridView2D(GraphicsView3D):
         """
         Returns the vertex shader for this particular item
         """
-        file = open(Path(__file__).resolve().parent / 'shader_scripts' / 'grid_vertex_2d.glsl')
+        file = open(Path(__file__).resolve().parent /
+                    'shader_scripts' / 'grid_vertex_2d.glsl')
         output = file.read()
         file.close()
         return output
@@ -364,4 +348,3 @@ class GridView2D(GraphicsView3D):
             output = file.read()
             file.close()
             return output
-        

@@ -206,6 +206,7 @@ class CanvasNode(SessionNode):
         # insert the artist
         self._artist = Artist2DNode(canvas=self)
         self.model().appendRow(self._artist, self)
+        self.plot_widget.setSpace(self._artist.space)
         self.plot_widget.setCamera(self._artist.camera)
         self.plot_widget.setLightSource(self._artist.light)
         self.plot_widget.shown.connect(self._setUpGraphItems)
@@ -258,8 +259,10 @@ class CanvasNode(SessionNode):
 
         # connect it all
         self.plot_widget.resized_signal.connect(self.resizeOverlaySpace)
-        self._overlay_view.sigTakenMouse.connect(self._artist.handleOverlayMouseTaken)
-        self._overlay_view.sigReleasedMouse.connect(self._artist.handleOverlayMouseReleased)
+        self._overlay_view.sigTakenMouse.connect(
+            self._artist.handleOverlayMouseTaken)
+        self._overlay_view.sigReleasedMouse.connect(
+            self._artist.handleOverlayMouseReleased)
 
     def resizeOverlaySpace(self):
         """
@@ -291,7 +294,8 @@ class CanvasNode(SessionNode):
         """
         for i in range(self.grid_layout.count()):
             if hasattr(self.grid_layout.itemAt(i).widget(), 'setBackground'):
-                self.grid_layout.itemAt(i).widget().setBackground(self.handler['Background'])
+                self.grid_layout.itemAt(i).widget().setBackground(
+                    self.handler['Background'])
 
     def _setVerticalSpacing(self):
         self.grid_layout.setVerticalSpacing(
@@ -313,17 +317,17 @@ class CanvasNode(SessionNode):
             self.loadFromFile(self.handler['Config. path'])
             self.handler.items['Config. path'].updateValue(temp_path, False)
             self._ignore_path_change = False
-        elif not  self._ignore_path_change:
+        elif not self._ignore_path_change:
             self._ignore_path_change = True
             self.handler.runAll()
             self._ignore_path_change = False
-        
+
     def _configurationActiveSet(self):
         """
         This will tell the model to either follow the
         changes of the active configuration and write them 
         on file or not
-        
+
         """
         if self.handler['Actively write config.']:
             self.model().dataChanged.connect(self._saveToCurrent)

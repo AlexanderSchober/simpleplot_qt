@@ -26,7 +26,7 @@ from functools import partial
 import numpy as np
 from PyQt5 import QtGui
 
-#import personal dependencies
+# import personal dependencies
 from ..graph_views_3D.axis_view_2d import AxisView2D
 from ..graph_views_3D.font_to_bitmap import getFontPaths
 from ..graphics_items.graphics_item import GraphicsItem
@@ -58,8 +58,10 @@ class AxesItem2D(GraphicsItem):
         self._edge_color = 'white'
         self._angles = [0, 0, 90, -90]
         self._angles_labels = [0, 0, 0, 0]
-        self._center_choices = [['Center', 'Left', 'Right'], ['Center', 'Top', 'Bottom']]
-        self._center_labels = [['Center', 'Center', 'Right', 'Left'], ['Bottom', 'Top', 'Center', 'Center']]
+        self._center_choices = [
+            ['Center', 'Left', 'Right'], ['Center', 'Top', 'Bottom']]
+        self._center_labels = [['Center', 'Center', 'Right', 'Left'], [
+            'Bottom', 'Top', 'Center', 'Center']]
         self._axes_list = []
 
     def initialize(self):
@@ -68,12 +70,6 @@ class AxesItem2D(GraphicsItem):
         unlike other methods the axes don't take any
         default parameters.
         """
-        self._main_handler.addParameter(
-            'Margins (px)',
-            [60, 60, 40, 40],
-            names=['Left', 'Bottom', 'Right', 'Top'],
-            method=self.refreshAuto)
-
         self._main_handler.addParameter(
             'Edge color', QtGui.QColor(self._edge_color),
             method=self.refreshAuto)
@@ -114,7 +110,8 @@ class AxesItem2D(GraphicsItem):
                 method=method)
 
             self._handlers[i].addParameter(
-                'Axis title font', self.font().family() if self.font().family() != 'MS Shell Dlg 2' else 'Arial',
+                'Axis title font', self.font().family() if self.font(
+                ).family() != 'MS Shell Dlg 2' else 'Arial',
                 choices=[key for key in self._fonts.keys()],
                 method=method)
 
@@ -135,7 +132,8 @@ class AxesItem2D(GraphicsItem):
                 method=method)
 
             self._handlers[i].addParameter(
-                'Axis label font', self.font().family() if self.font().family() != 'MS Shell Dlg 2' else 'Arial',
+                'Axis label font', self.font().family() if self.font(
+                ).family() != 'MS Shell Dlg 2' else 'Arial',
                 choices=[key for key in self._fonts.keys()],
                 method=method)
 
@@ -149,7 +147,7 @@ class AxesItem2D(GraphicsItem):
                 choices=self._center_choices[0],
                 method=method)
 
-    def setParameters(self, i: int, update:bool=False) -> None:
+    def setParameters(self, i: int, update: bool = False) -> None:
         """
         Set the parameters of the axis items
         """
@@ -163,7 +161,6 @@ class AxesItem2D(GraphicsItem):
                       'axis_widths': np.array([item['Axis visual'][1]
                                                for item in self._handlers]),
                       'axis_color': np.array(handler['Axis visual'][0].getRgbF()),
-                      'axis_margins': np.array(self._main_handler['Margins (px)']),
                       'tick_length': np.array(handler['Tick visual'][2]),
                       'tick_width': np.array(handler['Tick visual'][1]),
                       'tick_color': np.array(handler['Tick visual'][0].getRgbF()),
@@ -185,8 +182,10 @@ class AxesItem2D(GraphicsItem):
                       'edge_color': np.array(self._main_handler['Edge color'].getRgbF())
                       }
 
-        self._axes_list[i].setTitle(handler['Axis title'][0], handler['Axis title font'], handler['Axis title'][1])
-        self._axes_list[i].setLabelFont(handler['Axis label font'], handler['Axis label'][0])
+        self._axes_list[i].setTitle(
+            handler['Axis title'][0], handler['Axis title font'], handler['Axis title'][1])
+        self._axes_list[i].setLabelFont(
+            handler['Axis label font'], handler['Axis label'][0])
         self._axes_list[i].setProperties(**parameters)
 
         if update:
@@ -240,4 +239,3 @@ class AxesItem2D(GraphicsItem):
 
     def getMargins(self):
         return self._main_handler['Margins (px)']
-        

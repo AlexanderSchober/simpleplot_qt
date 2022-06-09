@@ -27,6 +27,8 @@ import numpy as np
 # import dependencies
 from PyQt5 import QtGui, QtCore, QtOpenGL, QtWidgets
 
+from simpleplot.artist.space import SpaceRepresentation
+
 from .gl_context_class import ContextClass
 # pylint: disable=E0202
 from .mouse_drag_event import SimpleMouseDragEvent
@@ -159,6 +161,13 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         self._camera = camera
         self._context_class.setCamera(camera)
         self._canvas.mouse.bind('move', self._camera.setMousePos, 'camera', 1)
+
+    def setSpace(self, space: SpaceRepresentation) -> None:
+        """
+        Set the canmera as the local item
+        """
+        self._space = space
+        self._context_class.setSpace(space)
 
     def setLightSource(self, light: LightSource) -> None:
         """

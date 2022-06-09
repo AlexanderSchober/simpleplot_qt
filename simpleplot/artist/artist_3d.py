@@ -25,6 +25,7 @@ import numpy as np
 from simpleplot.artist.artist import Artist
 from simpleplot.artist.camera_3d import Camera3D
 from simpleplot.artist.light import LightSource
+from simpleplot.artist.space import SpaceRepresentation
 from simpleplot.models.session_node import SessionNode
 from simpleplot.ploting.graph_items.axes_item_3d import AxesItem3D
 from simpleplot.ploting.graph_items.axes_orientation_item_3D import AxesOrientationItem3D
@@ -47,6 +48,8 @@ class Artist3DNode(SessionNode, Artist):
         self.plot_handlers = []
         self.artist_type = '3D'
         self.camera = Camera3D(canvas)
+        self.space = SpaceRepresentation()
+        self.space.setCamera(self.camera)
         self.light = LightSource(canvas)
         self.connect()
 

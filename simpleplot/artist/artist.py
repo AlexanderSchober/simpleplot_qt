@@ -22,12 +22,9 @@
 # *****************************************************************************
 
 import os
-
 import numpy as np
 
-from ..ploting.graph_items.legend import Legend
 from ..ploting.main_handler import get_main_handler
-from ..pointer.pointer import Pointer
 
 
 class Artist:
@@ -66,8 +63,7 @@ class Artist:
         now this corresponds to the legend and the 
         pointer
         """
-        self.pointer = Pointer(self.canvas)
-        self.legend = Legend(self.canvas)
+        pass
 
     def handleOverlayMouseTaken(self):
         """
@@ -125,7 +121,8 @@ class Artist:
 
         if not "Items" in active_handlers:
             new_child = get_main_handler("Items")
-            self.canvas.plotModel().insertRows(0, 1, [new_child], self.canvas.plotModel().root())
+            self.canvas.plotModel().insertRows(
+                0, 1, [new_child], self.canvas.plotModel().root())
 
         active_handlers = [
             child.name for child in
@@ -164,7 +161,8 @@ class Artist:
 
             elif len(shape) == 1:
                 item = self.addPlot('Scatter',
-                                    Name=file_path.split('.')[-2].split(os.path.sep)[-1],
+                                    Name=file_path.split(
+                                        '.')[-2].split(os.path.sep)[-1],
                                     x=data[0], y=data[1], error=data[2],
                                     Style=['-', 'o', 10])
 

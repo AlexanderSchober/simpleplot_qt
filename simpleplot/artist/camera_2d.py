@@ -49,7 +49,7 @@ class Camera2D(Camera):
             method=self._buildMVP)
 
         self.addParameter(
-            'Z near', -100,
+            'Z near', -100.,
             method=self._buildMVP)
 
         self.addParameter(
@@ -57,7 +57,7 @@ class Camera2D(Camera):
             method=self._buildMVP)
 
         self.addParameter(
-            'Move Factor', 1,
+            'Move Factor', 1.,
             method=self._buildMVP)
 
         self.addParameter(
@@ -66,6 +66,12 @@ class Camera2D(Camera):
 
         self.addParameter(
             'Zoom follow mouse', False,
+            method=self._buildMVP)
+
+        self.addParameter(
+            'Margins (px)',
+            [60, 60, 40, 40],
+            names=['Left', 'Bottom', 'Right', 'Top'],
             method=self._buildMVP)
 
     def zoom(self, ratio: float = 0, delta: float = 0) -> None:
@@ -87,8 +93,10 @@ class Camera2D(Camera):
 
         if self['Zoom follow mouse']:
             cursor_pos = [
-                mouse_pos[0] / screen_size[0] * (x_corners[1] - x_corners[0]) + x_corners[0],
-                (screen_size[1] - mouse_pos[1]) / screen_size[1] * (y_corners[1] - y_corners[0]) + y_corners[0],
+                mouse_pos[0] / screen_size[0] *
+                (x_corners[1] - x_corners[0]) + x_corners[0],
+                (screen_size[1] - mouse_pos[1]) / screen_size[1] *
+                (y_corners[1] - y_corners[0]) + y_corners[0],
             ]
         else:
             cursor_pos = [
@@ -183,6 +191,8 @@ class Camera2D(Camera):
         self.buildMView()
         self._buildMProjection()
         self.parent().view.contextClass().setMVP()
+        if not self.parent().view.contextClass().space() == None:
+            self.parent().view.contextClass().space().reevaluateAxis()
 
     def buildMView(self):
         """

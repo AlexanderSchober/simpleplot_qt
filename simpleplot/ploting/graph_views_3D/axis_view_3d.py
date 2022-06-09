@@ -30,7 +30,6 @@ import moderngl
 import numpy as np
 
 # Personal imports
-from .management.tick_management import tickValues, updateAutoSIPrefix
 from ..views_3D.graphics_view_3D import GraphicsView3D
 
 
