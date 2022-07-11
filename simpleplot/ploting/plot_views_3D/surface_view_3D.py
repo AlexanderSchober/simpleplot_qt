@@ -59,9 +59,9 @@ class SurfaceView3D(GraphicsView3D):
         self._vertices  = np.zeros((100,3))
         self._faces     = np.zeros((100,3), dtype=np.int)
         self._normals   = vertexNormals(self._vertices, self._faces)
-        self._ctx       = cl.create_some_context()
-        self._queue     = cl.CommandQueue(self._ctx)
-        self._mf        = cl.mem_flags
+        # self._ctx       = cl.create_some_context()
+        # self._queue     = cl.CommandQueue(self._ctx)
+        # self._mf        = cl.mem_flags
         
         self._updateTilesVBO()
         self.setMVP()
@@ -113,47 +113,47 @@ class SurfaceView3D(GraphicsView3D):
         self._faces         = faces.astype(np.int)
         self._normals       = vertexNormals(self._vertices, self._faces)
 
-        self._vertices_dev  = cl_array.to_device(
-            self._queue, self._vertices[self._faces.flatten()].astype(np.float))
-        self._dest_bool     = cl_array.to_device(
-            self._queue,np.zeros((self._faces.shape[0]), dtype=np.bool))
-        self._dest_vert     = cl_array.to_device(
-            self._queue,np.zeros((self._faces.shape[0],3), dtype=np.float))
+        # self._vertices_dev  = cl_array.to_device(
+        #     self._queue, self._vertices[self._faces.flatten()].astype(np.float))
+        # self._dest_bool     = cl_array.to_device(
+        #     self._queue,np.zeros((self._faces.shape[0]), dtype=np.bool))
+        # self._dest_vert     = cl_array.to_device(
+        #     self._queue,np.zeros((self._faces.shape[0],3), dtype=np.float))
 
-        self._prg = cl.Program(self._ctx, """
-            __kernel void intersect(
-                __global const float *vertices, __global bool *bool_holder, __global float *pos_holder)
-            {
-            int gid = get_global_id(0);
+        # self._prg = cl.Program(self._ctx, """
+        #     __kernel void intersect(
+        #         __global const float *vertices, __global bool *bool_holder, __global float *pos_holder)
+        #     {
+        #     int gid = get_global_id(0);
 
-            // Get the position out of the bufer
-            float4 p1 = (float4){
-                vertices[3 * gid + 0],
-                vertices[3 * gid + 1],
-                vertices[3 * gid + 2],
-                1
-            }; 
+        #     // Get the position out of the bufer
+        #     float4 p1 = (float4){
+        #         vertices[3 * gid + 0],
+        #         vertices[3 * gid + 1],
+        #         vertices[3 * gid + 2],
+        #         1
+        #     }; 
 
-            float4 p2 = (float4){
-                vertices[3 * gid + 3],
-                vertices[3 * gid + 4],
-                vertices[3 * gid + 5],
-                1
-            }; 
+        #     float4 p2 = (float4){
+        #         vertices[3 * gid + 3],
+        #         vertices[3 * gid + 4],
+        #         vertices[3 * gid + 5],
+        #         1
+        #     }; 
 
-            float4 p3 = (float4){
-                vertices[3 * gid + 6],
-                vertices[3 * gid + 7],
-                vertices[3 * gid + 8],
-                1
-            }; 
+        #     float4 p3 = (float4){
+        #         vertices[3 * gid + 6],
+        #         vertices[3 * gid + 7],
+        #         vertices[3 * gid + 8],
+        #         1
+        #     }; 
 
-            bool_holder[gid] = true;
-            pos_holder[3 * gid + 0] = p1[0];
-            pos_holder[3 * gid + 1] = p1[1];
-            pos_holder[3 * gid + 2] = p1[2];
-            }
-            """).build()
+        #     bool_holder[gid] = true;
+        #     pos_holder[3 * gid + 0] = p1[0];
+        #     pos_holder[3 * gid + 1] = p1[1];
+        #     pos_holder[3 * gid + 2] = p1[2];
+        #     }
+        #     """).build()
 
         self._updateTilesVBO()
         self.update()

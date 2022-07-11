@@ -57,9 +57,8 @@ class CrystalPlotHandler(PlotHandler):
         
         self._model.dataChanged.emit(self._plot_data.index(),self._plot_data.index())
 
-    def legendItems(self):
+    def legendItems(self, size_w, size_h):
         '''
         return to the legend the items to be used
         '''
-        # return SimpleItemSample([self.childFromName('Line'), self.childFromName('Scatter'), self.childFromName('Error')])
-        return []
+        return None

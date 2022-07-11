@@ -9,7 +9,7 @@ import numpy as np
 from ..pyqtgraph.pyqtgraph import functions as fn
 from ..pyqtgraph.pyqtgraph.graphicsItems.GraphicsWidget import GraphicsWidget
 from ..pyqtgraph.pyqtgraph.graphicsItems.ViewBox import *
-from .SimplePlotGradientEditorItem import *
+# from .SimplePlotGradientEditorItem import *
 from ..pyqtgraph.pyqtgraph.graphicsItems.LinearRegionItem import *
 from ..pyqtgraph.pyqtgraph.graphicsItems.PlotDataItem import *
 from ..pyqtgraph.pyqtgraph.graphicsItems.AxisItem import *

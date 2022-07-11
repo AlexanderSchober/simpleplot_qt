@@ -74,11 +74,11 @@ class StepPlotHandler(PlotHandler):
 
         self.transformer['Scaling'] = scaling
 
-    def legendItems(self):
+    def legendItems(self, size_w, size_h):
         '''
         return to the legend the items to be used
         '''
-        return SimpleItemSample([])
+        return None
 
     def addProjectionItem(self, item, direction = 'x'):
         '''

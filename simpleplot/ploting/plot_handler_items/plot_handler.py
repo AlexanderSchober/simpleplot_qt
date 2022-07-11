@@ -88,3 +88,8 @@ class PlotHandler(SessionNode):
         '''
         pass
         
+    def legendItems(self, size_w, size_h):
+        '''
+        return to the legend the items to be used
+        '''
+        return None

@@ -22,7 +22,7 @@
 # *****************************************************************************
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from ..simpleplot_widgets.SimplePlotGradientEditorItem import GradientEditorItem
+from simpleplot.dialogs.gradient_dialog import GradientPackage
 
 class ParameterDelegate(QtWidgets.QStyledItemDelegate):
     def createEditor(self, parent, option, index):
@@ -64,27 +64,20 @@ class ParameterDelegate(QtWidgets.QStyledItemDelegate):
             check_box_style_option.state |= QtWidgets.QStyle.State_Enabled
             QtWidgets.QApplication.style().drawControl(
                 QtWidgets.QStyle.CE_CheckBox, check_box_style_option, painter)
-        elif type(item.data(index.column())) == GradientEditorItem:
-            rect    = self.getGradRect(option)
-            grad    = item.data(index.column()).getGradient()
+        elif type(item.data(index.column())) == GradientPackage:
+            rect = option.rect
+            rect.setWidth(rect.width())
 
-            grad.setStart(rect.x(), rect.y())
-            grad.setFinalStop(rect.x() + rect.width(), rect.y())
+            gradient = QtGui.QLinearGradient(0, 0, rect.width(), 0)
+            for stop, color in item.data(index.column()).gradientQColor():
+                gradient.setColorAt(stop, color)
 
-            brush   = QtGui.QBrush(grad)
-            painter.fillRect(rect, brush)
-
+            gradient.setStart(rect.x(), rect.y())
+            gradient.setFinalStop(rect.x()+rect.width(), rect.y())
+            painter.fillRect(rect, gradient)
+            
         else:
             super().paint(painter, option, index)
-
-    def getGradRect(self, option):
-        '''
-        Get the rectangle for the drawing of the
-        gradient
-        '''
-        rect = option.rect
-        rect.setWidth(min([rect.width(), 200]))
-        return option.rect
 
     def getCheckBoxRect(self, option):
         '''
@@ -108,7 +101,7 @@ class ParameterDelegate(QtWidgets.QStyledItemDelegate):
         '''
         item    = index.model().getNode(index) 
         size    = super(ParameterDelegate, self).sizeHint(option, index)
-        if type(item.data(index.column())) == GradientEditorItem:
+        if type(item.data(index.column())) == GradientPackage:
             size = super(ParameterDelegate, self).sizeHint(option, index)
             size.setHeight(27)
         return size

@@ -24,10 +24,11 @@ from PyQt5 import QtGui
 import numpy as np
 from OpenGL.GL import glUseProgram, glGetUniformLocation, glCreateProgram, glAttachShader
 
+from simpleplot.dialogs.gradient_dialog import GradientPackage
+
 from ...pyqtgraph.pyqtgraph.opengl.shaders  import initShaders
 from ...pyqtgraph.pyqtgraph.opengl          import shaders
 from ...simpleplot_widgets.SimpleHistogramLUTWidget import HistogramLUTWidget
-from ...simpleplot_widgets.SimplePlotGradientEditorItem import GradientEditorItem
 
 from OpenGL import GL
 from ...models.parameter_class       import ParameterHandler 
@@ -59,7 +60,7 @@ class ShaderConstructor(ParameterHandler):
             'trial' : ['main','light']
         }
 
-        self._gradient_item  = GradientEditorItem()
+        
         self._positions      = [0,0.25,0.5,0.75,1.]
         self._colors        = [
             [0.,1.,1., 1.],
@@ -67,11 +68,9 @@ class ShaderConstructor(ParameterHandler):
             [0.,1.,0., 1.],
             [1.,0.,0., 1.],
             [1.,0.,1., 1.]]
-        state = {
-            'ticks':[[self._positions[i],np.array(self._colors)[i]*255] 
-            for i in range(len(self._colors))],
-            'mode' : 'rgb'}
-        self._gradient_item.restoreState(state)
+        state = [[self._positions[i],self._colors[i]] 
+            for i in range(len(self._colors))]
+        self._gradient_item  = GradientPackage(state)
 
         self._range_auto        = [True,True,True]
         self._range             = [[0.,1.],[0.,1.],[0.,1.]]
@@ -254,9 +253,9 @@ class ShaderConstructor(ParameterHandler):
         position: list of int [0. to 1.]
             The position of each color
         '''
-        state       = self['Gradient'].saveState()
-        positions   = [element[0] for element in state['ticks']]
-        colors      = [list(np.array(element[1])/255) for element in state['ticks']]
+        state       = self['Gradient'].gradientList()
+        positions   = [element[0] for element in state]
+        colors      = [list(np.array(element[1])) for element in state]
         self._colors      = np.array([c for _,c in sorted(zip(positions, colors))])
         self._positions   = np.array(sorted(positions))
 

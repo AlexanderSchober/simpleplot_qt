@@ -40,7 +40,7 @@ from .widget_constructors import checkBoxConstructor
 from .widget_constructors import gradientConstructor 
 from .widget_constructors import pathDialogConstructor 
 
-from ..simpleplot_widgets.SimplePlotGradientEditorItem import GradientEditorItem
+from ..dialogs.gradient_dialog import GradientPackage
 
 class ParameterHandler(SessionNode):
     '''
@@ -283,8 +283,8 @@ class ParameterMaster:
             return [name, 'font', value.styleName()]
         elif type(value) == bool:
             return [name, 'bool', value]
-        elif type(value) == GradientEditorItem:
-            return [name, 'gradient', value.saveState]
+        elif type(value) == GradientPackage:
+            return [name, 'gradient', value.gradient]
 
     def getValueFormat(self, value_array):
         '''
@@ -303,8 +303,7 @@ class ParameterMaster:
         elif value_array[1] == 'bool':
             return value_array[2]
         elif value_array[1] == 'gradient':
-            item = GradientEditorItem()
-            item.restoreState(value_array[2])
+            item = GradientPackage(value_array[2])
             return item
 
 class ParameterVector(ParameterMaster, ParameterNode):
@@ -457,7 +456,7 @@ class ParameterValue(ParameterMaster, ParameterItem):
             self._constructor = fontWidgetConstructor(self)
         elif type(value) == bool:
             self._constructor = checkBoxConstructor(self)
-        elif type(value) == GradientEditorItem:
+        elif type(value) == GradientPackage:
             self._constructor = gradientConstructor(self)
 
     def createWidget(self, parent, index):

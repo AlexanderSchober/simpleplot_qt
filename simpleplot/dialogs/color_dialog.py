@@ -21,9 +21,9 @@
 #
 # *****************************************************************************
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtWidgets
 
-class QColorDialog(QtWidgets.QColorDialog):
+class ColorDialog(QtWidgets.QColorDialog):
     
     def __init__(self, parent = None): 
         super().__init__(parent = parent)
@@ -43,28 +43,6 @@ class QColorDialog(QtWidgets.QColorDialog):
         for method in self.methods:
             try:
                 self.currentColorChanged.disconnect(method)
-            except:
-                print('Could not disconnect', method)
-
-class QFontDialog(QtWidgets.QFontDialog):
-    
-    def __init__(self, parent = None): 
-        super().__init__(parent = parent)
-        self.setModal(False)
-        self.methods = []
-
-    def connectMethod(self, method):
-        '''
-        '''
-        self.methods.append(method)
-        self.currentFontChanged.connect(self.methods[-1])
-
-    def disconnectAll(self):
-        '''
-        '''
-        for method in self.methods:
-            try:
-                self.currentFontChanged.disconnect(method)
             except:
                 print('Could not disconnect', method)
                 

@@ -21,12 +21,8 @@
 #
 # *****************************************************************************
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from ..simpleplot_widgets.SimplePlotGradientWidget import GradientWidget
-from ..simpleplot_widgets.SimplePlotGradientEditorItem import GradientEditorItem
-from ..simpleplot_widgets.scientificspin import ScientificDoubleSpinBox
+from PyQt5 import QtCore, QtWidgets
 from ..pyqtgraph.pyqtgraph.widgets.SpinBox import SpinBox
-from functools import partial
 
 class spinBoxConstructor:
 
@@ -157,43 +153,23 @@ class gradientConstructor:
         self.manager = parent
     
     def create(self,parent, value = None, index = None):
-        self._item = GradientWidget(parent = parent,orientation = 'bottom')
-        self._item.setMaximumWidth(200)
-        self._item.restoreState(self.manager._value.saveState())
-        self._item.sigGradientChanged.connect(self.updateInternals)
-        self._item.item.tick_clicked.connect(self.tick_clicked)
-        return self._item
+        self._index = QtCore.QModelIndex(index)
+        item = QtWidgets.QWidget(parent)
+        self.colorChoice()
+        return item
 
-    def tick_clicked(self, initial_tick):
-        '''
-        '''
-        self.pos = self._item.item.ticks[initial_tick]
-        self.manager._model.color_picker.disconnectAll()
-        self.manager._model.color_picker.setCurrentColor(initial_tick.color)
-        self.manager._model.color_picker.show()
-        self.manager._model.color_picker.connectMethod(self.updateInternalsBeta)
+    def setEditorData(self,editor):
+        self.manager._model.gradient_picker.setCurrentGradient(self.manager._value)
 
-    def updateInternalsBeta(self, color):
-        '''
-        '''
-        state = self._item.saveState()
+    def colorChoice(self):
+        self.manager._model.gradient_picker.disconnectAll()
+        self.manager._model.gradient_picker.show()
+        self.manager._model.gradient_picker.connectMethod(self.updateInternals)
 
-        new_state = []
-        for item in state['ticks']:
-            if item[0] == self.pos:
-                new_state.append((self.pos, (color.red(), color.green(), color.blue(), color.alpha())))
-            else:
-                new_state.append(item)
-        state['ticks'] = new_state
-        self._item.restoreState(state)
-
-    def updateInternals(self):
+    def updateInternals(self, gradient):
         '''
         '''
-        temp = GradientEditorItem()
-        temp.restoreState(self._item.saveState())
-
-        self.manager._value = temp
+        self.manager._value = gradient
         self.manager._model.dataChanged.emit(
             self.manager.index(),
             self.manager.index())
@@ -201,13 +177,8 @@ class gradientConstructor:
         if 'method' in self.manager.kwargs.keys():
             self.manager.kwargs['method']()
 
-    def setEditorData(self, editor):
-        editor.restoreState(self.manager._value.saveState())
-
     def retrieveData(self, editor):
-        temp = GradientEditorItem()
-        temp.restoreState(editor.saveState())
-        return temp
+        return self.manager._model.gradient_picker._gradient.gradient
 
 class checkBoxConstructor:
 

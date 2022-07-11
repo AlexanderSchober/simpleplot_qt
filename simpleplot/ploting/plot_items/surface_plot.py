@@ -23,8 +23,8 @@
 
 # General imports
 import numpy as np
-from ..custom_pg_items.SimpleImageItem import SimpleImageItem
-from ...simpleplot_widgets.SimplePlotGradientEditorItem import GradientEditorItem
+
+from simpleplot.dialogs.gradient_dialog import GradientPackage
 
 # Personal imports
 from ..graphics_items.graphics_item import GraphicsItem
@@ -54,6 +54,7 @@ class SurfacePlot(GraphicsItem):
         self.initializeVisual2D(**kwargs)
         self.initializeVisual3D(**kwargs)
         self._mode = '2D'
+        self.draw_items = [SurfaceView3D()]
 
     def initialize(self, **kwargs):
         '''
@@ -73,12 +74,9 @@ class SurfacePlot(GraphicsItem):
             [1.,0.,0., 1.],
             [1.,0.,1., 1.]
             ]
-        state = {
-            'ticks':[[positions[i],np.array(colors)[i]*255] 
-            for i in range(len(colors))],
-            'mode' : 'rgb'}
-        self._gradient_item  = GradientEditorItem()
-        self._gradient_item.restoreState(state)
+        state = [[positions[i], colors[i]] 
+            for i in range(len(colors))]
+        self._gradient_item  = GradientPackage(state)
 
         self.addParameter(
             'Gradient', self._gradient_item, 
@@ -89,42 +87,26 @@ class SurfacePlot(GraphicsItem):
         '''
         Set the visual of the given shape element
         '''
-        if not hasattr(self, 'draw_items'):
-            self.redraw()
-            return
-
-        if self._mode == '2D':
-            pass
-
-        elif self._mode == '3D':
-            parameters = {}
-            parameters['drawFaces']     = self['Draw faces']
-            parameters['drawEdges']     = self['Draw edges']
-            self.draw_items[0].setProperties(**parameters)
+        parameters = {}
+        parameters['drawFaces']     = self['Draw faces']
+        parameters['drawEdges']     = self['Draw edges']
+        self.draw_items[0].setProperties(**parameters)
 
     def setColor(self):
         '''
         Set the visual of the given shape element
         '''
-        if not hasattr(self, 'draw_items'):
-            self.redraw()
-            return
+        state       = self['Gradient'].gradientList()
+        positions   = [element[0] for element in state]
+        colors      = [element[1] for element in state]
 
-        if self._mode == '2D':
-            pass
+        parameters = {}
+        parameters['colors']            = np.array(
+            [c for _,c in sorted(zip(positions, colors))])
+        parameters['color_positions']   = np.array(
+            sorted(positions))
 
-        elif self._mode == '3D':
-            state       = self['Gradient'].saveState()
-            positions   = [element[0] for element in state['ticks']]
-            colors      = [list(np.array(element[1])/255.) for element in state['ticks']]
-
-            parameters = {}
-            parameters['colors']            = np.array(
-                [c for _,c in sorted(zip(positions, colors))])
-            parameters['color_positions']   = np.array(
-                sorted(positions))
-
-            self.draw_items[0].setColors(**parameters)
+        self.draw_items[0].setColors(**parameters)
 
     def setPlotData(self):
         '''
@@ -135,21 +117,6 @@ class SurfacePlot(GraphicsItem):
         '''
         data = self.parent()._plot_data.getMesh()
         self.draw_items[0].setData(vertices = data[0], faces = data[1])
-
-    def draw(self, target_surface = None):
-        '''
-        Draw the objects.
-        '''
-        self.removeItems()
-        self._mode = '2D'
-        if not target_surface == None:
-            self.default_target = target_surface.draw_surface.vb
-            self.setCurrentTags(['2D'])
-
-        if self['Visible']:
-            self.draw_items = [SimpleImageItem()]
-            self.default_target.addItem(self.draw_items[0])
-            self.setVisual()
 
     def drawGL(self, target_view = None):
         '''
@@ -162,7 +129,6 @@ class SurfacePlot(GraphicsItem):
             self.setCurrentTags(['3D'])
 
         if self['Visible']:
-            self.draw_items = [SurfaceView3D()]
             self.default_target.addItem(self.draw_items[-1])
             self.setPlotData()
             self.setColor()

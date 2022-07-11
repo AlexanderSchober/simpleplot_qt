@@ -24,7 +24,6 @@
 # General imports
 import numpy as np
 from ..custom_pg_items.SimpleImageItem import SimpleImageItem
-from ...simpleplot_widgets.SimplePlotGradientEditorItem import GradientEditorItem
 
 # Personal imports
 from ..graphics_items.graphics_item import GraphicsItem

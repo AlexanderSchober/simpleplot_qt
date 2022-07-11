@@ -143,7 +143,10 @@ class LegendItem(GraphicsItem):
         for plot_handler in self.canvas._plot_root._children:
             for element in plot_handler._children:
                 if hasattr(element, 'legendItems'):
-                    icons.append(element.legendItems(*self['Icon size']))
+                    icon_val = element.legendItems(*self['Icon size'])
+                    if icon_val is None:
+                        continue
+                    icons.append(icon_val)
                     titles.append(element._name)
 
         self._legend_view.setLegend(icons, titles)

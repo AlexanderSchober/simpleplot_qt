@@ -31,7 +31,9 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import QModelIndex
 from PyQt5.QtCore import QVariant
 
-from .modal_items import QColorDialog, QFontDialog
+from ..dialogs.color_dialog import ColorDialog
+from ..dialogs.font_dialog import FontDialog
+from ..dialogs.gradient_dialog import GradientDialog
 from .session_node import SessionNode
 
 
@@ -50,8 +52,12 @@ class SessionModel(QtCore.QAbstractItemModel):
         super(SessionModel, self).__init__(parent)
         self._root_node = root
         self._col_count = col_count
-        self.color_picker = QColorDialog()
-        self.font_picker = QFontDialog()
+        
+        # Load the dialogs localy
+        self.color_picker = ColorDialog()
+        self.font_picker = FontDialog()
+        self.gradient_picker = GradientDialog()
+        
         self.referenceModel()
 
     def referenceModel(self) -> None:
