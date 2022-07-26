@@ -20,24 +20,21 @@
 #   Alexander Schober <alex.schober@mac.com>
 #
 # *****************************************************************************
-from typing import Union
 
+from typing import Union
 import moderngl
 import numpy as np
-# import dependencies
-from PyQt5 import QtGui, QtCore, QtOpenGL, QtWidgets
-
+from PyQt5 import QtGui, QtCore, QtOpenGL
+from simpleplot.artist.interaction import InteractionHandler
 from simpleplot.artist.space import SpaceRepresentation
-
 from .gl_context_class import ContextClass
+
 # pylint: disable=E0202
 from .mouse_drag_event import SimpleMouseDragEvent
 from ..artist.camera_2d import Camera2D
 from ..artist.camera_3d import Camera3D
 from ..artist.light import LightSource
 
-
-# personal imports
 
 class MyGLViewWidget(QtOpenGL.QGLWidget):
     """
@@ -54,7 +51,9 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         super(MyGLViewWidget, self).__init__(self.qglFormat(), parent)
         self.setMouseTracking(True)
         self._context_class = ContextClass(self)
+        self._overay_context_class = ContextClass(self)
         self._canvas = canvas
+        self._interaction_handler = InteractionHandler(self._canvas, self._context_class)
         self._initialize()
         self._connect()
 
@@ -74,6 +73,7 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         Initialise the system
         """
         self._context_class.initializeGL(self.size().width(), self.size().height())
+        self._overay_context_class.initializeGL(self.size().width(), self.size().height())
 
     def context(self) -> moderngl.Context:
         """
@@ -82,12 +82,26 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         """
         return self._context_class.context()
 
+    def overlayContext(self) -> moderngl.Context:
+        """
+        Getter function for the context for 
+        doing tests for example
+        """
+        return self._overay_context_class.context()
+
     def contextClass(self) -> ContextClass:
         """
         Getter function for the context for 
         doing tests for example
         """
         return self._context_class
+
+    def overlayContextClass(self) -> ContextClass:
+        """
+        Getter function for the context for 
+        doing tests for example
+        """
+        return self._overay_context_class
 
     def addItem(self, item):
         """
@@ -142,17 +156,6 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         sued to edit plot data
         """
         self._context_class.update.connect(self.update)
-        self._canvas.mouse.bind('release', self._contextMenu, 'context', 2, True)
-        self._canvas.mouse.bind('press', self._showAxes, 'show_center', 1)
-        self._canvas.mouse.bind('release', self._hideAxes, 'hide_center', 1)
-        self._canvas.mouse.bind('press', self._showAxes, 'show_center', 2)
-        self._canvas.mouse.bind('release', self._hideAxes, 'hide_center', 2)
-        self._canvas.mouse.bind('press', self._showAxes, 'show_center', 0)
-        self._canvas.mouse.bind('release', self._hideAxes, 'hide_center', 0)
-        self._canvas.mouse.bind('move', self._rayMovement, 'ray', 1)
-        self._canvas.mouse.bind('drag', self._pan, 'pan', 1)
-        self._canvas.mouse.bind('drag', self._moveXY, 'shift_xy', 2)
-        self._canvas.mouse.bind('drag', self._moveXZ, 'shift_yz', 0)
 
     def setCamera(self, camera: Union[Camera2D, Camera3D]) -> None:
         """
@@ -160,6 +163,7 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         """
         self._camera = camera
         self._context_class.setCamera(camera)
+        self._interaction_handler.setCamera(camera)
         self._canvas.mouse.bind('move', self._camera.setMousePos, 'camera', 1)
 
     def setSpace(self, space: SpaceRepresentation) -> None:
@@ -168,6 +172,7 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         """
         self._space = space
         self._context_class.setSpace(space)
+        self._interaction_handler.setSpace(space)
 
     def setLightSource(self, light: LightSource) -> None:
         """
@@ -250,77 +255,6 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         else:
             self.keyTimer.stop()
 
-    def _contextMenu(self, ev):
-        """
-        Shift the view
-        """
-        if self._last_drag is None:
-            print('show context menu')
-
-    def _pan(self, x, y, drag_start, drag_end):
-        """
-        This function will handle the paning of the
-        openGl view and send it to the camera 
-        in charge
-
-        Parameters:
-        -------------------
-        x : float
-            x drag positions
-        y : float
-            y drag positions
-        drag_start : float
-            Not used
-        drag_end : float
-            Not used
-        """
-        diff_x = x[2] - x[1]
-        diff_y = y[2] - y[1]
-
-        self._camera.pan(diff_x, diff_y)
-
-    def _moveXZ(self, x, y, drag_start, drag_end):
-        """
-        This function will handle the moving of the
-        openGl view in the x and y plane and send 
-        it to the camera in charge
-
-        Parameters:
-        -------------------
-        x : float
-            x drag positions
-        y : float
-            y drag positions
-        drag_start : float
-            Not used
-        drag_end : float
-            Not used
-        """
-        diff_x = x[2] - x[1]
-        diff_y = y[2] - y[1]
-        self._camera.moveXZ(diff_x, diff_y, self.width())
-
-    def _moveXY(self, x, y, drag_start, drag_end):
-        """
-        This function will handle the moving of the
-        openGl view in the x and y plane and send 
-        it to the camera in charge
-
-        Parameters:
-        -------------------
-        x : float
-            x drag positions
-        y : float
-            y drag positions
-        drag_start : float
-            Not used
-        drag_end : float
-            Not used
-        """
-        diff_x = x[2] - x[1]
-        diff_y = y[2] - y[1]
-        self._camera.moveXY(diff_x, diff_y, self.width())
-
     def setBackground(self, color: QtGui.QColor):
         """
         Set the background of the draw context
@@ -333,6 +267,7 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         """
         self.contextClass()._background_color = [val / 255 for val in color.getRgb()]
         self.contextClass().render()
+        self.overlayContextClass().render()
 
     def resizeEvent(self, ev: QtGui.QResizeEvent) -> bool:
         """
@@ -348,38 +283,13 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
                 0, 0,
                 ev.size().width(),
                 ev.size().height())
+            
+        if self.overlayContextClass() is not None:
+            self.overlayContextClass().resizeEvent(
+                0, 0,
+                ev.size().width(),
+                ev.size().height())
+            
         self.resized_signal.emit()
 
         super().resizeEvent(ev)
-
-    def _showAxes(self):
-        """
-        Show the movement ball
-        """
-        if self._canvas.childFromName('Artist').orientation is not None:
-            self._canvas.childFromName('Artist').childFromName('Orientation Axes').drag_on = True
-            self._canvas.childFromName('Artist').childFromName('Orientation Axes').setParameters()
-
-    def _hideAxes(self):
-        """
-        Show the movement ball
-        """
-        if self._canvas.childFromName('Artist').orientation is not None:
-            self._canvas.childFromName('Artist').childFromName('Orientation Axes').drag_on = False
-            self._canvas.childFromName('Artist').childFromName('Orientation Axes').setParameters()
-
-    def _rayMovement(self, x, y):
-        """
-        Manage the ray movement
-        """
-        # fix the screen
-        # screens = QtWidgets.QApplication.instance().screens()
-        # num = QtWidgets.QApplication.instance().desktop().sreenNumber(self)
-        # ratio = QtGui.QScreen.devicePixelRatio(screens[num])
-        # ray = self._context_class.getPickingRay(x * ratio, y * ratio)
-        #
-        # self._context_class.pickRays()
-
-        # save the new ray and emit ray
-        # self.mouse_ray = np.array([self._camera['Camera position'], ray[:3]])
-        # self.rayUpdate.emit()

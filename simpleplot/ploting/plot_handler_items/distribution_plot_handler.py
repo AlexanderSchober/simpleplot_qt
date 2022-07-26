@@ -64,3 +64,7 @@ class DistributionPlotHandler(PlotHandler):
         return to the legend the items to be used
         '''
         return None
+
+    def boundaries(self):
+        return self._plot_data.getBounds()
+    

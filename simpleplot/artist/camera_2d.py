@@ -20,6 +20,7 @@
 #   Alexander Schober <alex.schober@mac.com>
 #
 # *****************************************************************************
+import numpy as np
 from pyrr import Matrix44, Vector3
 from .camera import Camera
 
@@ -116,7 +117,7 @@ class Camera2D(Camera):
              cursor_pos[1] + y_range / 2],
             method=False)
 
-        self.parent().view.contextClass().setGraphItemsUpdateable()
+        self.parent().view.contextClass().setGraphItemsUpdatable()
         self._buildMVP()
 
     def pan(self, diff_x: float, diff_y: float) -> None:
@@ -149,7 +150,7 @@ class Camera2D(Camera):
              y_corners[1] - direction * y_range * diff_y / screen_size[1]],
             method=False)
 
-        self.parent().view.contextClass().setGraphItemsUpdateable()
+        self.parent().view.contextClass().setGraphItemsUpdatable()
         self._buildMVP()
 
     def moveXY(self, diff_x: float, diff_y: float, width: float) -> None:
@@ -178,7 +179,7 @@ class Camera2D(Camera):
              y_corners[1] - y_range * diff_y / screen_size[1]],
             method=False)
 
-        self.parent().view.contextClass().setGraphItemsUpdateable()
+        self.parent().view.contextClass().setGraphItemsUpdatable()
         self._buildMVP()
 
     def _buildMVP(self):
@@ -224,3 +225,21 @@ class Camera2D(Camera):
                     'view_mat': self.mat_look_at,
                     'view_pos': self.vec_view_pos}
         return ret_dict
+
+    def _resetToBounds(self):
+        """
+        Reset the camera to the bounds of the sent items
+        """
+        bounds = np.array([
+            self.parent().artist().space.getBoundsToCamera(item.boundaries())
+            for item in self.parent().artist().plotHandlers()[0].getPlotInstances()])
+
+        bounds = [
+            [np.amin(bounds[:, 0, 0]), np.amax(bounds[:, 0, 1])],
+            [np.amin(bounds[:, 1, 0]), np.amax(bounds[:, 1, 1])],
+            [np.amin(bounds[:, 2, 0]), np.amax(bounds[:, 2, 1])]
+        ]
+        
+        self.items['Camera x range'].updateValue(bounds[0], method = False)
+        self.items['Camera y range'].updateValue(bounds[1], method = True)
+        

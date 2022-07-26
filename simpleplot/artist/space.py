@@ -32,12 +32,12 @@ from .space_modules.space_cartesian_2d import CartesianRepresentation2D
 class SpaceRepresentation(ParameterHandler):
     '''
     This class will handle very important transformation elements. 
-    For example the input will be cartesian and displaed as log2, log10
+    For example the input will be cartesian and displayed as log2, log10
     or polar coordinates. Meaning that the camera will always display the 
-    same infomation and the present class will trnaform the space on the 
+    same information and the present class will transform the space on the 
     fly. 
 
-    To this purpose th ecurrent transformation module will be loaded 
+    To this purpose the current transformation module will be loaded 
     for each axis. These modules will also handle the tick position
     and placement.
     '''
@@ -54,7 +54,7 @@ class SpaceRepresentation(ParameterHandler):
 
     def setCamera(self, camera: Union[Camera2D, Camera3D]) -> None:
         """
-        Set the canmera as the local item
+        Set the camera as the local item
         """
         self._camera = camera
         self.reevaluateAxis()
@@ -70,6 +70,17 @@ class SpaceRepresentation(ParameterHandler):
 
     def getTicks(self, axis):
         return self._selected_spaces[axis].getTicks()
+
+    def getBoundsToCamera(self, bounds):
+        '''
+        bounds needs to be a set of three lists
+        going x, y, z
+        '''
+        return [
+            [self._selected_spaces['x'].toCameraSpace(bounds[0][0]), self._selected_spaces['x'].toCameraSpace(bounds[0][1])],
+            [self._selected_spaces['y'].toCameraSpace(bounds[1][0]), self._selected_spaces['y'].toCameraSpace(bounds[1][1])],
+            [self._selected_spaces['z'].toCameraSpace(bounds[2][0]), self._selected_spaces['z'].toCameraSpace(bounds[2][1])]
+        ]
 
     def reevaluateAxis(self):
         if self._camera is None:

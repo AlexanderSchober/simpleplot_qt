@@ -111,3 +111,7 @@ class SurfacePlotHandler(PlotHandler):
             if self.childFromName('Data') is not None and hasattr(self.childFromName('Data'), 'getProjection'):
                 data = self.childFromName('Data').getProjection(*item[1:], x = x, y = y, z = z)
                 item[0].setPlotData(x = data[0], y = data[1])
+
+    def boundaries(self):
+        return self._plot_data.getBounds()
+    

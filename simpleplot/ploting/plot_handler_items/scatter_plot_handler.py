@@ -73,3 +73,6 @@ class ScatterPlotHandler(PlotHandler):
         # self.childFromName('Error')
         
         return pixmap
+
+    def boundaries(self):
+        return self._plot_data.getBounds()

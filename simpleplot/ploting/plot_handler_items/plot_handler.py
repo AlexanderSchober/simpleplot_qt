@@ -93,3 +93,10 @@ class PlotHandler(SessionNode):
         return to the legend the items to be used
         '''
         return None
+    
+    def boundaries(self):
+        '''
+        return to the legend the items to be used
+        '''
+        return None
+    

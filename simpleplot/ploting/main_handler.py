@@ -95,6 +95,12 @@ class MainHandler(SessionNode):
             'Parallepiped': ParallepipedItem,
             'Ellipsoid': EllipsoidItem
         }
+        
+    def getPlotInstances(self):
+        '''
+        Provide the child instances
+        '''
+        return self._children
 
     def addChild(self, *args, **kwargs):
         """

@@ -35,7 +35,7 @@ from ..models.parameter_class import ParameterHandler
 from ..models.plot_model import SessionModel
 from ..models.session_node import SessionNode
 from ..simpleplot_widgets.SimpleCanvasWidget import CanvasWidget
-from ..simpleplot_widgets.SimplePlotGLViewWidget import MyGLViewWidget
+from ..opengl.SimplePlotGLViewWidget import MyGLViewWidget
 from ..simpleplot_widgets.SimplePlotOverlayView import SimplePlotOverlayView
 
 

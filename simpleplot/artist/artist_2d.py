@@ -129,10 +129,16 @@ class Artist2DNode(SessionNode, Artist):
         selected items. if not a new instance will be
         generated and then fed into the handler system
         """
-        for plot_handler in self.canvas.plotModel().root().children():
+        for plot_handler in self.plotHandlers():
             plot_handler.draw(self.canvas)
 
         self.refreshAuto()
+
+    def plotHandlers(self):
+        """
+        return the plot handlers
+        """
+        return [plot_handler for plot_handler in self.canvas.plotModel().root().children()]
 
     def redrawOverlay(self):
         """

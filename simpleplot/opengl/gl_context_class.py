@@ -106,7 +106,7 @@ class ContextClass(QtCore.QObject):
 
     def initializeGL(self, width: float, height: float) -> None:
         """
-        Initialisation of the  moderngl system
+        Initialization of the  moderngl system
 
         Parameters:
         -------------------------------------
@@ -139,8 +139,8 @@ class ContextClass(QtCore.QObject):
 
     def drawItemTree(self):
         """
-        This fucntion will draw the items in the self.items
-        list through the poaint methods
+        This function will draw the items in the self.items
+        list through the paint methods
         """
         items = self.items + self.graph_items
         items.sort(key=lambda a: a.depthValue())
@@ -165,7 +165,7 @@ class ContextClass(QtCore.QObject):
 
     def setSpace(self, space: SpaceRepresentation) -> None:
         """
-        Set the canmera as the local item
+        Set the camera as the local item
         """
         self._space = space
 
@@ -196,7 +196,7 @@ class ContextClass(QtCore.QObject):
 
     def setLightSource(self, light: LightSource) -> None:
         """
-        Set the canmera as the local item
+        Set the camera as the local item
         """
         self._light = light
 
@@ -246,12 +246,12 @@ class ContextClass(QtCore.QObject):
                     self.context().viewport[2] / self.context().viewport[3])
                 self._camera.setScreenSize(width, height)
 
-        self.setGraphItemsUpdateable()
+        self.setGraphItemsUpdatable()
 
         if not silent:
             self.render()
 
-    def setGraphItemsUpdateable(self):
+    def setGraphItemsUpdatable(self):
         for item in self.graph_items:
             if hasattr(item, '_need_update'):
                 item._need_update = True
@@ -282,8 +282,8 @@ class ContextClass(QtCore.QObject):
 
     def pickRays(self):
         """
-        This fucntion will draw the items in the self.items
-        list through the poaint methods
+        This function will draw the items in the self.items
+        list through the paint methods
         """
         items = self.items + self.graph_items
         items.sort(key=lambda a: a.depthValue())
