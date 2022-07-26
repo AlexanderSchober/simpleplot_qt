@@ -20,7 +20,7 @@
 #   Alexander Schober <alexander.schober@mac.com>
 #
 # *****************************************************************************
-from PyQt5.QtWidgets import QApplication
+
 import numpy as np
 
 
@@ -53,6 +53,7 @@ class Mouse:
         self.cursor_y = 0
         self.pressed = []
         self.released = []
+        self.dragged = []
 
     def get_pos(self):
         """
@@ -60,12 +61,12 @@ class Mouse:
         """
         return self.cursor_x, self.cursor_y
 
-    def bind(self, motion_type, method, id_string, button=None, send_ev=False):
+    def bind(self, motion_type, method, id_string, button=None, send_ev=False, no_drag=False):
         """
         This methods allows the developer to bind 
         methods to the mouse evs. The move ev 
         will trigger the mouse motion ev based 
-        routines wand call them with the corrdinatess
+        routines wand call them with the coordinates
         etc...
         ———————
         Input: 
@@ -74,16 +75,16 @@ class Mouse:
         - the id string to identify it
         """
         if motion_type == 'move':
-            self.move_methods.append([method, id_string, send_ev])
+            self.move_methods.append([method, id_string, send_ev, no_drag, no_drag])
 
         elif motion_type == 'drag':
-            self.drag_methods.append([method, id_string, button, send_ev])
+            self.drag_methods.append([method, id_string, button, send_ev, no_drag])
 
         elif motion_type.split('-')[0] == 'press':
-            self.press_methods.append([method, id_string, button, send_ev])
+            self.press_methods.append([method, id_string, button, send_ev, no_drag])
 
         elif motion_type.split('-')[0] == 'release':
-            self.release_methods.append([method, id_string, button, send_ev])
+            self.release_methods.append([method, id_string, button, send_ev, no_drag])
 
         else:
             print('Motion type not found')
@@ -155,6 +156,9 @@ class Mouse:
         Input: 
         - Qt based mouse ev
         """
+        if not ev.button() in self.dragged:
+            self.dragged.append(ev.button())
+
         ev.accept()
 
         start = ev.buttonDownPos()
@@ -187,6 +191,12 @@ class Mouse:
             self.released.remove(ev.button())
         except:
             pass
+        
+        try:
+            self.dragged.remove(ev.button())
+        except:
+            pass
+
         if not ev.button() in self.pressed:
             self.pressed.append(ev.button())
         self.evaluatePress(ev)
@@ -203,6 +213,7 @@ class Mouse:
             self.pressed.remove(ev.button())
         except:
             pass
+        
         self.released.append(ev.button())
         self.evaluateRelease(ev)
 
@@ -255,6 +266,8 @@ class Mouse:
         linked methods.
         """
         for method in self.release_methods:
+            if ev.button() in self.dragged and method[4]:
+                continue
             if method[2] == ev.button():
                 if method[3]:
                     method[0](ev)
