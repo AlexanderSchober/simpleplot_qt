@@ -24,7 +24,7 @@
 import os
 import numpy as np
 
-from ..ploting.main_handler import get_main_handler
+from ..plotting.main_handler import get_main_handler
 
 
 class Artist:

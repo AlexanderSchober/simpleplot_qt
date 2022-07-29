@@ -4,8 +4,8 @@ from PyQt5 import QtCore,QtGui
 from ...pyqtgraph.pyqtgraph.graphicsItems.ScatterPlotItem import drawSymbol
 from ...pyqtgraph.pyqtgraph import fn
 
-from ...ploting.plot_items.line_plot     import LinePlot
-from ...ploting.plot_items.scatter_plot  import ScatterPlot
+from ...plotting.plot_items.line_plot     import LinePlot
+from ...plotting.plot_items.scatter_plot  import ScatterPlot
 
 class SimpleItemSample():
     '''

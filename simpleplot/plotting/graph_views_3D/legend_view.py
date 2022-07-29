@@ -44,7 +44,7 @@ class LegendView(GraphicsView3D):
     def _initParameters(self):
         """
         This is a placeholder for the parameter
-        initialisation
+        initialization
         """
         self._need_update = True
         self.width = 0
@@ -63,7 +63,7 @@ class LegendView(GraphicsView3D):
 
     def initializeGL(self) -> None:
         """
-        Unitialize the OpenGl states
+        Initialize the OpenGl states
         """
         self._createProgram(
             "legend",
@@ -100,7 +100,8 @@ class LegendView(GraphicsView3D):
         qimg = pixmap.toImage()
         byte_str = qimg.bits().asstring(w*h*4)
 
-        ## Using the np.frombuffer function to convert the byte string into an np array
+        ## Using the np.frombuf
+        # fer function to convert the byte string into an np array
         img = np.frombuffer(byte_str, dtype=np.uint8).reshape((w,h,4))
 
         return img
@@ -108,7 +109,7 @@ class LegendView(GraphicsView3D):
     def setLegend(self, icons:List[QtGui.QPixmap], titles:List[str])->None:
         '''
         Here we are getting all the icons and titles to
-        generate a new legend bitmap. The generatiomn of a 
+        generate a new legend bitmap. The generation of a 
         bitmap is essential as it avoids that the legend is 
         perpetually redrawn on every call.
         '''
@@ -210,7 +211,7 @@ class LegendView(GraphicsView3D):
         """
         Paint the elements of the axis.
         This includes the axis line,
-        the ticks and the lables
+        the ticks and the labels
         """
         self.context().disable(moderngl.CULL_FACE)
         

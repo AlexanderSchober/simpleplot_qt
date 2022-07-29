@@ -27,9 +27,9 @@ from simpleplot.artist.camera_3d import Camera3D
 from simpleplot.artist.light import LightSource
 from simpleplot.artist.space import SpaceRepresentation
 from simpleplot.models.session_node import SessionNode
-from simpleplot.ploting.graph_items.axes_item_3d import AxesItem3D
-from simpleplot.ploting.graph_items.axes_orientation_item_3D import AxesOrientationItem3D
-from simpleplot.ploting.graph_items.grid_item_3D import GridItem3D
+from simpleplot.plotting.graph_items.axes_item_3d import AxesItem3D
+from simpleplot.plotting.graph_items.axes_orientation_item_3D import AxesOrientationItem3D
+from simpleplot.plotting.graph_items.grid_item_3D import GridItem3D
 
 
 class Artist3DNode(SessionNode, Artist):

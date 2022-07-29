@@ -51,7 +51,7 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         super(MyGLViewWidget, self).__init__(self.qglFormat(), parent)
         self.setMouseTracking(True)
         self._context_class = ContextClass(self)
-        self._overay_context_class = ContextClass(self)
+        self._overlay_context_class = ContextClass(self)
         self._canvas = canvas
         self._interaction_handler = InteractionHandler(self._canvas, self._context_class)
         self._initialize()
@@ -73,7 +73,7 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         Initialise the system
         """
         self._context_class.initializeGL(self.size().width(), self.size().height())
-        self._overay_context_class.initializeGL(self.size().width(), self.size().height())
+        self._overlay_context_class.initializeGL(self.size().width(), self.size().height())
 
     def context(self) -> moderngl.Context:
         """
@@ -87,7 +87,7 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         Getter function for the context for 
         doing tests for example
         """
-        return self._overay_context_class.context()
+        return self._overlay_context_class.context()
 
     def contextClass(self) -> ContextClass:
         """
@@ -101,7 +101,7 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
         Getter function for the context for 
         doing tests for example
         """
-        return self._overay_context_class
+        return self._overlay_context_class
 
     def addItem(self, item):
         """
@@ -130,7 +130,7 @@ class MyGLViewWidget(QtOpenGL.QGLWidget):
     def paintGL(self):
         """
         This is the overwrite of the paintGL method. 
-        Note that for some reason it is recquired for
+        Note that for some reason it is required for
         the first draw and can then be set to point to
         a dummy to allow the contextClass to handle the
         drawing process.

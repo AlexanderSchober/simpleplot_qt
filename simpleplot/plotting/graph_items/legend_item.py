@@ -22,9 +22,7 @@
 # *****************************************************************************
 
 #import dependencies
-from turtle import width
 from PyQt5 import QtGui
-from functools import partial
 import numpy as np
 
 #import personal dependencies
@@ -82,7 +80,7 @@ class LegendItem(GraphicsItem):
             method = self.setParameters)
         
         self.addParameter(
-            'Outter margins',
+            'Outer margins',
             [5, 5, 5, 5],
             names=['Left', 'Top', 'Right', 'Bottom'],
             method = self.setParameters)
@@ -104,7 +102,7 @@ class LegendItem(GraphicsItem):
         parameters['draw_legend']        = self['Active']
         parameters['legend_font']        = self['Font']
         parameters['legend_font_size']   = self['Font size']
-        parameters['legend_margins']     = self['Outter margins']
+        parameters['legend_margins']     = self['Outer margins']
         parameters['legend_margin_h']    = self['Grid margin h']
         parameters['legend_margin_v']    = self['Grid margin v']
         parameters['legend_back_color']  = np.array(self['Background color'].getRgbF())*256
@@ -151,3 +149,5 @@ class LegendItem(GraphicsItem):
 
         self._legend_view.setLegend(icons, titles)
         
+
+            

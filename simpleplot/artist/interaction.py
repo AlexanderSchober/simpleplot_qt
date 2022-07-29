@@ -45,7 +45,7 @@ class InteractionHandler(object):
         
     def setCurrentScheme(self, scheme_name: str) -> None:
         """
-        Set the canmera as the local item
+        Set the current type of interaction scheme
         """
         self._current_interaction_scheme = self._interaction_schemes[scheme_name](self._canvas, self._context)
         
@@ -57,7 +57,7 @@ class InteractionHandler(object):
         
     def setCamera(self, camera: Union[Camera2D, Camera3D]) -> None:
         """
-        Set the canmera as the local item
+        Set the camera
         """
         self._camera = camera
         
@@ -66,7 +66,7 @@ class InteractionHandler(object):
             
     def setSpace(self, space: SpaceRepresentation) -> None:
         """
-        Set the canmera as the local item
+        Set the space
         """
         self._space = space
         
@@ -90,7 +90,7 @@ class InteractionScheme(object):
         
     def setCamera(self, camera: Union[Camera2D, Camera3D]) -> None:
         """
-        Set the canmera as the local item
+        Set the camera
         """
         self._disconnect()
         self._camera = camera
@@ -102,7 +102,7 @@ class InteractionScheme(object):
         
     def setSpace(self, space: SpaceRepresentation) -> None:
         """
-        Set the canmera as the local item
+        Set the space
         """
         self._disconnect()
         self._space = space
@@ -112,17 +112,17 @@ class InteractionScheme(object):
         '''
         Connect the methods between each other
         This needs to be implemented in the respective
-        child clases.
+        child classes.
         '''
-        pass
+        self._mouse.bind('move', self._selector, 'selector', 1)
     
     def _disconnect(self):
         '''
         Connect the methods between each other
         This needs to be implemented in the respective
-        child clases.
+        child classes.
         '''
-        pass
+        self._mouse.unbind('move', 'selector')
     
     def _selector(self, x, y):
         """
@@ -140,6 +140,24 @@ class InteractionScheme(object):
         # self.mouse_ray = np.array([self._camera['Camera position'], ray[:3]])
         # self.rayUpdate.emit()
         
+    def _getGraphItems(self):
+        """
+        Reset the camera to the bounds of the sent items
+        """
+        bounds = np.array([
+            self.parent().artist().space.getBoundsToCamera(item.boundaries())
+            for item in self.parent().artist().plotHandlers()[0].getPlotInstances()])
+
+        bounds = [
+            [np.amin(bounds[:, 0, 0]), np.amax(bounds[:, 0, 1])],
+            [np.amin(bounds[:, 1, 0]), np.amax(bounds[:, 1, 1])],
+            [np.amin(bounds[:, 2, 0]), np.amax(bounds[:, 2, 1])]
+        ]
+        
+        self.items['Camera x range'].updateValue(bounds[0], method = False)
+        self.items['Camera y range'].updateValue(bounds[1], method = True)
+        
+        
     def _contextMenu(self, ev):
         """
         Shift the view
@@ -155,8 +173,9 @@ class InteractionSchemeZoom(InteractionScheme):
         '''
         Connect the methods between each other
         This needs to be implemented in the respective
-        child clases.
+        child classes.
         '''
+        super(InteractionSchemeZoom, self)._connect()
         if self._is_3d:
             self._mouse.bind('press', self._showAxes, 'show_center', 1)
             self._mouse.bind('release', self._hideAxes, 'hide_center', 1)
@@ -168,7 +187,6 @@ class InteractionSchemeZoom(InteractionScheme):
             self._mouse.bind('release', self._resetZoom, 'reset_zoom', 1, False, True)
             
         self._mouse.bind('release', self._contextMenu, 'context', 2, True, True)
-        self._mouse.bind('move', self._selector, 'selector', 1)
         self._mouse.bind('drag', self._pan, 'pan', 1)
         self._mouse.bind('drag', self._moveXY, 'shift_xy', 2)
         self._mouse.bind('drag', self._moveXZ, 'shift_yz', 0)
@@ -177,8 +195,10 @@ class InteractionSchemeZoom(InteractionScheme):
         '''
         Connect the methods between each other
         This needs to be implemented in the respective
-        child clases.
+        child classes.
         '''
+        super(InteractionSchemeZoom, self)._disconnect()
+        
         if self._is_3d:
             self._mouse.unbind('press', 'show_center')
             self._mouse.unbind('release', 'hide_center')
@@ -190,7 +210,6 @@ class InteractionSchemeZoom(InteractionScheme):
             self._mouse.unbind('release', 'reset_zoom')
             
         self._mouse.unbind('release', 'context')
-        self._mouse.unbind('move', 'selector')
         self._mouse.unbind('drag', 'pan')
         self._mouse.unbind('drag', 'shift_xy')
         self._mouse.unbind('drag', 'shift_yz')

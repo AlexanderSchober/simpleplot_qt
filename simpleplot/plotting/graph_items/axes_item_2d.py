@@ -239,3 +239,8 @@ class AxesItem2D(GraphicsItem):
 
     def getMargins(self):
         return self._main_handler['Margins (px)']
+
+    def retrieveInteractiveItems(self, output):
+        for axis in self._axes_list:
+            output.append(axis)
+            

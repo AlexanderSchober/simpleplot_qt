@@ -35,7 +35,7 @@ class GraphicsItem(ParameterHandler):
     '''
     def __init__(self,*args, transformer = True, **kwargs):
         '''
-        Initialisation of the class and super class
+        Initialization of the class and super class
 
         Parameters:
         -------------------
@@ -54,7 +54,7 @@ class GraphicsItem(ParameterHandler):
     def setCurrentTags(self, tags):
         '''
         Overwrite the default current tag setter to allow
-        adding and removing the current tranformaer and 
+        adding and removing the current transformer and 
         shader constructor
         '''
         # if "2D" in tags:
@@ -220,3 +220,9 @@ class GraphicsItem(ParameterHandler):
             self['Position'][2]
         ], method = True)
     
+    def boundaries(self):
+        '''
+        return the boundaries in spae of the underlying item
+        '''
+        None
+        

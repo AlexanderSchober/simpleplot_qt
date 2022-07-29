@@ -27,10 +27,10 @@ from simpleplot.artist.camera_2d import Camera2D
 from simpleplot.artist.light import LightSource
 from simpleplot.artist.space import SpaceRepresentation
 from simpleplot.models.session_node import SessionNode
-from simpleplot.ploting.graph_items.axes_item_2d import AxesItem2D
-from simpleplot.ploting.graph_items.grid_item_2d import GridItem2D
-from simpleplot.ploting.graph_items.pointer_item_2d import PointerItem2D
-from simpleplot.ploting.graph_items.legend_item import LegendItem
+from simpleplot.plotting.graph_items.axes_item_2d import AxesItem2D
+from simpleplot.plotting.graph_items.grid_item_2d import GridItem2D
+from simpleplot.plotting.graph_items.pointer_item_2d import PointerItem2D
+from simpleplot.plotting.graph_items.legend_item import LegendItem
 # from simpleplot.ploting.graph_items.axes_orientation_item_3D import AxesOrientationItem3D
 # from simpleplot.ploting.graph_items.grid_item_3D import GridItem3D
 
@@ -59,11 +59,26 @@ class Artist2DNode(SessionNode, Artist):
         self.axes = None
         self.grids = None
         self.orientation = None
-
+        
+    def getInteractGraphItems(self):
+        '''
+        This function will grab the item that are though
+        to be interactive and return them
+        '''
+        interaction_graph_items = {}
+        
+        # if self.axes is None:
+        #     self.axes.retrieveInteractiveItems(interaction_graph_items)
+            
+        if self.legend is None:
+            interaction_graph_items['legend'] = self.legend
+            
+        return interaction_graph_items
+            
     def setUpGraphItems(self):
         """
         this will help setting up the graph items
-        after the artists has been initialised such as the
+        after the artists has been initialized such as the
         camera dn the light
         """
         if self.axes is None:
@@ -85,7 +100,7 @@ class Artist2DNode(SessionNode, Artist):
             self.legend = LegendItem(self, self.canvas)
             self.model().appendRow(self.legend, self)
             self.legend.initialize()
-
+            
     def connect(self):
         """
         Connect the methods
